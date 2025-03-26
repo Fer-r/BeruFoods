@@ -1,0 +1,72 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: DockerfileFrontendFRA
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Activa polling para asegurar detección de cambios en Docker
+    depends_on:
+      - backend
+    networks:
+      - app-network
+  backend:
+    build:
+      context: ./backend
+      dockerfile: DockerfileBackend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - database
+    command: >
+      sh -c " composer install && composer show doctrine/dbal && php -S 0.0.0.0:8000 -t public"
+    networks:
+      - app-network
+  database:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: FRA_DB
+      MYSQL_USER: alumnoDAW
+      MYSQL_PASSWORD: passFRA
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - database_data:/var/lib/mysql
+    networks:
+      - app-network
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: database
+      PMA_USER: user
+      PMA_PASSWORD: password
+    depends_on:
+      - database
+    networks:
+      - app-network
+  nginx:
+    build:
+      context: ./web
+      dockerfile: DockerfileWebFRA
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  database_data:

@@ -2,7 +2,6 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: DockerfileFrontendFRA
     ports:
       - "3000:3000"
     volumes:
@@ -15,9 +14,7 @@ services:
     networks:
       - app-network
   backend:
-    build:
-      context: ./backend
-      dockerfile: DockerfileBackend
+    build: ./backend
     ports:
       - "8000:8000"
     volumes:
@@ -55,18 +52,21 @@ services:
     networks:
       - app-network
   nginx:
-    build:
-      context: ./web
-      dockerfile: DockerfileWebFRA
+    build: docker/nginx
+    restart: on-failure
+    volumes:
+      - ./backend:/var/www/backend
+      - ./docker/nginx/logs:/var/log/nginx
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
     ports:
       - "80:80"
     depends_on:
       - frontend
       - backend
     networks:
-      - app-network
+      - beru-network
 networks:
-  app-network:
+  beru-network:
     driver: bridge
 volumes:
   database_data:

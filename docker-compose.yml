@@ -3,70 +3,77 @@ services:
     build:
       context: ./frontend
     ports:
-      - "3000:3000"
+      - 5173:5173
     volumes:
       - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - CHOKIDAR_USEPOLLING=true # Activa polling para asegurar detección de cambios en Docker
-    depends_on:
-      - backend
     networks:
-      - app-network
+      - beru-network
   backend:
-    build: ./backend
-    ports:
-      - "8000:8000"
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
     volumes:
-      - ./backend:/app
+      - ./backend:/var/www/backend
     depends_on:
-      - database
-    command: >
-      sh -c " composer install && composer show doctrine/dbal && php -S 0.0.0.0:8000 -t public"
+      database:
+        condition: service_healthy
+    environment:
+      DB_DRIVER: pdo_mysql
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_SERVER_VERSION: '8.0'
+      APP_ENV: ${APP_ENV:-dev}
+      APP_SECRET: ${APP_SECRET:-change_me_in_dotenv}
     networks:
-      - app-network
+      - beru-network
   database:
     image: mysql:8.0
-    ports:
-      - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: FRA_DB
-      MYSQL_USER: alumnoDAW
-      MYSQL_PASSWORD: passFRA
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
       - database_data:/var/lib/mysql
     networks:
-      - app-network
+      - beru-network
+    healthcheck:
+        test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$${MYSQL_USER}", "-p$${MYSQL_PASSWORD}"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+        start_period: 30s
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
       - "8080:80"
     environment:
       PMA_HOST: database
-      PMA_USER: user
-      PMA_PASSWORD: password
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     networks:
-      - app-network
+      - beru-network
   nginx:
-    build: docker/nginx
-    restart: on-failure
+    build:
+      context: docker/nginx
+    restart: always
     volumes:
-      - ./backend:/var/www/backend
+      - ./backend:/var/www/backend:ro
       - ./docker/nginx/logs:/var/log/nginx
-      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
     ports:
       - "80:80"
     depends_on:
-      - frontend
       - backend
     networks:
       - beru-network
 networks:
   beru-network:
     driver: bridge
+    name: beru-network
 volumes:
   database_data:

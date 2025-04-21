@@ -82,8 +82,9 @@ install-frontend: ## Install frontend npm dependencies
 	$(COMPOSE) exec ${FRONTEND_SERVICE} npm install
 
 db: ## Run database migrations
+	# Wait logic removed - handled by Docker Compose healthcheck now
 	# Database is created by the MySQL container via MYSQL_DATABASE env var
-	# Running migrations as root user in container
+	@echo "Running database migrations..."
 	$(COMPOSE) exec ${BACKEND_SERVICE} bin/console doctrine:migration:migrate --no-interaction --allow-no-migration
 
 cache-clear: ## Clear the backend Symfony cache
@@ -107,3 +108,6 @@ frontend: ## Build frontend assets for production
 backend: ## Validate backend composer setup
 	@echo "Validating backend composer setup..."
 	$(COMPOSE) exec --user=${BACKEND_USER} ${BACKEND_SERVICE} composer validate
+
+delete: ## Delete all containers, networks, and volumes
+	$(COMPOSE) down -v

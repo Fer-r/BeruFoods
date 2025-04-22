@@ -3,6 +3,9 @@ framework:
         # The paths to make available to the asset mapper.
         paths:
             - assets/
+        # Exclude vendor bundles installed via assets:install
+        excluded_patterns:
+            - 'bundles/**'
         missing_import_mode: strict
 
 when@prod:

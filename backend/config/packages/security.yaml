@@ -4,14 +4,46 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        # Provider for regular users
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+        # Provider for restaurant users
+        restaurant_provider:
+            entity:
+                class: App\Entity\Restaurant
+                property: email
+        # Chain provider to check both user types for API token validation
+        chain_provider:
+            chain:
+                providers: [app_user_provider, restaurant_provider]
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        main:
-            lazy: true
-            provider: users_in_memory
+        # Firewall for User login
+        login:
+            pattern: ^/api/login
+            stateless: true
+            json_login:
+                check_path: /api/login
+                username_path: email
+                provider: app_user_provider
+        # Firewall for Restaurant login (New)
+        restaurant_login:
+            pattern: ^/api/restaurant/login
+            stateless: true
+            json_login:
+                check_path: /api/restaurant/login
+                username_path: email
+                provider: restaurant_provider
+        # General API Firewall - validates JWTs from either user type
+        api:
+            pattern: ^/api
+            stateless: true
+            provider: chain_provider
+            jwt: ~
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -19,11 +51,18 @@ security:
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
 
+
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        # Order matters: More specific paths first
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/restaurant/login, roles: PUBLIC_ACCESS } # Added restaurant login path
+        - { path: ^/api/restaurant/register, roles: PUBLIC_ACCESS }
+        # Secure the rest of the API
+        - { path: ^/api, roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/, roles: PUBLIC_ACCESS }
 
 when@test:
     security:

@@ -12,7 +12,7 @@ COMPOSE := docker compose
 .DEFAULT_GOAL := help
 
 # Phony targets prevent conflicts with files of the same name
-.PHONY: help init up down restart build logs logs-backend logs-frontend bash bash-frontend install db cache cache-clear migration test-backend frontend backend
+.PHONY: help init up down restart build logs logs-backend logs-frontend bash-backend bash-frontend install db cache cache-clear migration test-backend frontend backend
 
 help: ## Display this help message
 	@echo "Usage: make [target]"
@@ -27,7 +27,7 @@ help: ## Display this help message
 	@echo "  logs            Tail logs from all services"
 	@echo "  logs-backend    Tail logs from the backend service"
 	@echo "  logs-frontend   Tail logs from the frontend service"
-	@echo "  bash            Connect to the backend container's shell as www-data"
+	@echo "  bash-backend    Connect to the backend container's shell as www-data"
 	@echo "  bash-frontend   Connect to the frontend container's shell"
 	@echo "  install         Install backend (Composer) and frontend (npm) dependencies"
 	@echo "  db              Run database migrations"
@@ -67,7 +67,7 @@ logs-backend: ## Tail logs from the backend service
 logs-frontend: ## Tail logs from the frontend service
 	$(COMPOSE) logs -f ${FRONTEND_SERVICE}
 
-bash: ## Connect to the backend container's shell as www-data
+bash-backend: ## Connect to the backend container's shell as www-data
 	$(COMPOSE) exec --user=${BACKEND_USER} ${BACKEND_SERVICE} /bin/bash
 
 bash-frontend: ## Connect to the frontend container's shell

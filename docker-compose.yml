@@ -30,6 +30,8 @@ services:
       DB_SERVER_VERSION: '8.0'
       APP_ENV: ${APP_ENV:-dev}
       APP_SECRET: ${APP_SECRET:-change_me_in_dotenv}
+    ports:
+      - 9000:9000
     networks:
       - beru-network
   database:
@@ -52,7 +54,7 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-      - "8080:80"
+      - "8081:80"
     environment:
       PMA_HOST: database
     depends_on:
@@ -65,14 +67,17 @@ services:
       context: docker/nginx
     restart: always
     volumes:
-      - ./backend:/var/www/backend:ro
       - ./docker/nginx/logs:/var/log/nginx
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./backend:/var/www/backend:ro
+      - ./docker/nginx/certs:/etc/nginx/certs
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - backend
       - frontend
+      - phpmyadmin
     networks:
       - beru-network
 networks:

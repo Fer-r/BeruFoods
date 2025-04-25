@@ -44,7 +44,7 @@ init: stop up install db cache ## Initialize the project: stop, build, start, in
 
 up: ## Build images (if needed) and start services in detached mode
 	$(COMPOSE) build
-	$(COMPOSE) up -d
+	$(COMPOSE) up
 
 down: stop ## Stop and remove containers, networks
 	$(COMPOSE) down

@@ -169,6 +169,7 @@
       <path value="$PROJECT_DIR$/backend/vendor/api-platform/http-cache" />
       <path value="$PROJECT_DIR$/backend/vendor/api-platform/doctrine-common" />
       <path value="$PROJECT_DIR$/backend/vendor/api-platform/state" />
+      <path value="$PROJECT_DIR$/backend/vendor/phpstan/phpstan" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2" />

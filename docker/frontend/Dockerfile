@@ -3,7 +3,7 @@ FROM node:23-alpine
 WORKDIR /app
 # Instalar dependencias
 COPY frontend/package*.json ./
-RUN npm install
+RUN npm install --ignore-scripts
 # Copiar el código fuente
 COPY frontend/ .
 # Exponer el puerto

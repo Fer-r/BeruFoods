@@ -14,7 +14,7 @@ final class Version20250422233630 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Creates comprehensive schema for restaurant management system including users, restaurants, food types, orders, and addresses';
     }
 
     public function up(Schema $schema): void

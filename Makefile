@@ -68,7 +68,7 @@ logs-frontend: ## Tail logs from the frontend service
 	$(COMPOSE) logs -f ${FRONTEND_SERVICE}
 
 bash-backend: ## Connect to the backend container's shell as www-data
-	$(COMPOSE) exec ${BACKEND_SERVICE} /bin/bash
+	$(COMPOSE) exec --user=${BACKEND_USER} ${BACKEND_SERVICE} /bin/bash
 
 bash-frontend: ## Connect to the frontend container's shell
 	$(COMPOSE) exec ${FRONTEND_SERVICE} /bin/sh # Alpine uses sh
@@ -76,7 +76,7 @@ bash-frontend: ## Connect to the frontend container's shell
 install: install-backend install-frontend ## Install backend (Composer) and frontend (npm) dependencies
 
 install-backend: ## Install backend Composer dependencies
-	$(COMPOSE) exec ${BACKEND_SERVICE} composer install --no-interaction --optimize-autoloader
+	$(COMPOSE) exec --user=${BACKEND_USER} ${BACKEND_SERVICE} composer install --no-interaction --optimize-autoloader
 
 install-frontend: ## Install frontend npm dependencies
 	$(COMPOSE) exec ${FRONTEND_SERVICE} npm install
@@ -96,7 +96,7 @@ cache-warmup: cache-clear ## Warm up the backend Symfony cache
 cache: cache-warmup ## Alias for cache-warmup
 
 migration: ## Generate a new Doctrine migration file
-	$(COMPOSE) exec ${BACKEND_SERVICE} bin/console make:migration
+	$(COMPOSE) exec --user=${BACKEND_USER} ${BACKEND_SERVICE} bin/console make:migration
 
 test-backend: ## Run backend PHPUnit tests
 	$(COMPOSE) exec --user=${BACKEND_USER} ${BACKEND_SERVICE} php bin/phpunit # Assuming phpunit is installed via composer dev-deps

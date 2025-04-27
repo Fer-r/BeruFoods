@@ -35,7 +35,7 @@ services:
     networks:
       - beru-network
   database:
-    image: mysql:8.0
+    image: mariadb:11.7.2
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -46,9 +46,9 @@ services:
     networks:
       - beru-network
     healthcheck:
-        test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$${MYSQL_USER}", "-p$${MYSQL_PASSWORD}"]
-        interval: 10s
-        timeout: 5s
+        test: ["CMD", "/usr/local/bin/healthcheck.sh", "--connect"]
+        interval: 15s
+        timeout: 10s
         retries: 5
         start_period: 30s
   phpmyadmin:

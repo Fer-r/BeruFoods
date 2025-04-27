@@ -1,5 +1,5 @@
 # Use the PHP FPM image (provides extensions, but we won't run FPM itself)
-FROM php:8.4-fpm
+FROM php:8.3-fpm
 
 # Set working directory
 WORKDIR /var/www/backend
@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libicu-dev \
     unzip \
     libpng-dev \
-    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/*
 
 # Configure and Install PHP extensions
 RUN docker-php-ext-configure intl \
@@ -50,8 +50,13 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interactio
 # Switch back to root to copy remaining files
 USER root
 
-# Copy the rest of the application code into the WORKDIR
-COPY --chown=www-data:www-data backend/ .
+# Copy the rest of the application code into the WORKDIR, owned by root
+COPY --chown=root:root --chmod=755 backend/ .
+
+# Ensure runtime directories are writable by www-data
+RUN mkdir -p /var/www/backend/public/uploads && \
+    chown -R www-data:www-data /var/www/backend/var /var/www/backend/public/uploads && \
+    chmod -R u+w /var/www/backend/var /var/www/backend/public/uploads
 
 # Make console executable
 RUN chmod +x /var/www/backend/bin/console

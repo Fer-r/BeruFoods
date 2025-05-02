@@ -29,7 +29,7 @@ help: ## Display this help message
 	@echo "  logs-frontend   Tail logs from the frontend service"
 	@echo "  bash-backend    Connect to the backend container's shell as www-data"
 	@echo "  bash-frontend   Connect to the frontend container's shell"
-	@echo "  install         Install backend (Composer) and frontend (npm) dependencies"
+	@echo "  install         Install backend (Composer) and frontend (yarn) dependencies"
 	@echo "  db              Run database migrations"
 	@echo "  cache           Clear and warm up the backend cache"
 	@echo "  cache-clear     Clear the backend cache"
@@ -44,7 +44,7 @@ init: stop up install db cache logs ## Initialize the project: stop, build, star
 
 up: ## Build images (if needed) and start services in detached mode
 	$(COMPOSE) build
-	$(COMPOSE) up -d
+	$(COMPOSE) up -d --build
 
 down: stop ## Stop and remove containers, networks
 	$(COMPOSE) down
@@ -73,13 +73,13 @@ bash-backend: ## Connect to the backend container's shell as www-data
 bash-frontend: ## Connect to the frontend container's shell
 	$(COMPOSE) exec ${FRONTEND_SERVICE} /bin/sh # Alpine uses sh
 
-install: install-backend install-frontend ## Install backend (Composer) and frontend (npm) dependencies
+install: install-backend install-frontend ## Install backend (Composer) and frontend (yarn) dependencies
 
 install-backend: ## Install backend Composer dependencies
 	$(COMPOSE) exec --user=${BACKEND_USER} ${BACKEND_SERVICE} composer install --no-interaction --optimize-autoloader
 
-install-frontend: ## Install frontend npm dependencies
-	$(COMPOSE) exec ${FRONTEND_SERVICE} npm install
+install-frontend: ## Install frontend yarn dependencies
+	$(COMPOSE) exec ${FRONTEND_SERVICE} yarn install --frozen-lockfile
 
 db: ## Run database migrations
 	# Wait logic removed - handled by Docker Compose healthcheck now
@@ -103,7 +103,7 @@ test-backend: ## Run backend PHPUnit tests
 
 frontend: ## Build frontend assets for production
 	@echo "Building frontend assets..."
-	$(COMPOSE) exec ${FRONTEND_SERVICE} npm run build
+	$(COMPOSE) exec ${FRONTEND_SERVICE} yarn build
 
 backend: ## Validate backend composer setup
 	@echo "Validating backend composer setup..."

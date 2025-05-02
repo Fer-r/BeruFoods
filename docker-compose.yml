@@ -30,27 +30,30 @@ services:
       DB_SERVER_VERSION: '8.0'
       APP_ENV: ${APP_ENV:-dev}
       APP_SECRET: ${APP_SECRET:-change_me_in_dotenv}
+      TZ: Europe/Madrid
     ports:
       - 9000:9000
     networks:
       - beru-network
   database:
-    image: mysql:9.3
+    image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: Europe/Madrid
     volumes:
       - database_data:/var/lib/mysql
     networks:
       - beru-network
     healthcheck:
-        test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$${MYSQL_USER}", "-p$${MYSQL_PASSWORD}"]
+        test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD"]
         interval: 10s
         timeout: 5s
         retries: 5
         start_period: 30s
+    command: --default-authentication-plugin=caching_sha2_password
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
@@ -79,7 +82,6 @@ services:
     depends_on:
       - backend
       - frontend
-      - phpmyadmin
     networks:
       - beru-network
 networks:

@@ -1,0 +1,19 @@
+# config/serialization/User.yaml
+App\Entity\User:
+    attributes:
+        id:
+            groups: ['user:read', 'user:read:collection', 'user:read:nested']
+        email:
+            groups: ['user:read', 'user:read:collection']
+        name:
+            groups: ['user:read', 'user:read:collection', 'user:read:nested']
+        phone:
+            groups: ['user:read', 'user:read:collection'] # Include phone in lists for admin view? Maybe create user:read:admin?
+        roles:
+             # groups: ['user:read'] # Removed from default user view
+             groups: ['admin:read'] # Only readable by admin
+        banned:
+            groups: ['user:read', 'user:read:collection'] # Show banned status in lists
+        address:
+            groups: ['user:read'] # Show full address only for single user view
+            # We'll need UserAddress.yaml to define how the address itself is serialized 

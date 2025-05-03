@@ -1,0 +1,24 @@
+# config/serialization/Article.yaml
+App\Entity\Article:
+    attributes:
+        id:
+            groups: ['article:read', 'article:read:collection']
+        name:
+            groups: ['article:read', 'article:read:collection']
+        description:
+            groups: ['article:read'] # Only show description in detailed view
+        imageFilename:
+            groups: ['article:read', 'article:read:collection']
+        listed:
+            groups: ['article:read', 'article:read:collection']
+        price:
+            groups: ['article:read', 'article:read:collection']
+        allergies:
+            groups: ['article:read'] # Only show allergies in detailed view
+        available:
+            groups: ['article:read', 'article:read:collection']
+        restaurant:
+            groups: ['article:read', 'article:read:collection', 'restaurant:read:nested'] # Use nested restaurant group
+            # Needs Restaurant.yaml to define which fields of restaurant are included
+            # Careful: Use a less detailed group for Restaurant here to avoid recursion/too much data
+            # Example: groups: ['restaurant:read:nested'] -> define this group in Restaurant.yaml 

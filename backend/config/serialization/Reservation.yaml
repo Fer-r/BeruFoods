@@ -1,0 +1,20 @@
+# config/serialization/Reservation.yaml
+App\Entity\Reservation:
+    attributes:
+        id:
+            groups: ['reservation:read', 'reservation:read:collection']
+        reservation_datetime:
+            groups: ['reservation:read', 'reservation:read:collection']
+        state:
+            groups: ['reservation:read', 'reservation:read:collection']
+        created_at:
+            groups: ['reservation:read', 'reservation:read:collection']
+        confirmationCode:
+            groups: ['reservation:read']
+        # confirmationCode: # Add when implemented
+        #     groups: ['reservation:read']
+        user:
+            groups: ['reservation:read', 'reservation:read:collection', 'user:read:nested'] # Use nested user group
+        restaurant:
+            groups: ['reservation:read', 'reservation:read:collection', 'restaurant:read:nested'] # Use nested restaurant group
+            # Use less detailed group, e.g., 'restaurant:read:nested' 

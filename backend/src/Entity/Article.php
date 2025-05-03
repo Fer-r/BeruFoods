@@ -5,11 +5,9 @@ namespace App\Entity;
 use App\Repository\ArticleRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiResource; // Optional
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 #[ORM\Table(name: 'articles')]
-#[ApiResource]
 class Article
 {
     #[ORM\Id]
@@ -17,18 +15,18 @@ class Article
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Restaurant::class)] // Assuming relationship to Restaurant
-    #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Restaurant::class)]
+    #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: false)]
     private ?Restaurant $restaurant = null;
 
     #[ORM\Column(type: 'text', nullable: false)]
     private ?string $name = null;
 
-    #[ORM\Column(type: 'text', nullable: false)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: 'text', nullable: false)]
-    private ?string $image = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $imageFilename = null;
 
     #[ORM\Column(type: 'boolean', options: ["default" => true])]
     private ?bool $listed = true;
@@ -36,8 +34,8 @@ class Article
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: false)]
     private ?string $price = null;
 
-    #[ORM\Column(type: 'json', nullable: false)]
-    private ?array $allergies = null; // Stored as JSON as per SQL
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $allergies = null;
 
     #[ORM\Column(type: 'boolean', options: ["default" => true])]
     private ?bool $available = true;
@@ -82,14 +80,14 @@ class Article
         return $this;
     }
 
-    public function getImage(): ?string
+    public function getImageFilename(): ?string
     {
-        return $this->image;
+        return $this->imageFilename;
     }
 
-    public function setImage(?string $image): static
+    public function setImageFilename(?string $imageFilename): static
     {
-        $this->image = $image;
+        $this->imageFilename = $imageFilename;
         return $this;
     }
 

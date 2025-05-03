@@ -5,11 +5,9 @@ namespace App\Entity;
 use App\Repository\ReservationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiResource; // Optional
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
-#[ORM\Table(name: 'reservations')] // Match table name
-#[ApiResource]
+#[ORM\Table(name: 'reservations')]
 class Reservation
 {
     #[ORM\Id]
@@ -17,26 +15,30 @@ class Reservation
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Restaurant::class)] // Relationship to Restaurant
-    #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Restaurant::class)]
+    #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: false)]
     private ?Restaurant $restaurant = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)] // Relationship to User
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true)]
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     private ?User $user = null;
 
-    #[ORM\Column(type: 'datetime', nullable: true)] // Match timestamp without time zone
+    #[ORM\Column(type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $reservation_datetime = null;
 
     #[ORM\Column(type: 'text', nullable: false)]
-    private ?string $state = null;
+    private ?string $state = 'pending';
 
-    #[ORM\Column(type: 'datetime', options: ["default" => "CURRENT_TIMESTAMP"])] // Default in SQL
+    #[ORM\Column(type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $created_at = null;
+
+    #[ORM\Column(type: 'string', length: 16, unique: true, nullable: true)]
+    private ?string $confirmationCode = null;
 
     public function __construct()
     {
-        $this->created_at = new \DateTime(); // Set default in constructor
+        $this->created_at = new \DateTimeImmutable();
+        $this->state = 'pending'; // Ensure default state
     }
 
     // --- Getters and Setters ---
@@ -98,6 +100,17 @@ class Reservation
     public function setCreatedAt(\DateTimeInterface $created_at): static
     {
         $this->created_at = $created_at;
+        return $this;
+    }
+
+    public function getConfirmationCode(): ?string
+    {
+        return $this->confirmationCode;
+    }
+
+    public function setConfirmationCode(?string $confirmationCode): static
+    {
+        $this->confirmationCode = $confirmationCode;
         return $this;
     }
 } 

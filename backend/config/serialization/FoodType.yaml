@@ -1,0 +1,10 @@
+# config/serialization/FoodType.yaml
+App\Entity\FoodType:
+    attributes:
+        id:
+            groups: ['foodtype:read', 'foodtype:read:collection']
+        name:
+            groups: ['foodtype:read', 'foodtype:read:collection']
+        # restaurants relation is not exposed by default
+        # restaurants: # Avoid serializing back to restaurants
+        #     groups: [] 

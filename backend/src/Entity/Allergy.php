@@ -5,11 +5,9 @@ namespace App\Entity;
 use App\Repository\AllergyRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiResource; // Optional
 
 #[ORM\Entity(repositoryClass: AllergyRepository::class)]
-#[ORM\Table(name: 'allergies')] // Match table name
-#[ApiResource]
+#[ORM\Table(name: 'allergies')]
 class Allergy
 {
     #[ORM\Id]

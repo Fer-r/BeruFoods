@@ -5,13 +5,13 @@ namespace App\Entity;
 use App\Repository\OrderRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiResource; // Optional
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use function Symfony\Component\Clock\now;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
-#[ORM\Table(name: 'orders')] // Match table name
-#[ApiResource]
+#[ORM\Table(name: 'orders')]
 class Order
 {
     #[ORM\Id]
@@ -19,27 +19,27 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)] // Relationship to User
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true)]
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(targetEntity: Restaurant::class)] // Relationship to Restaurant
-    #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: true)]
+    #[ORM\ManyToOne(targetEntity: Restaurant::class)]
+    #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: false)]
     private ?Restaurant $restaurant = null;
 
-    #[ORM\Column(type: 'datetime', nullable: false, options: ["default" => "CURRENT_TIMESTAMP"])] // Match timestamp without time zone
+    #[ORM\Column(type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $created_at = null;
 
     #[ORM\Column(type: 'text', nullable: false)]
-    private ?string $status = null;
+    private ?string $status = 'pendiente';
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: false)]
     private ?string $total_price = null;
 
-    #[ORM\Column(type: 'datetime', nullable: true)] // For soft delete
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $deleted_at = null;
 
-    #[ORM\Column(type: 'json', nullable: false)] // Items stored as JSON
+    #[ORM\Column(type: 'json', nullable: false)]
     private ?array $items = null;
 
     // --- Getters and Setters ---
@@ -125,5 +125,11 @@ class Order
     {
         $this->items = $items;
         return $this;
+    }
+
+    public function __construct()
+    { // Set defaults
+        $this->created_at = new \DateTimeImmutable();
+        $this->status = 'pendiente';
     }
 } 

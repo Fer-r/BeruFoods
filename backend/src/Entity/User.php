@@ -2,14 +2,13 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ApiResource]
 #[ORM\Table(name: 'users')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -20,6 +19,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank]
+    #[Assert\Email]
     private ?string $email = null;
 
     /**
@@ -34,10 +35,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[ORM\Column(type: 'text', nullable: false)]
+    #[Assert\NotBlank(groups: ['user:write', 'user:update'])]
+    #[Assert\Length(min: 6, groups: ['user:write', 'user:update'])]
+    private ?string $plainPassword = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(min: 2, max: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(type: 'text', nullable: false)]
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(min: 5, max: 20)]
     private ?string $phone = null;
 
     #[ORM\Column(type: 'boolean', options:["default" => false])]
@@ -47,6 +54,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $deleted_at = null;
 
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserAddress::class, cascade: ['persist', 'remove'])]
+    #[Assert\Valid]
     private ?UserAddress $address = null;
 
     public function getId(): ?string
@@ -121,7 +129,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        $this->plainPassword = null;
     }
 
     public function getName(): ?string
@@ -181,6 +189,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->address = $address;
+        return $this;
+    }
+
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(?string $plainPassword): self
+    {
+        $this->plainPassword = $plainPassword;
         return $this;
     }
 }

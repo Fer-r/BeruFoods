@@ -1,0 +1,33 @@
+# config/serialization/Restaurant.yaml
+App\Entity\Restaurant:
+    attributes:
+        id:
+            groups: ['restaurant:read', 'restaurant:read:collection', 'restaurant:read:nested']
+        email:
+            groups: ['restaurant:read', 'restaurant:read:collection'] # Maybe only admin needs email in collection?
+        roles: # Added roles property
+            groups: ['admin:read'] # Only readable by admin
+        name:
+            groups: ['restaurant:read', 'restaurant:read:collection', 'restaurant:read:nested']
+        phone:
+            groups: ['restaurant:read'] # Phone might not be needed in list view
+        banned:
+            groups: ['restaurant:read', 'restaurant:read:collection'] # Show banned status in lists for admin
+        takes_reservations:
+            groups: ['restaurant:read', 'restaurant:read:collection']
+        table_count:
+            groups: ['restaurant:read'] # Table count might not be needed in list view
+        address:
+            groups: ['restaurant:read', 'restaurant:read:collection'] # Include address summary in collection
+            # Need RestaurantAddress.yaml definition
+        foodTypes:
+            groups: ['restaurant:read', 'restaurant:read:collection'] # Include food types summary in collection
+            # Need FoodType.yaml definition 
+        imageFilename:
+            groups: ['restaurant:read', 'restaurant:read:collection']
+        openingTime:
+            groups: ['restaurant:read', 'restaurant:read:collection']
+        closingTime:
+            groups: ['restaurant:read', 'restaurant:read:collection']
+        reservationDuration:
+            groups: ['restaurant:read', 'restaurant:read:collection'] 

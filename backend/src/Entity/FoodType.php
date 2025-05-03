@@ -7,11 +7,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiResource; // Optional
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: FoodTypeRepository::class)]
-#[ORM\Table(name: 'food_types')] // Match table name
-#[ApiResource]
+#[ORM\Table(name: 'food_types')]
 class FoodType
 {
     #[ORM\Id]
@@ -20,6 +19,7 @@ class FoodType
     private ?int $id = null;
 
     #[ORM\Column(type: 'text', nullable: false)]
+    #[Assert\NotBlank]
     private ?string $name = null;
 
     /**

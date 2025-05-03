@@ -1,0 +1,17 @@
+# config/serialization/UserAddress.yaml
+App\Entity\UserAddress:
+    attributes:
+        id:
+            groups: ['user:read'] # Show ID when address is included
+        address_line:
+            groups: ['user:read']
+        lat:
+            groups: ['user:read']
+        lng:
+            groups: ['user:read']
+        floor:
+            groups: ['user:read']
+        province:
+            groups: ['user:read']
+        # user: # Avoid serializing back to user to prevent loops
+        #     groups: [] 

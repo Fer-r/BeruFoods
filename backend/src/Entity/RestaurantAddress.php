@@ -4,11 +4,9 @@ namespace App\Entity;
 
 use App\Repository\RestaurantAddressRepository;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiResource; // Optional: If you want API Platform support
 
 #[ORM\Entity(repositoryClass: RestaurantAddressRepository::class)]
-#[ORM\Table(name: 'restaurant_addresses')] // Match table name from SQL
-#[ApiResource]
+#[ORM\Table(name: 'restaurant_addresses')]
 class RestaurantAddress
 {
     #[ORM\Id]

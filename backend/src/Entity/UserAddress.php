@@ -4,10 +4,9 @@ namespace App\Entity;
 
 use App\Repository\UserAddressRepository;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Metadata\ApiResource; // Optional: If you want API Platform support
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserAddressRepository::class)]
-#[ApiResource]
 #[ORM\Table(name: 'user_addresses')]
 class UserAddress
 {
@@ -21,8 +20,30 @@ class UserAddress
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)] // Match foreign key
     private ?User $user = null;
 
-    #[ORM\Column(type: 'text', nullable: false)]
-    private ?string $address_line = null;
+    #[ORM\Column(type: 'text')] // Assuming street can be multiline
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 5, max: 500)]
+    private ?string $street = null;
+
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 100)]
+    private ?string $city = null;
+
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 100)]
+    private ?string $province = null;
+
+    #[ORM\Column(length: 20)]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 4, max: 20)] // Adjust length as needed
+    private ?string $postalCode = null;
+
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 100)] // Assuming country is required
+    private ?string $country = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: false)]
     private ?string $lat = null;
@@ -32,9 +53,6 @@ class UserAddress
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $floor = null;
-
-    #[ORM\Column(type: 'text', nullable: false)]
-    private ?string $province = null;
 
     // --- Getters and Setters ---
 
@@ -54,14 +72,58 @@ class UserAddress
         return $this;
     }
 
-    public function getAddressLine(): ?string
+    public function getStreet(): ?string
     {
-        return $this->address_line;
+        return $this->street;
     }
 
-    public function setAddressLine(?string $address_line): static
+    public function setStreet(?string $street): static
     {
-        $this->address_line = $address_line;
+        $this->street = $street;
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): static
+    {
+        $this->city = $city;
+        return $this;
+    }
+
+    public function getProvince(): ?string
+    {
+        return $this->province;
+    }
+
+    public function setProvince(?string $province): static
+    {
+        $this->province = $province;
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(?string $postalCode): static
+    {
+        $this->postalCode = $postalCode;
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $country): static
+    {
+        $this->country = $country;
         return $this;
     }
 
@@ -95,17 +157,6 @@ class UserAddress
     public function setFloor(?string $floor): static
     {
         $this->floor = $floor;
-        return $this;
-    }
-
-    public function getProvince(): ?string
-    {
-        return $this->province;
-    }
-
-    public function setProvince(?string $province): static
-    {
-        $this->province = $province;
         return $this;
     }
 } 

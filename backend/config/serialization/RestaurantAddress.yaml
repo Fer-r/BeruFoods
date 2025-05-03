@@ -1,0 +1,15 @@
+# config/serialization/RestaurantAddress.yaml
+App\Entity\RestaurantAddress:
+    attributes:
+        id:
+            groups: ['restaurant:read', 'restaurant:read:collection'] # Show ID when address is included
+        address_line:
+            groups: ['restaurant:read', 'restaurant:read:collection']
+        lat:
+            groups: ['restaurant:read', 'restaurant:read:collection'] # Lat/Lng needed for list view map?
+        lng:
+            groups: ['restaurant:read', 'restaurant:read:collection']
+        province:
+            groups: ['restaurant:read', 'restaurant:read:collection']
+        # restaurant: # Avoid serializing back to restaurant
+        #     groups: [] 

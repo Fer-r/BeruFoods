@@ -11,6 +11,7 @@ services:
       - ./frontend:/app
     networks:
       - beru-network
+    command: sh -c "yarn install && yarn dev -- --host 0.0.0.0"
   backend:
     build:
       context: .
@@ -43,6 +44,8 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TZ: Europe/Madrid
+    ports:
+      - 3306:3306
     volumes:
       - database_data:/var/lib/mysql
     networks:

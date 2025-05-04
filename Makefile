@@ -79,7 +79,7 @@ install-backend: ## Install backend Composer dependencies
 	$(COMPOSE) exec --user=${BACKEND_USER} ${BACKEND_SERVICE} composer install --no-interaction --optimize-autoloader
 
 install-frontend: ## Install frontend yarn dependencies
-	$(COMPOSE) exec ${FRONTEND_SERVICE} yarn install --frozen-lockfile
+	$(COMPOSE) exec ${FRONTEND_SERVICE} yarn install
 
 db: ## Run database migrations
 	# Wait logic removed - handled by Docker Compose healthcheck now

@@ -17,7 +17,11 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     volumes:
-      - ./backend:/var/www/backend
+      - ./backend:/var/www/backend:rw
+      - backend_vendor:/var/www/backend/vendor
+      - backend_cache:/var/www/backend/var/cache
+      - backend_log:/var/www/backend/var/log
+      - backend_uploads:/var/www/backend/public/uploads
     depends_on:
       database:
         condition: service_healthy
@@ -93,3 +97,7 @@ networks:
     name: beru-network
 volumes:
   database_data:
+  backend_vendor:
+  backend_cache:
+  backend_log:
+  backend_uploads:

@@ -15,17 +15,15 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/food-types')]
-final class FoodTypeController extends AbstractController
+class FoodTypeController extends AbstractController
 {
     #[Route('', name: 'api_food_type_index', methods: ['GET'])]
     public function index(FoodTypeRepository $foodTypeRepository, SerializerInterface $serializer): JsonResponse
     {
         $foodTypes = $foodTypeRepository->findBy([], ['name' => 'ASC']);
 
-        // No need to manually add imageUrl
         $json = $serializer->serialize($foodTypes, 'json', ['groups' => 'foodtype:read:collection']);
 
-        // Directly return serialized data
         return new JsonResponse($json, Response::HTTP_OK, [], true);
     }
 

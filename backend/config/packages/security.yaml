@@ -57,9 +57,10 @@ security:
     access_control:
         # Order matters: More specific paths first
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/register/user, roles: PUBLIC_ACCESS }
         - { path: ^/api/restaurant/login, roles: PUBLIC_ACCESS } # Added restaurant login path
-        - { path: ^/api/restaurant/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/register/restaurant, roles: PUBLIC_ACCESS }
+        - { path: ^/api/food-types, roles: PUBLIC_ACCESS }
         # Secure the rest of the API
         - { path: ^/api, roles: [IS_AUTHENTICATED_FULLY] }
         - { path: ^/, roles: PUBLIC_ACCESS }

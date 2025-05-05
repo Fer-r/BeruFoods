@@ -14,11 +14,17 @@ parameters:
     # Public base path for article images
     article_images_public_path: '/uploads/article_images/'
 
+    # Define the directory where images will be uploaded
+    uploads_directory: '%kernel.project_dir%/public/uploads/images' # Or your desired path
+
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        # Bind the parameter globally to any argument named $targetDirectory of type string
+        bind:
+            string $targetDirectory: '%uploads_directory%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

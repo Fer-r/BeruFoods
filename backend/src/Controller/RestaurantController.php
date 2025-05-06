@@ -37,8 +37,6 @@ final class RestaurantController extends AbstractController
 
     public function __construct(private ParameterBagInterface $params) {}
 
-    // register method was removed (moved to AuthController)
-
     #[Route('', name: 'api_restaurant_index', methods: ['GET'])]
     public function index(RestaurantRepository $restaurantRepository, SerializerInterface $serializer, Request $request): JsonResponse
     {
@@ -48,9 +46,17 @@ final class RestaurantController extends AbstractController
         $latitude = $request->query->get('latitude');
         $longitude = $request->query->get('longitude');
         $radius = $request->query->get('radius', 5000);
-        $foodTypeId = $request->query->get('foodTypeId');
+        $foodTypeIdsParam = $request->query->get('foodTypeId');
+        $name = $request->query->get('name'); // Get name parameter
+        $isOpenNow = $request->query->getBoolean('isOpenNow', false); // New parameter
 
         $qb = null; // Initialize QueryBuilder variable
+
+        // Convert comma-separated foodTypeId string to array of integers
+        $foodTypeIds = null;
+        if ($foodTypeIdsParam) {
+            $foodTypeIds = array_map('intval', explode(',', $foodTypeIdsParam));
+        }
 
         if ($latitude !== null && $longitude !== null) {
             // Nearby search
@@ -62,9 +68,14 @@ final class RestaurantController extends AbstractController
                 (float)$latitude,
                 (float)$longitude,
                 (int)$radius,
-                $foodTypeId ? (int)$foodTypeId : null
+                $foodTypeIds // Pass the array of IDs
             );
             // Paginator will be applied below
+            // Add name filtering for nearby search if provided
+            if ($name) {
+                $qb->andWhere('LOWER(r.name) LIKE LOWER(:name)')
+                   ->setParameter('name', '%' . $name . '%');
+            }
 
         } else {
             // Standard QB filtering (no pagination applied here yet)
@@ -72,12 +83,43 @@ final class RestaurantController extends AbstractController
                 ->innerJoin('r.address', 'a')->addSelect('a')
                 ->innerJoin('r.foodTypes', 'ft')->addSelect('ft');
 
-            if ($foodTypeId) {
-                $qb->andWhere('ft.id = :foodTypeId')
-                   ->setParameter('foodTypeId', $foodTypeId);
+            if (!empty($foodTypeIds)) { // Check if the array is not empty
+                $qb->andWhere($qb->expr()->in('ft.id', ':foodTypeIds')) // Use IN clause
+                   ->setParameter('foodTypeIds', $foodTypeIds); // Pass the array of IDs
             }
+
+            // Add name filtering if provided
+            if ($name) {
+                $qb->andWhere('LOWER(r.name) LIKE LOWER(:name)')
+                   ->setParameter('name', '%' . $name . '%');
+            }
+
             // Add other non-spatial filters here
             $qb->orderBy('r.name', 'ASC'); // Set default order for non-nearby
+        }
+
+        // Apply "isOpenNow" filter if requested
+        if ($isOpenNow) {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    // Case 1: Not overnight (opening_time <= closing_time)
+                    // AND current_time BETWEEN opening_time AND closing_time
+                    $qb->expr()->andX(
+                        'r.openingTime <= r.closingTime',
+                        'r.openingTime <= CURRENT_TIME()',
+                        'r.closingTime >= CURRENT_TIME()'
+                    ),
+                    // Case 2: Overnight (opening_time > closing_time)
+                    // AND (current_time >= opening_time OR current_time <= closing_time)
+                    $qb->expr()->andX(
+                        'r.openingTime > r.closingTime',
+                        $qb->expr()->orX(
+                            'r.openingTime <= CURRENT_TIME()',
+                            'r.closingTime >= CURRENT_TIME()'
+                        )
+                    )
+                )
+            );
         }
 
         // Apply pagination to the selected QueryBuilder
@@ -103,6 +145,15 @@ final class RestaurantController extends AbstractController
             // Serialize individual restaurant with appropriate group
              $restaurantData = json_decode($serializer->serialize($restaurant, 'json', ['groups' => 'restaurant:read:collection']), true);
              $restaurantData['imageUrl'] = $imageUrl;
+
+             // Format opening and closing times
+             if ($restaurant->getOpeningTime()) {
+                 $restaurantData['openingTime'] = $restaurant->getOpeningTime()->format('H:i');
+             }
+             if ($restaurant->getClosingTime()) {
+                 $restaurantData['closingTime'] = $restaurant->getClosingTime()->format('H:i');
+             }
+
              $processedResults[] = $restaurantData;
         }
 
@@ -141,6 +192,21 @@ final class RestaurantController extends AbstractController
         // Construct and add the image URL
         $filename = $restaurant->getImageFilename();
         $data['imageUrl'] = $filename ? rtrim($imageBasePath, '/') . '/' . $filename : null;
+
+        // Format opening and closing times for the single restaurant view
+        if ($restaurant->getOpeningTime()) {
+            $data['openingTime'] = $restaurant->getOpeningTime()->format('H:i');
+        } else {
+            // Ensure the key exists even if null, if the frontend expects it
+            $data['openingTime'] = null;
+        }
+
+        if ($restaurant->getClosingTime()) {
+            $data['closingTime'] = $restaurant->getClosingTime()->format('H:i');
+        } else {
+            // Ensure the key exists even if null
+            $data['closingTime'] = null;
+        }
 
         // Return the modified data as JSON
         return new JsonResponse($data, Response::HTTP_OK); // Already an array, no need for json_encode or third param true

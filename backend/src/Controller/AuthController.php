@@ -6,9 +6,10 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Entity\Restaurant; // For restaurant registration
 use App\Repository\RestaurantRepository; // For restaurant registration
-use App\Entity\RestaurantAddress; // <-- Add this
-use App\Repository\FoodTypeRepository; // <-- Add this
-use App\Service\ImageUploader; // <-- Add the new service
+use App\Entity\UserAddress; // Corrected: Ensure this is UserAddress, not RestaurantAddress for user registration context
+use App\Entity\RestaurantAddress; // This is for restaurant registration, keep it if used elsewhere
+use App\Repository\FoodTypeRepository;
+use App\Service\ImageUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,8 +19,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\HttpFoundation\File\UploadedFile; // <-- Keep for type hinting
-use Symfony\Component\HttpFoundation\File\Exception\FileException; // <-- Add for catching upload errors
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 #[Route('/api/auth')] // Base route for auth actions
 final class AuthController extends AbstractController
@@ -47,6 +48,18 @@ final class AuthController extends AbstractController
              return $this->json(['message' => 'Password must be at least 6 characters long'], Response::HTTP_BAD_REQUEST);
         }
 
+        // Validate address data if present
+        $addressData = $data['address'] ?? null;
+        if (!$addressData || 
+            !isset($addressData['address_line']) || empty(trim($addressData['address_line'])) ||
+            !isset($addressData['lat']) || empty(trim($addressData['lat'])) ||
+            !isset($addressData['lng']) || empty(trim($addressData['lng'])) ||
+            !isset($addressData['province']) || empty(trim($addressData['province']))) {
+            return $this->json([
+                'message' => 'Missing or incomplete address information. Required fields: address_line, lat, lng, province.'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
         // Check if email exists in User table
         $existingUser = $userRepository->findOneBy(['email' => $data['email']]);
         if ($existingUser) {
@@ -68,20 +81,41 @@ final class AuthController extends AbstractController
         $user->setPassword($hashedPassword);
         $user->setRoles(['ROLE_USER']);
 
-        // Validate the User entity
+        // Create and set UserAddress
+        $userAddress = new UserAddress();
+        $userAddress->setAddressLine($addressData['address_line']);
+        $userAddress->setLat($addressData['lat']);
+        $userAddress->setLng($addressData['lng']);
+        $userAddress->setProvince($addressData['province']);
+
+        $user->setAddress($userAddress); // This will also set $userAddress->setUser($user) due to cascade/inversedBy
+
+        // Validate the User entity (which should also validate UserAddress if Assert\\Valid is on User::$address)
         $errors = $validator->validate($user);
+        $addressErrors = $validator->validate($userAddress); // Explicitly validate address too for detailed errors
+
+        $errorMessages = [];
         if (count($errors) > 0) {
-            $errorMessages = [];
             foreach ($errors as $error) {
-                $errorMessages[$error->getPropertyPath()][] = $error->getMessage();
+                // Prepend 'user.' to user fields to distinguish from address fields if needed
+                $errorMessages['user.'.$error->getPropertyPath()][] = $error->getMessage();
             }
+        }
+        if (count($addressErrors) > 0) {
+            foreach ($addressErrors as $error) {
+                $errorMessages['address.'.$error->getPropertyPath()][] = $error->getMessage();
+            }
+        }
+
+        if (!empty($errorMessages)) {
             return $this->json(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
         }
 
         $entityManager->persist($user);
+        // $entityManager->persist($userAddress); // Not strictly necessary if cascade persist is working correctly on User::$address
         $entityManager->flush();
 
-        return $this->json(['message' => 'User registered successfully', 'userId' => $user->getId()], Response::HTTP_CREATED);
+        return $this->json(['message' => 'User registered successfully with address', 'userId' => $user->getId()], Response::HTTP_CREATED);
     }
 
     #[Route('/register/restaurant', name: 'api_auth_register_restaurant', methods: ['POST'])]

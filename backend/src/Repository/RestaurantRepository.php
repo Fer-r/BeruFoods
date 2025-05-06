@@ -52,10 +52,10 @@ class RestaurantRepository extends ServiceEntityRepository
      * @param float $latitude
      * @param float $longitude
      * @param int $radiusMeters
-     * @param int|null $foodTypeId Optional food type ID to filter by
+     * @param int|null $foodTypeIds Optional array of food type IDs to filter by
      * @return Restaurant[]
      */
-    public function findNearby(float $latitude, float $longitude, int $radiusMeters = 5000, ?int $foodTypeId = null): array
+    public function findNearby(float $latitude, float $longitude, int $radiusMeters = 5000, ?array $foodTypeIds = null): array
     {
         $qb = $this->createQueryBuilder('r')
             ->innerJoin('r.address', 'a')
@@ -78,10 +78,10 @@ class RestaurantRepository extends ServiceEntityRepository
             ->setParameter('radius', $radiusMeters);
 
         // Add food type filter if provided
-        if ($foodTypeId !== null) {
+        if ($foodTypeIds !== null && !empty($foodTypeIds)) {
             $qb->innerJoin('r.foodTypes', 'ft')
-               ->andWhere('ft.id = :foodTypeId')
-               ->setParameter('foodTypeId', $foodTypeId);
+               ->andWhere($qb->expr()->in('ft.id', ':foodTypeIds'))
+               ->setParameter('foodTypeIds', $foodTypeIds);
         }
 
         // If using the POINT field approach without distance in select, remove having() and orderBy('distance')
@@ -93,32 +93,64 @@ class RestaurantRepository extends ServiceEntityRepository
     /**
      * @param float $longitude
      * @param int $radiusMeters
-     * @param int|null $foodTypeId Optional food type ID to filter by
+     * @param array|null $foodTypeIds Optional array of food type IDs to filter by
      * @return \Doctrine\ORM\QueryBuilder The QueryBuilder object for further customization (e.g., pagination)
      */
-    public function findNearbyQueryBuilder(float $latitude, float $longitude, int $radiusMeters = 5000, ?int $foodTypeId = null): \Doctrine\ORM\QueryBuilder
+    public function findNearbyQueryBuilder(float $latitude, float $longitude, int $radiusMeters = 5000, ?array $foodTypeIds = null): \Doctrine\ORM\QueryBuilder
     {
-        $qb = $this->createQueryBuilder('r')
-            ->innerJoin('r.address', 'a')
-            // Note: Select the main entity and potentially calculated fields like distance
-            // Address and FoodType might need separate joins/selects if needed after pagination
-            ->addSelect('( 6371000 * acos( cos( radians(:lat) ) * cos( radians( a.lat ) ) * cos( radians( a.lng ) - radians(:lng) ) + sin( radians(:lat) ) * sin( radians( a.lat ) ) ) ) AS HIDDEN distance') // Calculate distance, mark as HIDDEN if not needed directly in entity hydration
-            ->andWhere('( 6371000 * acos( cos( radians(:lat) ) * cos( radians( a.lat ) ) * cos( radians( a.lng ) - radians(:lng) ) + sin( radians(:lat) ) * sin( radians( a.lat ) ) ) ) <= :radius')
-            // ->having('distance <= :radius') // Using HAVING with Paginator can be tricky/inefficient. Prefer WHERE if possible.
-            ->orderBy('distance', 'ASC') // Order by distance
-            ->setParameter('lat', $latitude)
-            ->setParameter('lng', $longitude)
-            ->setParameter('radius', $radiusMeters);
+        $earthRadius = 6371000; // meters
 
-        if ($foodTypeId !== null) {
-            $qb->innerJoin('r.foodTypes', 'ft') // Join necessary for filtering
-               ->andWhere('ft.id = :foodTypeId')
-               ->setParameter('foodTypeId', $foodTypeId);
+        // Calculate bounding box coordinates
+        $latRadiusDegrees = rad2deg($radiusMeters / $earthRadius);
+        // Ensure cos(deg2rad($latitude)) is not zero to avoid division by zero if latitude is +/- 90 degrees
+        $cosLat = cos(deg2rad($latitude));
+        if ($cosLat == 0) {
+            // At poles, longitude radius is effectively infinite or not well-defined in this simple model.
+            // Fallback to a very large longitude span or handle as a special case if needed.
+            // For simplicity here, we might just use a large number or not apply longitude bounding.
+            // However, a restaurant search at the exact pole is unlikely.
+            // A more robust solution might skip longitude bounding or use a different projection near poles.
+            $lngRadiusDegrees = 180; // Effectively no longitude bounding for this simple case
+        } else {
+            $lngRadiusDegrees = rad2deg($radiusMeters / $earthRadius / $cosLat);
         }
 
+        $minLat = $latitude - $latRadiusDegrees;
+        $maxLat = $latitude + $latRadiusDegrees;
+        $minLng = $longitude - $lngRadiusDegrees;
+        $maxLng = $longitude + $lngRadiusDegrees;
+
+        $qb = $this->createQueryBuilder('r')
+            ->innerJoin('r.address', 'a');
+
+        // Add bounding box for initial filtering (can use an index if lat/lng are indexed)
+        $qb->andWhere('a.lat BETWEEN :minLat AND :maxLat')
+           ->andWhere('a.lng BETWEEN :minLng AND :maxLng');
+
+        // Precise distance calculation using Haversine (ASIN variant from your example)
+        // This is calculated for rows that pass the bounding box.
+        $distanceFormula = '(:earthRadius * 2 * ASIN(SQRT(POWER(SIN(RADIANS(a.lat - :lat) / 2), 2) + COS(RADIANS(:lat)) * COS(RADIANS(a.lat)) * POWER(SIN(RADIANS(a.lng - :lng) / 2), 2))))';
+
+        $qb->addSelect($distanceFormula . ' AS HIDDEN distance') // Calculate distance, mark as HIDDEN
+           ->andWhere($distanceFormula . ' <= :radius')         // Filter by the calculated distance
+           ->orderBy('distance', 'ASC');                         // Order by distance
+
+        $qb->setParameter('lat', $latitude);
+        $qb->setParameter('lng', $longitude);
+        $qb->setParameter('radius', $radiusMeters);
+        $qb->setParameter('earthRadius', $earthRadius);
+        $qb->setParameter('minLat', $minLat);
+        $qb->setParameter('maxLat', $maxLat);
+        $qb->setParameter('minLng', $minLng);
+        $qb->setParameter('maxLng', $maxLng);
+
+        if ($foodTypeIds !== null && !empty($foodTypeIds)) {
+            $qb->innerJoin('r.foodTypes', 'ft')
+               ->andWhere($qb->expr()->in('ft.id', ':foodTypeIds'))
+               ->setParameter('foodTypeIds', $foodTypeIds);
+        }
+        
         return $qb; // Return the QueryBuilder object
     }
 
-    // Keep the old findNearby method temporarily if needed, or remove it.
-    // public function findNearby(...) { ... ->getQuery()->getResult(); }
 }

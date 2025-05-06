@@ -32,6 +32,15 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+        dql:
+            string_functions:
+                ACOS: App\Doctrine\DQL\Acos
+                COS: App\Doctrine\DQL\Cos
+                RADIANS: App\Doctrine\DQL\Radians
+                SIN: App\Doctrine\DQL\Sin
+                SQRT: App\Doctrine\DQL\Sqrt
+                POWER: App\Doctrine\DQL\Power
+                ASIN: App\Doctrine\DQL\Asin
         controller_resolver:
             auto_mapping: false
 

@@ -5,9 +5,9 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     # Path for file uploads (relative to project root, make sure it's writable)
-    restaurant_images_directory: '%kernel.project_dir%/public/uploads/restaurant_images' # Example path
+    restaurant_images_directory: '%kernel.project_dir%/public/uploads/images/restaurants'
     # Public base path for accessing uploaded images via URL
-    restaurant_images_public_path: '/uploads/restaurant_images/' # Example URL path
+    restaurant_images_public_path: '/uploads/images/restaurants' # Path accessible from the web
 
     # Path for article image uploads
     article_images_directory: '%kernel.project_dir%/public/uploads/article_images'
@@ -37,3 +37,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Service\ImageUploader:
+        arguments:
+            $slugger: '@Symfony\Component\String\Slugger\SluggerInterface'
+            $targetDirectory: '%restaurant_images_directory%'
+            $filesystem: '@Symfony\Component\Filesystem\Filesystem'

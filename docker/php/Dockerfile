@@ -4,7 +4,11 @@ FROM php:8.3-fpm
 # Set working directory
 WORKDIR /var/www/backend
 
-# Install system dependencies (excluding apache2, supervisor)
+# Modify www-data UID and GID to 1000 (common for host user)
+# This should be done before creating files/dirs that www-data needs to own
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
+
+# Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
     acl \
     bash \
@@ -17,7 +21,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     zip \
     && rm -rf /var/lib/apt/lists/* \
-# Configure and Install PHP extensions
     && docker-php-ext-configure intl \
     && docker-php-ext-install -j$(nproc) \
     pdo \
@@ -39,8 +42,8 @@ RUN mkdir -p /var/www/backend/var/log \
 # Copy composer files first into the WORKDIR
 COPY backend/composer.json backend/composer.lock ./
 
-# Change ownership of the current directory contents (composer files)
-RUN chown -R www-data:www-data .
+# Ensure www-data owns the working directory before composer install
+RUN chown -R www-data:www-data /var/www/backend
 
 # Switch to www-data user for composer install
 USER www-data
@@ -61,6 +64,11 @@ COPY --chown=www-data:www-data backend/ .
 
 # Make console executable
 RUN chmod +x /var/www/backend/bin/console
+
+# Ensure final ownership of the entire app directory by www-data
+# This is crucial as the COPY backend/ . command runs as root by default
+# and we want www-data to own these files.
+RUN chown -R www-data:www-data /var/www/backend
 
 # Expose the port PHP-FPM will listen on
 EXPOSE 9000

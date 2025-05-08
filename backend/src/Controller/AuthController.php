@@ -211,6 +211,11 @@ final class AuthController extends AbstractController
                  );
                 throw new \InvalidArgumentException($errorMessage);
             }
+
+            if ($openingTime >= $closingTime) {
+                throw new \InvalidArgumentException('Opening time must be before closing time.');
+            }
+
             $restaurant->setOpeningTime($openingTime);
             $restaurant->setClosingTime($closingTime);
         } catch (\InvalidArgumentException $e) { // Catch specific exception type
@@ -271,17 +276,8 @@ final class AuthController extends AbstractController
         // Include the path to the uploaded image if available
         $responseData = [
             'message' => 'Restaurant registered successfully',
-            'restaurantId' => $restaurant->getId(),
         ];
-        if ($imageFilename) {
-             // Construct the URL based on your public path and the service's target directory structure
-             // Example assumes targetDirectory is relative to public folder
-             // e.g., if targetDirectory is 'uploads/images/restaurants'
-             $publicImagePath = str_replace('%kernel.project_dir%/public/', '/', $imageUploader->getTargetDirectory());
-             $responseData['imageUrl'] = $publicImagePath . '/' . $imageFilename; // Example path
-        }
-
-
+        
         return $this->json($responseData, Response::HTTP_CREATED);
     }
 

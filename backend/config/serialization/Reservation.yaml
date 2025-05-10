@@ -11,8 +11,6 @@ App\Entity\Reservation:
             groups: ['reservation:read', 'reservation:read:collection']
         confirmationCode:
             groups: ['reservation:read']
-        # confirmationCode: # Add when implemented
-        #     groups: ['reservation:read']
         user:
             groups: ['reservation:read', 'reservation:read:collection', 'user:read:nested'] # Use nested user group
         restaurant:

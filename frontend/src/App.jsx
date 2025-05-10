@@ -1,21 +1,16 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-function App() {
-  const [message, setMessage] = useState("");
-  useEffect(() => {
-    fetch("/api/db")
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message));
-  }, []);
+import { router } from "./router";
+import { RouterProvider } from "react-router"; // Correct import
+import { useThemeManager } from "./hooks/useThemeManager"; // Import the hook
+import { AuthProvider } from "./context/AuthContext.jsx"; // Import AuthProvider
+
+const App = () => {
+  useThemeManager(); // Call the hook to activate global theme management
+
   return (
-    <div>
-      <h1>Frontend en React de Nombre Completo</h1>
-      <p>
-        Esta aplicación se conecta al backend de Symfony pidiéndole una
-        respuesta
-      </p>
-      <p>respuesta del Backend: {message || "Fernando Rodriguez Arcos cargando la respuesta"}</p>
-    </div>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   );
-}
+};
+
 export default App;

@@ -49,8 +49,7 @@ final class ReservationController extends AbstractController
 
         // --- Regular List Fetching and Pagination (If no confirmation code) ---
         $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', self::ITEMS_PER_PAGE);
-
+        $limit = max(1, min(100, $request->query->getInt('limit', self::ITEMS_PER_PAGE)));
         $currentUser = $this->getUser();
         $qb = $reservationRepository->createQueryBuilder('rsv')
                  ->leftJoin('rsv.user', 'u')->addSelect('u')

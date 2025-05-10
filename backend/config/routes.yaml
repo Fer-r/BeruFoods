@@ -10,3 +10,6 @@ kernel:
 
 api_login:
     path: /api/login   
+
+api_restaurant_login: 
+    path: /api/restaurant/login

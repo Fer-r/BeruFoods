@@ -2,22 +2,28 @@
 
 namespace App\Service;
 
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ImageUploader
 {
+    private string $imagesDirectory;
+    private string $imagesPublicPath;
     private SluggerInterface $slugger;
-    private string $targetDirectory;
     private Filesystem $filesystem;
 
-    public function __construct(SluggerInterface $slugger, string $targetDirectory, Filesystem $filesystem)
-    {
+    public function __construct(
+        SluggerInterface $slugger,
+        Filesystem $filesystem,
+        string $imagesDirectory,
+        string $imagesPublicPath
+    ) {
         $this->slugger = $slugger;
-        $this->targetDirectory = $targetDirectory;
         $this->filesystem = $filesystem;
+        $this->imagesDirectory = $imagesDirectory;
+        $this->imagesPublicPath = $imagesPublicPath;
     }
 
     /**
@@ -27,31 +33,48 @@ class ImageUploader
      * @return string|null The generated filename if upload is successful, null otherwise or if $file is null.
      * @throws FileException If the file cannot be moved.
      */
-    public function upload(?UploadedFile $file): ?string
+    public function uploadImage(UploadedFile $file): string
     {
-        if (!$file) {
-            return null;
-        }
+        $this->validateImage($file);
 
         $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $safeFilename = $this->slugger->slug($originalFilename);
-        $fileName = $safeFilename.'-'.uniqid('', true).'.'.$file->guessExtension();
+        $newFilename = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
 
         try {
-            // Ensure the target directory exists
-             $this->filesystem->mkdir($this->targetDirectory);
-            // Move the file to the target directory
-            $file->move($this->getTargetDirectory(), $fileName);
+            $file->move($this->imagesDirectory, $newFilename);
         } catch (FileException $e) {
-            // Re-throw the exception to be handled by the caller
-            throw new FileException("Could not move the uploaded file: " . $e->getMessage());
+            throw new FileException('Failed to upload image: '.$e->getMessage());
         }
 
-        return $fileName;
+        return $newFilename;
     }
 
-    public function getTargetDirectory(): string
+    public function deleteImage(?string $filename): void
     {
-        return $this->targetDirectory;
+        if ($filename) {
+            $this->filesystem->remove($this->imagesDirectory.'/'.$filename);
+        }
     }
-} 
+
+    public function getImageUrl(?string $filename): ?string
+    {
+        if (!$filename) {
+            return null;
+        }
+        return rtrim($this->imagesPublicPath, '/') . '/' . $filename;
+    }
+
+    /**
+     * @throws FileException
+     */
+    private function validateImage(UploadedFile $file): void
+    {
+        if (!in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/gif'])) {
+            throw new FileException('Invalid file type. Only JPG, PNG, GIF allowed.');
+        }
+        if ($file->getSize() > 4 * 1024 * 1024) {
+            throw new FileException('File is too large. Max 4MB allowed.');
+        }
+    }
+}

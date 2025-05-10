@@ -6,6 +6,7 @@ use App\Entity\Restaurant;
 use App\Repository\RestaurantRepository;
 use App\Repository\FoodTypeRepository; // For handling food types update
 use App\Entity\FoodType; // For type hinting
+use App\Service\ImageUploader; 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,7 +36,7 @@ final class RestaurantController extends AbstractController
 {
     private const ITEMS_PER_PAGE = 10;
 
-    public function __construct(private ParameterBagInterface $params) {}
+    public function __construct(private ImageUploader $imageUploader) {}
 
     #[Route('', name: 'api_restaurant_index', methods: ['GET'])]
     public function index(RestaurantRepository $restaurantRepository, SerializerInterface $serializer, Request $request): JsonResponse
@@ -132,34 +133,25 @@ final class RestaurantController extends AbstractController
 
         $results = iterator_to_array($paginator->getIterator());
 
-        // Get base path for images
-        $imageBasePath = $this->params->get('restaurant_images_public_path');
-
-        // Add imageUrl to each result
         $processedResults = [];
         foreach ($results as $restaurant) {
-            // Assuming $restaurant is an object with getImageFilename()
             $filename = $restaurant->getImageFilename();
-            $imageUrl = $filename ? rtrim($imageBasePath, '/') . '/' . $filename : null;
-            // We need to serialize the restaurant first to add the URL
-            // Serialize individual restaurant with appropriate group
-             $restaurantData = json_decode($serializer->serialize($restaurant, 'json', ['groups' => 'restaurant:read:collection']), true);
-             $restaurantData['imageUrl'] = $imageUrl;
+            $imageUrl = $this->imageUploader->getImageUrl($filename);
+            $restaurantData = json_decode($serializer->serialize($restaurant, 'json', ['groups' => 'restaurant:read:collection']), true);
+            $restaurantData['imageUrl'] = $imageUrl;
 
-             // Format opening and closing times
-             if ($restaurant->getOpeningTime()) {
-                 $restaurantData['openingTime'] = $restaurant->getOpeningTime()->format('H:i');
-             }
-             if ($restaurant->getClosingTime()) {
-                 $restaurantData['closingTime'] = $restaurant->getClosingTime()->format('H:i');
-             }
+            if ($restaurant->getOpeningTime()) {
+                $restaurantData['openingTime'] = $restaurant->getOpeningTime()->format('H:i');
+            }
+            if ($restaurant->getClosingTime()) {
+                $restaurantData['closingTime'] = $restaurant->getClosingTime()->format('H:i');
+            }
 
-             $processedResults[] = $restaurantData;
+            $processedResults[] = $restaurantData;
         }
 
-        // Prepare response data with processed results
         $data = [
-            'items' => $processedResults, // Use processed results
+            'items' => $processedResults,
             'pagination' => [
                 'totalItems' => $totalItems,
                 'currentPage' => $page,
@@ -168,48 +160,31 @@ final class RestaurantController extends AbstractController
             ]
         ];
 
-        // Note: The calculated 'distance' is marked as HIDDEN in the QB.
-        // To include it in the response, you'd need to adjust the QB select,
-        // potentially use a DTO, or add it manually after serialization if feasible.
-
-        // Serialize the final data structure (pagination + items with imageUrl)
-        $json = json_encode($data); // Data is already structured correctly
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
+        return new JsonResponse($data, Response::HTTP_OK);
     }
 
     #[Route('/{id}', name: 'api_restaurant_show', methods: ['GET'])]
     public function show(Restaurant $restaurant, SerializerInterface $serializer): JsonResponse
     {
-        // Serialize the restaurant object
         $json = $serializer->serialize($restaurant, 'json', ['groups' => 'restaurant:read']);
-
-        // Decode the JSON to an array to add the image URL
         $data = json_decode($json, true);
 
-        // Get base path for images
-        $imageBasePath = $this->params->get('restaurant_images_public_path');
-
-        // Construct and add the image URL
         $filename = $restaurant->getImageFilename();
-        $data['imageUrl'] = $filename ? rtrim($imageBasePath, '/') . '/' . $filename : null;
+        $data['imageUrl'] = $this->imageUploader->getImageUrl($filename);
 
-        // Format opening and closing times for the single restaurant view
         if ($restaurant->getOpeningTime()) {
             $data['openingTime'] = $restaurant->getOpeningTime()->format('H:i');
         } else {
-            // Ensure the key exists even if null, if the frontend expects it
             $data['openingTime'] = null;
         }
 
         if ($restaurant->getClosingTime()) {
             $data['closingTime'] = $restaurant->getClosingTime()->format('H:i');
         } else {
-            // Ensure the key exists even if null
             $data['closingTime'] = null;
         }
 
-        // Return the modified data as JSON
-        return new JsonResponse($data, Response::HTTP_OK); // Already an array, no need for json_encode or third param true
+        return new JsonResponse($data, Response::HTTP_OK);
     }
 
     #[Route('/{id}', name: 'api_restaurant_update', methods: ['PUT', 'PATCH'])]
@@ -220,61 +195,41 @@ final class RestaurantController extends AbstractController
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         ValidatorInterface $validator,
-        FoodTypeRepository $foodTypeRepository, // Inject to handle food types
-        UserPasswordHasherInterface $passwordHasher, // Needed for password update
-        SluggerInterface $slugger,                  // Inject Slugger
-        Filesystem $filesystem                  // Inject Filesystem
+        FoodTypeRepository $foodTypeRepository, 
+        UserPasswordHasherInterface $passwordHasher, 
     ): JsonResponse {
-        $this->denyAccessUnlessGranted('edit', $restaurant); // Check ownership or ROLE_ADMIN via Voter
+        $this->denyAccessUnlessGranted('edit', $restaurant); 
 
         $originalFoodTypes = new ArrayCollection();
         foreach ($restaurant->getFoodTypes() as $foodType) {
             $originalFoodTypes->add($foodType);
         }
 
-        // Deserialize basic fields onto existing object
         $serializer->deserialize($request->getContent(), Restaurant::class, 'json', [
             AbstractNormalizer::OBJECT_TO_POPULATE => $restaurant,
-            AbstractNormalizer::IGNORED_ATTRIBUTES => ['password', 'foodTypes'] // Handle separately
+            AbstractNormalizer::IGNORED_ATTRIBUTES => ['password', 'foodTypes', 'imageFilename'] 
         ]);
 
-        $data = json_decode($request->getContent(), true) ?? []; // Decode JSON data, default to empty array if null
+        $data = json_decode($request->getContent(), true) ?? [];
 
-        // Handle Image Upload
         /** @var UploadedFile|null $imageFile */
-        $imageFile = $request->files->get('imageFile'); // Key used in FormData
-        $uploadDirectory = $this->params->get('restaurant_images_directory'); // Get upload dir from config
+        $imageFile = $request->files->get('imageFile');
 
         if ($imageFile) {
-            // Basic validation (you might want more robust validation)
-            if (!in_array($imageFile->getMimeType(), ['image/jpeg', 'image/png', 'image/gif'])) {
-                return $this->json(['errors' => ['imageFile' => 'Invalid file type. Only JPG, PNG, GIF allowed.']], Response::HTTP_BAD_REQUEST);
-            }
-            if ($imageFile->getSize() > 5 * 1024 * 1024) { // 5MB limit
-                return $this->json(['errors' => ['imageFile' => 'File is too large. Max 5MB allowed.']], Response::HTTP_BAD_REQUEST);
-        }
-
-            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-            $safeFilename = $slugger->slug($originalFilename);
-            $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-
+            $originalImageFilename = $restaurant->getImageFilename(); 
             try {
-                // Delete old file if it exists
-                $oldFilename = $restaurant->getImageFilename();
-                if ($oldFilename) {
-                    $filesystem->remove($uploadDirectory.'/'.$oldFilename);
+                $newFilename = $this->imageUploader->uploadImage($imageFile);
+                $restaurant->setImageFilename($newFilename);
+                // Delete old file AFTER successful upload of new one and entity update
+                if ($originalImageFilename && $originalImageFilename !== $newFilename) {
+                    $this->imageUploader->deleteImage($originalImageFilename);
                 }
-
-                // Move the new file to the target directory
-                $imageFile->move($uploadDirectory, $newFilename);
-                $restaurant->setImageFilename($newFilename); // Update entity
             } catch (FileException $e) {
-                // Handle file upload error (e.g., log it)
-                 return $this->json(['errors' => ['imageFile' => 'Failed to upload image.'.$e->getMessage()]], Response::HTTP_INTERNAL_SERVER_ERROR);
+                // Use $e->getMessage() which is set in ImageService
+                return $this->json(['errors' => ['imageFile' => $e->getMessage()]], Response::HTTP_BAD_REQUEST);
             }
         }
 
-        // Handle password update separately
         if (isset($data['password']) && !empty($data['password'])) {
              if (strlen($data['password']) >= 6) {
                  $hashedPassword = $passwordHasher->hashPassword($restaurant, $data['password']);
@@ -284,15 +239,12 @@ final class RestaurantController extends AbstractController
         }
         }
 
-        // Handle FoodTypes update (example assumes array of IDs)
         if (isset($data['food_type_ids']) && is_array($data['food_type_ids'])) {
-            // Remove old ones
             foreach ($originalFoodTypes as $foodType) {
                 if (!in_array($foodType->getId(), $data['food_type_ids'])) {
                     $restaurant->removeFoodType($foodType);
                 }
             }
-            // Add new ones
             foreach ($data['food_type_ids'] as $foodTypeId) {
                 $foodType = $foodTypeRepository->find($foodTypeId);
                 if ($foodType && !$restaurant->getFoodTypes()->contains($foodType)) {
@@ -300,8 +252,6 @@ final class RestaurantController extends AbstractController
                 }
             }
         }
-
-        // TODO: Handle Address update/creation if needed
 
         $errors = $validator->validate($restaurant);
         if (count($errors) > 0) {
@@ -321,8 +271,15 @@ final class RestaurantController extends AbstractController
     #[IsGranted('ROLE_ADMIN')] // Only Admins can delete restaurants
     public function delete(Restaurant $restaurant, EntityManagerInterface $entityManager): JsonResponse
     {
+        $imageFilename = $restaurant->getImageFilename(); // Get filename before removing entity
+
         $entityManager->remove($restaurant);
         $entityManager->flush();
+
+        // Delete the image file after successfully removing the entity
+        if ($imageFilename) {
+            $this->imageUploader->deleteImage($imageFilename);
+        }
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }

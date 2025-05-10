@@ -121,13 +121,13 @@ final class AuthController extends AbstractController
     #[Route('/register/restaurant', name: 'api_auth_register_restaurant', methods: ['POST'])]
     public function registerRestaurant(
         Request $request,
-        UserPasswordHasherInterface $passwordHasher, // Use the same hasher interface
+        UserPasswordHasherInterface $passwordHasher, 
         EntityManagerInterface $entityManager,
         RestaurantRepository $restaurantRepository,
         UserRepository $userRepository,
-        FoodTypeRepository $foodTypeRepository, // <-- Inject FoodTypeRepository
+        FoodTypeRepository $foodTypeRepository, 
         ValidatorInterface $validator,
-        ImageUploader $imageUploader // <-- Inject the ImageUploader service
+        ImageUploader $imageUploader 
     ): JsonResponse {
         // --- Access form data from multipart/form-data ---
         $email = $request->request->get('email');
@@ -216,11 +216,10 @@ final class AuthController extends AbstractController
         $imageFilename = null;
         if ($imageFile) {
             try {
-                $imageFilename = $imageUploader->upload($imageFile);
-                $restaurant->setImageFilename($imageFilename); // Set filename
+                $imageFilename = $imageUploader->uploadImage($imageFile); // Changed method name to uploadImage
+                $restaurant->setImageFilename($imageFilename);
             } catch (FileException $e) {
-                 // Handle exception if something happens during file upload
-                 return $this->json(['message' => 'Could not process uploaded image: '.$e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+                 return $this->json(['message' => 'Could not process uploaded image: '.$e->getMessage()], Response::HTTP_BAD_REQUEST); 
             }
         }
         // No need to set imageFilename if $imageFile is null, it's already null

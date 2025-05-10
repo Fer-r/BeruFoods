@@ -13,7 +13,7 @@ class Sin extends FunctionNode
 
     public function getSql(SqlWalker $sqlWalker): string
     {
-        return 'SIN(' . $sqlWalker->walkSimpleArithmeticExpression($this->simpleArithmeticExpression) . ')';
+        return 'SIN(' . $this->simpleArithmeticExpression->dispatch($sqlWalker) . ')';
     }
 
     public function parse(Parser $parser): void

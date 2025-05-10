@@ -23,8 +23,8 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         # Bind the parameter globally to any argument named $targetDirectory of type string
-        bind:
-            string $targetDirectory: '%uploads_directory%'
+        # bind:
+            # string $targetDirectory: '%uploads_directory%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -38,8 +38,32 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    App\Service\ImageUploader:
+    # Configure instances of the new App\Service\ImageUploader
+    app.image_uploader.article:
+        class: App\Service\ImageUploader
         arguments:
             $slugger: '@Symfony\Component\String\Slugger\SluggerInterface'
-            $targetDirectory: '%restaurant_images_directory%'
             $filesystem: '@Symfony\Component\Filesystem\Filesystem'
+            $imagesDirectory: '%article_images_directory%'
+            $imagesPublicPath: '%article_images_public_path%'
+
+    app.image_uploader.restaurant:
+        class: App\Service\ImageUploader
+        arguments:
+            $slugger: '@Symfony\Component\String\Slugger\SluggerInterface'
+            $filesystem: '@Symfony\Component\Filesystem\Filesystem'
+            $imagesDirectory: '%restaurant_images_directory%'
+            $imagesPublicPath: '%restaurant_images_public_path%'
+
+    App\Controller\ArticleController:
+        arguments:
+            $imageUploader: '@app.image_uploader.article'
+        tags: ['controller.service_arguments']
+
+    App\Controller\RestaurantController:
+        arguments:
+            $imageUploader: '@app.image_uploader.restaurant'
+        tags: ['controller.service_arguments']
+
+    App\Controller\AuthController:
+        tags: ['controller.service_arguments']

@@ -1,9 +1,5 @@
 @import "tailwindcss";
-@plugin "daisyui" {
-  themes: light --default, dark --prefersdark; /* Configure our custom themes */
-  root: ":root";
-}
-
+@plugin "daisyui";
 @theme {
   /* Define custom colors as CSS variables */
   --color-persian-red-50: #fdf3f3;
@@ -48,6 +44,7 @@
 /* Custom DaisyUI Themes */
 @plugin "daisyui/theme" {
   name: "light";
+  default: true;
   color-scheme: "light";
   --color-base-100: oklch(100% 0 0); /* white */
   --color-base-200: oklch(98% 0 0); /* ~gray-100 */
@@ -81,6 +78,7 @@
 
 @plugin "daisyui/theme" {
   name: "dark";
+  default: false;
   color-scheme: "dark";
   --color-base-100: oklch(25.33% 0.016 252.42); /* ~slate-800 */
   --color-base-200: oklch(23.26% 0.014 253.1); /* Darker */

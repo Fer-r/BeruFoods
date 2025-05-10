@@ -1,7 +1,10 @@
 services:
   frontend:
     build:
-      context: ./frontend
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     ports:
       - 5173:5173
     volumes:
@@ -13,7 +16,7 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     volumes:
-      - ./backend:/var/www/backend
+      - ./backend:/var/www/backend:rw
     depends_on:
       database:
         condition: service_healthy
@@ -27,6 +30,9 @@ services:
       DB_SERVER_VERSION: '8.0'
       APP_ENV: ${APP_ENV:-dev}
       APP_SECRET: ${APP_SECRET:-change_me_in_dotenv}
+      TZ: Europe/Madrid
+    ports:
+      - 9000:9000
     networks:
       - beru-network
   database:
@@ -36,22 +42,28 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: Europe/Madrid
+    ports:
+      - 3306:3306
     volumes:
       - database_data:/var/lib/mysql
     networks:
       - beru-network
     healthcheck:
-        test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$${MYSQL_USER}", "-p$${MYSQL_PASSWORD}"]
+        test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD"]
         interval: 10s
         timeout: 5s
         retries: 5
         start_period: 30s
+    command: --default-authentication-plugin=caching_sha2_password
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-      - "8080:80"
+      - "8081:80"
     environment:
       PMA_HOST: database
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
     depends_on:
       database:
         condition: service_healthy
@@ -62,13 +74,16 @@ services:
       context: docker/nginx
     restart: always
     volumes:
-      - ./backend:/var/www/backend:ro
       - ./docker/nginx/logs:/var/log/nginx
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./backend:/var/www/backend:ro
+      - ./docker/nginx/certs:/etc/nginx/certs
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - backend
+      - frontend
     networks:
       - beru-network
 networks:

@@ -1,26 +1,27 @@
-# Use the standard Debian-based PHP-FPM image
-FROM php:8.2-fpm
+# Use the PHP FPM image (provides extensions, but we won't run FPM itself)
+FROM php:8.3-fpm
 
 # Set working directory
 WORKDIR /var/www/backend
 
-# Ensure www-data owns the working directory
-RUN chown www-data:www-data /var/www/backend
+# Modify www-data UID and GID to 1000 (common for host user)
+# This should be done before creating files/dirs that www-data needs to own
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
-# Install system dependencies required by PHP extensions FIRST
+# Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash \
-    git \
-    curl \
-    libzip-dev \
-    zip \
     acl \
-    openssl \
+    bash \
+    curl \
+    git \
     libicu-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Configure and Install PHP extensions AFTER dependencies are installed
-RUN docker-php-ext-configure intl \
+    libpng-dev \
+    libzip-dev \
+    openssl \
+    unzip \
+    zip \
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-configure intl \
     && docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_mysql \
@@ -33,30 +34,47 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Define Composer home and create cache directory owned by www-data
 ENV COMPOSER_HOME=/var/www/backend/var/cache/composer
-RUN mkdir -p $COMPOSER_HOME && chown -R www-data:www-data /var/www/backend/var
+# Ensure var/cache and var/log exist and are owned by www-data before potential volume mount overwrites during runtime
+# Note: COMPOSER_HOME already creates var/cache/composer
+RUN mkdir -p /var/www/backend/var/log \
+    && chown -R www-data:www-data /var/www/backend/var
 
-# Use the default www-data user provided by the base image (usually UID/GID 33)
-# RUN addgroup -g 82 -S www-data && adduser -u 82 -G www-data -S -D www-data # Removed Alpine-specific user creation
+# Copy composer files first into the WORKDIR
+COPY backend/composer.json backend/composer.lock ./
+
+# Ensure www-data owns the working directory before composer install
+RUN chown -R www-data:www-data /var/www/backend
+
+# Switch to www-data user for composer install
 USER www-data
 
-# Copy composer files first
-COPY backend/composer.json backend/composer.lock /var/www/backend/
+# Install dependencies without running scripts during build
+RUN composer install --no-dev --no-interaction --no-scripts
 
-# Install dependencies (as www-data, creating vendor dir with correct permissions)
-# Added --no-scripts --no-interaction for potentially safer build execution
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
+# Generate optimized autoloader separately
+RUN composer dump-autoload --optimize --no-dev --classmap-authoritative
 
-# Copy the rest of the application code AFTER installing dependencies
-COPY --chown=www-data:www-data backend/ /var/www/backend/
+# Switch back to root to copy remaining files
+USER root
 
-# Make console executable (now works because www-data owns the file)
-RUN chmod +x bin/console
+# Copy the entire backend application content
+# (Files will be overwritten by the bind mount at runtime for development,
+# but this makes the image potentially runnable standalone)
+COPY --chown=www-data:www-data backend/ .
 
-# Fix potential cache/log permissions if needed (Symfony standard)
-# RUN chown -R www-data:www-data /var/www/backend/var
+# Make console executable
+RUN chmod +x /var/www/backend/bin/console
 
-# Expose port 9000 and start php-fpm server
+# Ensure final ownership of the entire app directory by www-data
+# This is crucial as the COPY backend/ . command runs as root by default
+# and we want www-data to own these files.
+RUN chown -R www-data:www-data /var/www/backend
+
+# Expose the port PHP-FPM will listen on
 EXPOSE 9000
-CMD ["php-fpm"]
 
-# Optional: Copy application code - Removed the old COPY/RUN block here 
+# Switch to www-data user to run FPM (this should now work for logs/cache)
+USER www-data
+
+# Default command to run PHP-FPM
+CMD ["php-fpm"]

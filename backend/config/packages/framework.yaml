@@ -8,6 +8,11 @@ framework:
     #esi: true
     #fragments: true
 
+    serializer:
+        enabled: true
+        mapping:
+            paths: ['%kernel.project_dir%/config/serialization']
+
 when@test:
     framework:
         test: true

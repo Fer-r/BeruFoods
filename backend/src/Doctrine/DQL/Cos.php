@@ -13,7 +13,7 @@ class Cos extends FunctionNode
 
     public function getSql(SqlWalker $sqlWalker): string
     {
-        return 'COS(' . $sqlWalker->walkSimpleArithmeticExpression($this->simpleArithmeticExpression) . ')';
+        return 'COS(' . $this->simpleArithmeticExpression->dispatch($sqlWalker) . ')';
     }
 
     public function parse(Parser $parser): void

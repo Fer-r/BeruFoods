@@ -25,10 +25,12 @@ class Address
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: false)]
     #[Assert\NotBlank]
+    #[Assert\Range(min: -90, max: 90)]
     protected ?string $lat = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: false)]
     #[Assert\NotBlank]
+    #[Assert\Range(min: -180, max: 180)]
     protected ?string $lng = null;
 
 

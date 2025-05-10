@@ -30,14 +30,17 @@ security:
                 check_path: /api/login
                 username_path: email
                 provider: app_user_provider
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
         # Firewall for Restaurant login (New)
         restaurant_login:
             pattern: ^/api/restaurant/login
-            stateless: true
             json_login:
                 check_path: /api/restaurant/login
                 username_path: email
                 provider: restaurant_provider
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
         # General API Firewall - validates JWTs from either user type
         api:
             pattern: ^/api

@@ -13,11 +13,6 @@ class Address
     #[ORM\Column]
     protected ?int $id = null;
 
-    #[ORM\Column(type: 'text', nullable: false)]
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 5, max: 500)]
-    protected ?string $address_line = null;
-
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 100)]
@@ -37,17 +32,6 @@ class Address
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getAddressLine(): ?string
-    {
-        return $this->address_line;
-    }
-
-    public function setAddressLine(?string $address_line): static
-    {
-        $this->address_line = $address_line;
-        return $this;
     }
 
     public function getProvince(): ?string
@@ -82,4 +66,4 @@ class Address
         $this->lng = $lng;
         return $this;
     }
-} 
+}

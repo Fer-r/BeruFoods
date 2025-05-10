@@ -14,7 +14,7 @@ final class Version20250509220401 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Update restaurant_addresses province type and simplify user_addresses schema';
     }
 
     public function up(Schema $schema): void

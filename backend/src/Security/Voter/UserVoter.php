@@ -53,10 +53,10 @@ class UserVoter extends Voter
         switch ($attribute) {
             case self::VIEW:
                 // Logged-in user can view their own profile
-                return $userSubject === $loggedInUser;
+                return $userSubject->getId() === $loggedInUser->getId();
             case self::EDIT:
                 // Logged-in user can edit their own profile
-                return $userSubject === $loggedInUser;
+                return $userSubject->getId() === $loggedInUser->getId();
         }
 
         throw new \LogicException('This code should not be reached!');

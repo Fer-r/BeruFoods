@@ -16,7 +16,7 @@ class Allergy
     private ?int $id = null;
 
     #[ORM\Column(type: 'text', nullable: false)]
-    private ?string $name = null;
+    private string $name;
 
     // --- Getters and Setters ---
 

@@ -2,10 +2,11 @@
 
 namespace App\Controller;
 
+use App\Controller\Trait\ApiResponseTrait;
+use App\Controller\Trait\PaginationTrait;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,56 +14,34 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 #[Route('/api')]
 final class UserController extends AbstractController
 {
-    private const ITEMS_PER_PAGE = 10;
+    use PaginationTrait;
+    use ApiResponseTrait;
 
     #[Route('/users', name: 'api_user_index', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function index(UserRepository $userRepository, SerializerInterface $serializer, Request $request): JsonResponse
+    public function index(UserRepository $userRepository, Request $request): JsonResponse
     {
-        $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', self::ITEMS_PER_PAGE);
-
         $qb = $userRepository->createQueryBuilder('u');
 
-        $qb->orderBy('u.email', 'ASC')
-           ->setFirstResult(($page - 1) * $limit)
-           ->setMaxResults($limit);
+        $qb->orderBy('u.email', 'ASC');
 
-        $paginator = new Paginator($qb->getQuery(), true);
-        $totalItems = count($paginator);
-        $pagesCount = ceil($totalItems / $limit);
+        $paginationData = $this->paginate($qb, $request);
 
-        $results = iterator_to_array($paginator->getIterator());
-
-        $data = [
-            'items' => $results,
-            'pagination' => [
-                'totalItems' => $totalItems,
-                'currentPage' => $page,
-                'itemsPerPage' => $limit,
-                'totalPages' => $pagesCount
-            ]
-        ];
-
-        $json = $serializer->serialize($data, 'json', ['groups' => 'user:read:collection']);
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
+        return $this->apiSuccessResponse($paginationData, Response::HTTP_OK, ['user:read:collection']);
     }
 
     #[Route('/users/{id}', name: 'api_user_show', methods: ['GET'])]
     #[IsGranted('view', 'user')]
-    public function show(User $user, SerializerInterface $serializer): JsonResponse
+    public function show(User $user): JsonResponse
     {
         $this->denyAccessUnlessGranted('view', $user);
 
-        $json = $serializer->serialize($user, 'json', ['groups' => 'user:read']);
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
+        return $this->apiSuccessResponse($user, Response::HTTP_OK, ['user:read']);
     }
 
     #[Route('/users/{id}', name: 'api_user_update', methods: ['PUT', 'PATCH'])]
@@ -76,14 +55,12 @@ final class UserController extends AbstractController
     ): JsonResponse {
         $this->denyAccessUnlessGranted('edit', $user);
 
-        $data = json_decode($request->getContent(), true);
+        $jsonData = json_decode($request->getContent(), true);
 
-        if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
-            return $this->json(['message' => 'Invalid JSON payload.'], Response::HTTP_BAD_REQUEST);
+        if ($jsonData === null && json_last_error() !== JSON_ERROR_NONE) {
+            return $this->apiErrorResponse('Invalid JSON payload.', Response::HTTP_BAD_REQUEST, ['json_error' => json_last_error_msg()]);
         }
 
-        // Whitelist of fields that can be updated by the user.
-        // Assumes User entity has setEmail, setFirstName, setLastName methods.
         $allowedFieldsToUpdate = [
             'email' => 'setEmail',
             'name' => 'setName',
@@ -91,31 +68,28 @@ final class UserController extends AbstractController
         ];
 
         foreach ($allowedFieldsToUpdate as $field => $setterMethod) {
-            if (array_key_exists($field, $data)) {
+            if (array_key_exists($field, $jsonData)) {
                 if (method_exists($user, $setterMethod)) {
-                    $user->$setterMethod($data[$field]);
+                    $user->$setterMethod($jsonData[$field]);
                 }
             }
         }
 
-        // Handle address update
-        if (isset($data['address']) && is_array($data['address'])) {
-            $addressData = $data['address'];
+        if (isset($jsonData['address']) && is_array($jsonData['address'])) {
+            $addressData = $jsonData['address'];
             $userAddress = $user->getAddress();
 
             if (!$userAddress) {
-                $userAddressClassName = \App\Entity\UserAddress::class; // Adjust if your namespace/entity name differs
+                $userAddressClassName = \App\Entity\UserAddress::class; 
                 if (class_exists($userAddressClassName)) {
                     $userAddress = new $userAddressClassName();
-                    $userAddress->setUser($user); // Link to the user
+                    $userAddress->setUser($user); 
                 } else {
-                    return $this->json(['message' => 'UserAddress entity not configured correctly.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    return $this->apiErrorResponse('UserAddress entity not configured correctly.', Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
             }
 
             if ($userAddress) {
-                // Whitelist of fields that can be updated on the UserAddress.
-                // Assumes UserAddress entity has these setters. Adjust as necessary.
                 $allowedAddressFieldsToUpdate = [
                     'address_line' => 'setAddressLine',
                     'province' => 'setProvince',
@@ -132,28 +106,22 @@ final class UserController extends AbstractController
                 }
                 $user->setAddress($userAddress);
             }
-        } elseif (array_key_exists('address', $data) && $data['address'] === null) {
-            // Handle explicit null to remove address
+        } elseif (array_key_exists('address', $jsonData) && $jsonData['address'] === null) {
             $user->setAddress(null);
         }
 
-        // Securely handle password update
-        if (isset($data['password'])) {
-             if (strlen($data['password']) >= 6) {
-                  $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
+        if (isset($jsonData['password'])) {
+             if (strlen($jsonData['password']) >= 6) {
+                  $hashedPassword = $passwordHasher->hashPassword($user, $jsonData['password']);
                   $user->setPassword($hashedPassword);
              } else {
-                 return $this->json(['errors' => ['password' => ['Password must be at least 6 characters long']]], Response::HTTP_BAD_REQUEST);
+                 return $this->apiErrorResponse('Password validation failed', Response::HTTP_BAD_REQUEST, ['password' => ['Password must be at least 6 characters long']]);
              }
         }
 
         $errors = $validator->validate($user);
         if (count($errors) > 0) {
-            $errorMessages = [];
-            foreach ($errors as $error) {
-                $errorMessages[$error->getPropertyPath()][] = $error->getMessage();
-            }
-            return $this->json(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            return $this->apiValidationErrorResponse($errors);
         }
 
         $entityManager->flush();
@@ -177,7 +145,7 @@ final class UserController extends AbstractController
     {
         $user->setBanned(true);
         $entityManager->flush();
-        return new JsonResponse(['message' => 'User banned successfully.'], Response::HTTP_OK);
+        return $this->apiSuccessResponse(['message' => 'User banned successfully.'], Response::HTTP_OK);
     }
 
     #[Route('/users/{id}/unban', name: 'api_user_unban', methods: ['PATCH'])]
@@ -186,6 +154,6 @@ final class UserController extends AbstractController
     {
         $user->setBanned(false);
         $entityManager->flush();
-        return new JsonResponse(['message' => 'User unbanned successfully.'], Response::HTTP_OK);
+        return $this->apiSuccessResponse(['message' => 'User unbanned successfully.'], Response::HTTP_OK);
     }
 }

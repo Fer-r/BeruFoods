@@ -2,60 +2,51 @@
 
 namespace App\Controller;
 
+use App\Controller\Trait\ApiResponseTrait;
+use App\Controller\Trait\PaginationTrait;
 use App\Entity\Reservation;
 use App\Entity\User;
 use App\Entity\Restaurant;
 use App\Repository\ReservationRepository;
 use App\Repository\RestaurantRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException; // For 404
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use JsonException;
 
 #[Route('/api/reservations')] // Base route for reservations
 final class ReservationController extends AbstractController
 {
-    private const ITEMS_PER_PAGE = 10;
+    use PaginationTrait;
+    use ApiResponseTrait;
 
     #[Route('', name: 'api_reservation_index', methods: ['GET'])]
-    public function index(ReservationRepository $reservationRepository, SerializerInterface $serializer, Request $request): JsonResponse
+    public function index(ReservationRepository $reservationRepository, Request $request): JsonResponse
     {
-        // --- Handle Confirmation Code Lookup First ---
         if ($confirmationCode = $request->query->get('confirmationCode')) {
             $code = strtoupper(trim($confirmationCode));
             $reservation = $reservationRepository->findOneBy(['confirmationCode' => $code]);
 
             if (!$reservation) {
-                throw $this->createNotFoundException('Reservation with this code not found.');
-                // Or return $this->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
+                return $this->apiErrorResponse('Reservation with this code not found.', Response::HTTP_NOT_FOUND);
             }
 
-            // Check view permission using the Voter
             $this->denyAccessUnlessGranted('view', $reservation);
-
-            // Serialize and return the single reservation
-            $json = $serializer->serialize($reservation, 'json', ['groups' => 'reservation:read']);
-            return new JsonResponse($json, Response::HTTP_OK, [], true);
+            return $this->apiSuccessResponse($reservation, Response::HTTP_OK, ['reservation:read']);
         }
 
-        // --- Regular List Fetching and Pagination (If no confirmation code) ---
-        $page = $request->query->getInt('page', 1);
-        $limit = max(1, min(100, $request->query->getInt('limit', self::ITEMS_PER_PAGE)));
         $currentUser = $this->getUser();
         $qb = $reservationRepository->createQueryBuilder('rsv')
                  ->leftJoin('rsv.user', 'u')->addSelect('u')
                  ->leftJoin('rsv.restaurant', 'r')->addSelect('r');
 
-        // Filtering based on role
         if ($this->isGranted('ROLE_ADMIN')) {
             if ($userId = $request->query->get('userId')) {
                 $qb->andWhere('rsv.user = :userId')->setParameter('userId', $userId);
@@ -68,168 +59,139 @@ final class ReservationController extends AbstractController
         } elseif ($currentUser instanceof User) {
             $qb->andWhere('rsv.user = :userId')->setParameter('userId', $currentUser->getId());
         } else {
-            // Should not happen if IsGranted('ROLE_USER') works, but defensive check
-            return $this->json(['message' => 'Unauthorized access to reservations.'], Response::HTTP_FORBIDDEN);
+            return $this->apiErrorResponse('Unauthorized access to reservations.', Response::HTTP_FORBIDDEN);
         }
 
-        // Apply pagination
-        $qb->orderBy('rsv.reservation_datetime', 'DESC')
-           ->setFirstResult(($page - 1) * $limit)
-           ->setMaxResults($limit);
+        $qb->orderBy('rsv.reservation_datetime', 'DESC');
+        $paginationData = $this->paginate($qb, $request);
 
-        $paginator = new Paginator($qb->getQuery(), true);
-        $totalItems = count($paginator);
-        $pagesCount = ceil($totalItems / $limit);
-
-        $results = iterator_to_array($paginator->getIterator());
-
-        $data = [
-            'items' => $results,
-            'pagination' => [
-                'totalItems' => $totalItems,
-                'currentPage' => $page,
-                'itemsPerPage' => $limit,
-                'totalPages' => $pagesCount
-            ]
-        ];
-
-        // Define serialization group e.g., 'reservation:read:collection'
-        $json = $serializer->serialize($data, 'json', ['groups' => 'reservation:read:collection']);
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
+        return $this->apiSuccessResponse($paginationData, Response::HTTP_OK, ['reservation:read:collection']);
     }
 
     #[Route('/{id}', name: 'api_reservation_show', methods: ['GET'])]
-    #[IsGranted('view', 'reservation')] // Assumes ReservationVoter
-    public function show(Reservation $reservation, SerializerInterface $serializer): JsonResponse
+    #[IsGranted('view', 'reservation')]
+    public function show(Reservation $reservation): JsonResponse
     {
-        $this->denyAccessUnlessGranted('view', $reservation); // Voter checks ownership or admin
-
-        // Define serialization group e.g., 'reservation:read'
-        $json = $serializer->serialize($reservation, 'json', ['groups' => 'reservation:read']);
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
+        $this->denyAccessUnlessGranted('view', $reservation);
+        return $this->apiSuccessResponse($reservation, Response::HTTP_OK, ['reservation:read']);
     }
 
     #[Route('', name: 'api_reservation_create', methods: ['POST'])]
-    #[IsGranted('ROLE_USER')] // Only users can create reservations for themselves
+    #[IsGranted('ROLE_USER')]
     public function create(
         Request $request,
-        SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
         RestaurantRepository $restaurantRepository
     ): JsonResponse {
         $currentUser = $this->getUser();
         if (!$currentUser instanceof User) {
-            return $this->json(['message' => 'Only registered users can create reservations.'], Response::HTTP_FORBIDDEN);
+            return $this->apiErrorResponse('Only registered users can create reservations.', Response::HTTP_FORBIDDEN);
         }
 
-        $data = json_decode($request->getContent(), true);
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            return $this->apiErrorResponse('Invalid JSON payload: ' . $e->getMessage(), Response::HTTP_BAD_REQUEST, ['json_error' => $e->getMessage()]);
+        }
 
         if (!isset($data['restaurantId']) || !isset($data['reservation_datetime'])) {
-             return $this->json(['message' => 'Missing required fields: restaurantId, reservation_datetime'], Response::HTTP_BAD_REQUEST);
+             return $this->apiErrorResponse('Missing required fields: restaurantId, reservation_datetime', Response::HTTP_BAD_REQUEST);
         }
 
         $restaurant = $restaurantRepository->find($data['restaurantId']);
         if (!$restaurant) {
-            return $this->json(['message' => 'Restaurant not found'], Response::HTTP_BAD_REQUEST);
+            return $this->apiErrorResponse('Restaurant not found', Response::HTTP_NOT_FOUND);
         }
 
-        // Optional: Check if restaurant takes reservations
         if (!$restaurant->isTakesReservations()) {
-             return $this->json(['message' => 'This restaurant does not take reservations.'], Response::HTTP_BAD_REQUEST);
+             return $this->apiErrorResponse('This restaurant does not take reservations.', Response::HTTP_BAD_REQUEST);
         }
 
-        $reservation = new Reservation(); // Constructor sets created_at and default state ('pending')
+        $reservation = new Reservation();
         $reservation->setUser($currentUser);
         $reservation->setRestaurant($restaurant);
 
-        // Set reservation datetime (handle potential format errors)
         try {
             $dateTime = new \DateTimeImmutable($data['reservation_datetime']);
             $reservation->setReservationDatetime($dateTime);
         } catch (\Exception $e) {
-            return $this->json(['message' => 'Invalid reservation_datetime format'], Response::HTTP_BAD_REQUEST);
+            return $this->apiErrorResponse('Invalid reservation_datetime format', Response::HTTP_BAD_REQUEST);
+        }
+
+        $errors = $validator->validate($reservation);
+        if (count($errors) > 0) {
+            return $this->apiValidationErrorResponse($errors);
         }
 
         $entityManager->persist($reservation);
-        $entityManager->flush(); // Flush first to get ID if needed
+        $entityManager->flush(); 
 
-        // Generate and set confirmation code with retry logic for uniqueness
-        $maxAttempts = 5; // Prevent infinite loop in extreme (and unlikely) scenarios
+        $maxAttempts = 5; 
         $attempt = 0;
         do {
             $confirmationCode = strtoupper(bin2hex(random_bytes(8)));
             $reservation->setConfirmationCode($confirmationCode);
             try {
-                $entityManager->flush(); // Attempt to save the code
-                break; // Exit loop if successful
+                $entityManager->flush(); 
+                break; 
             } catch (UniqueConstraintViolationException $e) {
                 $attempt++;
                 if ($attempt >= $maxAttempts) {
-                    // Log the error or handle it more gracefully
-                    // For now, rethrow if max attempts reached, or return a specific error
-                    return $this->json(['message' => 'Failed to generate a unique confirmation code after several attempts.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+                    return $this->apiErrorResponse('Failed to generate a unique confirmation code.', Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
-                // If a duplicate is found, the loop will continue, and a new code will be generated.
-                // Optional: log the collision event for monitoring.
-                $entityManager->refresh($reservation); // Refresh the entity state before retrying
+                $entityManager->refresh($reservation); 
             }
         } while ($attempt < $maxAttempts);
 
-        // Return created reservation data
-        $json = $serializer->serialize($reservation, 'json', ['groups' => 'reservation:read']);
-        return new JsonResponse($json, Response::HTTP_CREATED, [], true);
+        return $this->apiSuccessResponse($reservation, Response::HTTP_CREATED, ['reservation:read']);
     }
 
     #[Route('/{id}', name: 'api_reservation_update_state', methods: ['PATCH'])]
-    #[IsGranted('update_state', 'reservation')] // Custom voter attribute for state changes
+    #[IsGranted('update_state', 'reservation')]
     public function updateState(
         Request $request,
-        Reservation $reservation, // The reservation to update
+        Reservation $reservation, 
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator
     ): JsonResponse {
-        // Voter checks general permission (is owner restaurant? is current state modifiable?)
         $this->denyAccessUnlessGranted('update_state', $reservation);
-
-        $data = json_decode($request->getContent(), true);
+        
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            return $this->apiErrorResponse('Invalid JSON payload: ' . $e->getMessage(), Response::HTTP_BAD_REQUEST, ['json_error' => $e->getMessage()]);
+        }
 
         if (!isset($data['state'])) {
-            return $this->json(['message' => 'Missing state field'], Response::HTTP_BAD_REQUEST);
+            return $this->apiErrorResponse('Missing state field', Response::HTTP_BAD_REQUEST);
         }
 
         $newState = $data['state'];
         $currentState = $reservation->getState();
 
-        // Define allowed transitions *for restaurants*
         $allowedTransitions = [
             'pending' => ['confirmed', 'cancelled_by_restaurant'],
             'confirmed' => ['completed', 'cancelled_by_restaurant'],
-            'completed' => [],  // Terminal state, no further transitions
-            'cancelled_by_restaurant' => [], // Terminal state
-            'cancelled_by_user' => [] // Terminal state
+            'completed' => [],  
+            'cancelled_by_restaurant' => [], 
+            'cancelled_by_user' => [] 
         ];
 
-        // Check if this specific transition is allowed
         if (!isset($allowedTransitions[$currentState]) || !in_array($newState, $allowedTransitions[$currentState])) {
-             return $this->json(['message' => sprintf('Restaurant cannot change reservation state from "%s" to "%s"', $currentState, $newState)], Response::HTTP_BAD_REQUEST);
+             return $this->apiErrorResponse(sprintf('Restaurant cannot change reservation state from "%s" to "%s"', $currentState, $newState), Response::HTTP_BAD_REQUEST);
         }
 
-        // Basic validation of overall possible states (optional, could be entity constraint)
         $allPossibleStates = ['pending', 'confirmed', 'cancelled_by_user', 'cancelled_by_restaurant', 'completed'];
         if (!in_array($newState, $allPossibleStates)) {
-            return $this->json(['message' => 'Invalid target state value'], Response::HTTP_BAD_REQUEST);
+            return $this->apiErrorResponse('Invalid target state value', Response::HTTP_BAD_REQUEST);
         }
 
         $reservation->setState($newState);
 
         $errors = $validator->validate($reservation);
         if (count($errors) > 0) {
-            $errorMessages = [];
-            foreach ($errors as $error) {
-                $errorMessages[$error->getPropertyPath()][] = $error->getMessage();
-            }
-            return $this->json(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            return $this->apiValidationErrorResponse($errors);
         }
 
         $entityManager->flush();
@@ -238,22 +200,14 @@ final class ReservationController extends AbstractController
     }
 
     #[Route('/{id}/cancel', name: 'api_reservation_cancel_by_user', methods: ['PATCH'])]
-    #[IsGranted('cancel', 'reservation')] // Use the CANCEL attribute and ReservationVoter
+    #[IsGranted('cancel', 'reservation')]
     public function cancelByUser(
-        Reservation $reservation, // The reservation to cancel
+        Reservation $reservation, 
         EntityManagerInterface $entityManager
     ): JsonResponse {
-        // Voter already checked: user is owner, state is pending/confirmed, time is > 24h away
-
         $reservation->setState('cancelled_by_user');
-
-        // No need to re-validate state usually, as Voter checked allowed current state
-        // $errors = $validator->validate($reservation); ...
-
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Reservation cancelled successfully.'], Response::HTTP_OK);
+        return $this->apiSuccessResponse(['message' => 'Reservation cancelled successfully.'], Response::HTTP_OK);
     }
-
-    // Delete action likely only for admins or specific cleanup tasks.
 }

@@ -36,6 +36,10 @@ final class AuthController extends AbstractController
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
+        if (!is_array($data)) {
+            return $this->json(['message' => 'Invalid JSON payload'], Response::HTTP_BAD_REQUEST);
+        }
+
         if (!isset($data['email']) || !isset($data['password'])) {
             return $this->json(['message' => 'Missing email or password'], Response::HTTP_BAD_REQUEST);
         }
@@ -46,18 +50,6 @@ final class AuthController extends AbstractController
         }
         if (strlen($data['password']) < 6) {
              return $this->json(['message' => 'Password must be at least 6 characters long'], Response::HTTP_BAD_REQUEST);
-        }
-
-        // Validate address data if present
-        $addressData = $data['address'] ?? null;
-        if (!$addressData || 
-            !isset($addressData['address_line']) || empty(trim($addressData['address_line'])) ||
-            !isset($addressData['lat']) || empty(trim($addressData['lat'])) ||
-            !isset($addressData['lng']) || empty(trim($addressData['lng'])) ||
-            !isset($addressData['province']) || empty(trim($addressData['province']))) {
-            return $this->json([
-                'message' => 'Missing or incomplete address information. Required fields: address_line, lat, lng, province.'
-            ], Response::HTTP_BAD_REQUEST);
         }
 
         // Check if email exists in User table
@@ -81,29 +73,27 @@ final class AuthController extends AbstractController
         $user->setPassword($hashedPassword);
         $user->setRoles(['ROLE_USER']);
 
-        // Create and set UserAddress
-        $userAddress = new UserAddress();
-        $userAddress->setAddressLine($addressData['address_line']);
-        $userAddress->setLat($addressData['lat']);
-        $userAddress->setLng($addressData['lng']);
-        $userAddress->setProvince($addressData['province']);
+        // Create and set UserAddress if provided
+        $addressData = $data['address'] ?? null;
 
-        $user->setAddress($userAddress); // This will also set $userAddress->setUser($user) due to cascade/inversedBy
+        if (is_array($addressData)) {
+            $userAddress = new UserAddress();
+            $userAddress->setAddressLine($addressData['address_line'] ?? null);
+            $userAddress->setLat($addressData['lat'] ?? null);
+            $userAddress->setLng($addressData['lng'] ?? null);
+            $userAddress->setProvince($addressData['province'] ?? null);
+            $user->setAddress($userAddress); // Associate for validation only if address data is provided
+        }
+        // If addressData is not an array, $user->address remains null (or uninitialized).
+        // Validation will proceed accordingly.
 
-        // Validate the User entity (which should also validate UserAddress if Assert\\Valid is on User::$address)
+        // Validate the User entity (which will also validate UserAddress due to Assert\Valid)
         $errors = $validator->validate($user);
-        $addressErrors = $validator->validate($userAddress); // Explicitly validate address too for detailed errors
 
         $errorMessages = [];
         if (count($errors) > 0) {
             foreach ($errors as $error) {
-                // Prepend 'user.' to user fields to distinguish from address fields if needed
-                $errorMessages['user.'.$error->getPropertyPath()][] = $error->getMessage();
-            }
-        }
-        if (count($addressErrors) > 0) {
-            foreach ($addressErrors as $error) {
-                $errorMessages['address.'.$error->getPropertyPath()][] = $error->getMessage();
+                $errorMessages[$error->getPropertyPath()][] = $error->getMessage();
             }
         }
 

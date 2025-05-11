@@ -71,15 +71,73 @@ final class UserController extends AbstractController
         Request $request,
         User $user,
         EntityManagerInterface $entityManager,
-        SerializerInterface $serializer,
         ValidatorInterface $validator,
         UserPasswordHasherInterface $passwordHasher
     ): JsonResponse {
         $this->denyAccessUnlessGranted('edit', $user);
 
-        $serializer->deserialize($request->getContent(), User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $user]);
-
         $data = json_decode($request->getContent(), true);
+
+        if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+            return $this->json(['message' => 'Invalid JSON payload.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Whitelist of fields that can be updated by the user.
+        // Assumes User entity has setEmail, setFirstName, setLastName methods.
+        $allowedFieldsToUpdate = [
+            'email' => 'setEmail',
+            'name' => 'setName',
+            'phone' => 'setPhone',
+        ];
+
+        foreach ($allowedFieldsToUpdate as $field => $setterMethod) {
+            if (array_key_exists($field, $data)) {
+                if (method_exists($user, $setterMethod)) {
+                    $user->$setterMethod($data[$field]);
+                }
+            }
+        }
+
+        // Handle address update
+        if (isset($data['address']) && is_array($data['address'])) {
+            $addressData = $data['address'];
+            $userAddress = $user->getAddress();
+
+            if (!$userAddress) {
+                $userAddressClassName = \App\Entity\UserAddress::class; // Adjust if your namespace/entity name differs
+                if (class_exists($userAddressClassName)) {
+                    $userAddress = new $userAddressClassName();
+                    $userAddress->setUser($user); // Link to the user
+                } else {
+                    return $this->json(['message' => 'UserAddress entity not configured correctly.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
+            }
+
+            if ($userAddress) {
+                // Whitelist of fields that can be updated on the UserAddress.
+                // Assumes UserAddress entity has these setters. Adjust as necessary.
+                $allowedAddressFieldsToUpdate = [
+                    'address_line' => 'setAddressLine',
+                    'province' => 'setProvince',
+                    'lat' => 'setLat',
+                    'lng' => 'setLng',
+                ];
+
+                foreach ($allowedAddressFieldsToUpdate as $field => $setterMethod) {
+                    if (array_key_exists($field, $addressData)) {
+                        if (method_exists($userAddress, $setterMethod)) {
+                            $userAddress->$setterMethod($addressData[$field]);
+                        }
+                    }
+                }
+                $user->setAddress($userAddress);
+            }
+        } elseif (array_key_exists('address', $data) && $data['address'] === null) {
+            // Handle explicit null to remove address
+            $user->setAddress(null);
+        }
+
+        // Securely handle password update
         if (isset($data['password'])) {
              if (strlen($data['password']) >= 6) {
                   $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
@@ -101,7 +159,7 @@ final class UserController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
-        }
+    }
 
     #[Route('/users/{id}', name: 'api_user_delete', methods: ['DELETE'])]
     #[IsGranted('ROLE_ADMIN')]

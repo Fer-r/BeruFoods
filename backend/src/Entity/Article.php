@@ -20,7 +20,7 @@ class Article
     private ?Restaurant $restaurant = null;
 
     #[ORM\Column(type: 'text', nullable: false)]
-    private ?string $name = null;
+    private string $name;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
@@ -28,17 +28,17 @@ class Article
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $imageFilename = null;
 
-    #[ORM\Column(type: 'boolean', options: ["default" => true])]
-    private ?bool $listed = true;
+    #[ORM\Column(type: 'boolean', nullable: false, options: ["default" => true])]
+    private bool $listed = true;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: false)]
-    private ?string $price = null;
+    private string $price;
 
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $allergies = null;
 
-    #[ORM\Column(type: 'boolean', options: ["default" => true])]
-    private ?bool $available = true;
+    #[ORM\Column(type: 'boolean', nullable: false, options: ["default" => true])]
+    private bool $available = true;
 
     // --- Getters and Setters ---
 
@@ -58,12 +58,12 @@ class Article
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function setName(?string $name): static
+    public function setName(string $name): static
     {
         $this->name = $name;
         return $this;
@@ -91,23 +91,23 @@ class Article
         return $this;
     }
 
-    public function isListed(): ?bool
+    public function isListed(): bool
     {
         return $this->listed;
     }
 
-    public function setListed(?bool $listed): static
+    public function setListed(bool $listed): static
     {
         $this->listed = $listed;
         return $this;
     }
 
-    public function getPrice(): ?string
+    public function getPrice(): string
     {
         return $this->price;
     }
 
-    public function setPrice(?string $price): static
+    public function setPrice(string $price): static
     {
         $this->price = $price;
         return $this;
@@ -124,7 +124,7 @@ class Article
         return $this;
     }
 
-    public function isAvailable(): ?bool
+    public function isAvailable(): bool
     {
         return $this->available;
     }

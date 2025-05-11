@@ -55,9 +55,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserAddress::class, cascade: ['persist', 'remove'])]
     #[Assert\Valid]
+    #[Assert\NotNull(message: "User address data is required.")]
     private ?UserAddress $address = null;
 
-    public function getId(): ?string
+    public function getId(): ?int
     {
         return $this->id;
     }

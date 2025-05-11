@@ -14,6 +14,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use JsonException;
 
 #[Route('/api/allergies')]
 final class AllergyController extends AbstractController
@@ -34,8 +35,13 @@ final class AllergyController extends AbstractController
         SerializerInterface $serializer,
         ValidatorInterface $validator
     ): JsonResponse {
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            return $this->json(['errors' => ['json' => 'Invalid JSON payload: ' . $e->getMessage()]], Response::HTTP_BAD_REQUEST);
+        }
+
         $allergy = new Allergy();
-        $data = json_decode($request->getContent(), true);
 
         if (!isset($data['name'])) {
              return $this->json(['errors' => ['name' => 'Name is required']], Response::HTTP_BAD_REQUEST);
@@ -78,7 +84,11 @@ final class AllergyController extends AbstractController
         ValidatorInterface $validator,
         SerializerInterface $serializer
     ): JsonResponse {
-        $data = json_decode($request->getContent(), true);
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            return $this->json(['errors' => ['json' => 'Invalid JSON payload: ' . $e->getMessage()]], Response::HTTP_BAD_REQUEST);
+        }
 
         if (!isset($data['name'])) {
             return $this->json(['errors' => ['name' => 'Name is required']], Response::HTTP_BAD_REQUEST);

@@ -36,7 +36,7 @@ export const useThemeManager = () => {
       // We only care about system changes if the current preference *is* 'system'.
       // The themePreference state itself won't change here, but applyTheme needs to be called
       // to re-evaluate the effective theme based on the new system state.
-      if (localStorage.getItem('themeMode') === 'system') {
+      if (themePreference === 'system') {
         console.log('[ThemeManager] System theme changed, re-evaluating and applying...');
         applyTheme(); // applyTheme will re-check window.matchMedia
       }

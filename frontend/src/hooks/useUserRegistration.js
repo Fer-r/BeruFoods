@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { postPublicJSONToAPI } from '../services/useApiService';
 import {
@@ -10,18 +10,17 @@ import {
   validatePhone
 } from '../utils/formValidation';
 
-// Define initial state outside the hook for consistency and potential reuse
 const initialFormData = {
   email: '',
   password: '',
   confirmPassword: '',
-  name: '', // Optional field
-  phone: '', // Optional field
-  addressLine: '', // New address fields
+  name: '',
+  phone: '',
+  addressLine: '',
   lat: '',
   lng: '',
   province: '',
-  fullAddress: '' // For display or context, may not be sent to backend directly
+  fullAddress: ''
 };
 
 const useUserRegistration = () => {
@@ -29,13 +28,14 @@ const useUserRegistration = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [navigationTrigger, setNavigationTrigger] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = useCallback((e) => {
     setFormData(prevFormData => ({ ...prevFormData, [e.target.name]: e.target.value }));
     setError('');
     setSuccess('');
-  }, []); // No dependencies needed if only using setFormData with functional update
+  }, []);
 
   const handleAddressSelected = useCallback((addressDetails) => {
     setFormData(prevFormData => ({
@@ -46,7 +46,7 @@ const useUserRegistration = () => {
       province: addressDetails.province || '',
       fullAddress: addressDetails.fullAddress || '',
     }));
-    setError(''); // Clear general error when address is selected
+    setError('');
   }, []);
 
   const handleSubmit = useCallback(async (e) => {
@@ -86,11 +86,15 @@ const useUserRegistration = () => {
     const provinceError = validateRequired(formData.province, 'Province');
     if (provinceError) { setError(provinceError); return; }
 
-    const nameError = validateMinLength(formData.name, 2, 'Full Name');
-    if (nameError) { setError(nameError); return; }
+    if (formData.name) {
+      const nameError = validateMinLength(formData.name, 2, 'Full Name');
+      if (nameError) { setError(nameError); return; }
+    }
 
-    const phoneError = validatePhone(formData.phone, 'Phone Number');
-    if (phoneError) { setError(phoneError); return; }
+    if (formData.phone) {
+      const phoneError = validatePhone(formData.phone, 'Phone Number');
+      if (phoneError) { setError(phoneError); return; }
+    }
 
     setLoading(true);
 
@@ -98,25 +102,22 @@ const useUserRegistration = () => {
       const registrationData = {
         email: formData.email,
         password: formData.password,
-        name: formData.name || null, // Ensure null if empty
-        phone: formData.phone || null, // Ensure null if empty
-        address: { // Nest address data
-          address_line: formData.addressLine,
+        name: formData.name || null,
+        phone: formData.phone || null,
+        address: {
+          address_line: [formData.addressLine],
           lat: formData.lat,
           lng: formData.lng,
           province: formData.province,
         }
       };
 
-      // Use the new, more descriptive API service function
       const responseData = await postPublicJSONToAPI('/auth/register/user', registrationData);
 
       setSuccess(responseData.message || 'Registration successful! Redirecting to login...');
       setFormData(initialFormData); // Reset form to initial state
       
-      setTimeout(() => {
-        navigate('/');
-      }, 1000);
+      setNavigationTrigger(true); // Trigger navigation effect
 
     } catch (err) {
       setError(err.details?.message || err.message || 'Registration failed. Please try again.');
@@ -130,6 +131,17 @@ const useUserRegistration = () => {
       setLoading(false);
     }
   }, [formData, navigate]);
+
+  useEffect(() => {
+    let timeoutId;
+    if (navigationTrigger) {
+      timeoutId = setTimeout(() => {
+        navigate('/');
+      }, 1000);
+      setNavigationTrigger(false);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [navigationTrigger, navigate]);
 
   return {
     formData,

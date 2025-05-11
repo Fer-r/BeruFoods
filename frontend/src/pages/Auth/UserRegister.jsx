@@ -1,9 +1,10 @@
-import { Link } from "react-router";
-import { useCallback } from "react";
+import { Link, useNavigate } from "react-router";
+import { useCallback, useEffect } from "react";
 import useUserRegistration from "../../hooks/useUserRegistration";
 import StyledInput from "../../components/StyledInput";
 import AlertMessage from "../../components/AlertMessage";
 import RadarMapDisplay from "../../components/RadarMapDisplay";
+import { useModal } from "../../context/ModalContext.jsx";
 
 const UserRegister = () => {
   const {
@@ -16,6 +17,8 @@ const UserRegister = () => {
     handleAddressSelected,
     setError,
   } = useUserRegistration();
+  const { openLoginModal } = useModal();
+  const navigate = useNavigate();
 
   const onAddressSelect = useCallback(
     (addressDetails) => {
@@ -28,6 +31,12 @@ const UserRegister = () => {
     },
     [handleAddressSelected, error, setError]
   );
+
+  useEffect(() => {
+    if (success) {
+      openLoginModal();
+    }
+  }, [success, openLoginModal]);
 
   return (
     <>
@@ -119,9 +128,16 @@ const UserRegister = () => {
         <div className="text-center text-sm space-y-2 mt-4">
           <p>
             Already have an account?{" "}
-            <Link to="/login" className="link link-secondary">
+            <button 
+              type="button"
+              onClick={() => {
+                openLoginModal();
+                navigate('/');
+              }}
+              className="link link-secondary"
+            >
               Sign In
-            </Link>
+            </button>
           </p>
           <p>
             Register as a restaurant?{" "}

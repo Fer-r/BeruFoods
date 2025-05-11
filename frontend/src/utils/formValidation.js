@@ -30,8 +30,14 @@ export const validateMinLength = (value, minLength, fieldName = 'This field') =>
 export const validateTimeOrder = (startTime, endTime, startFieldName = 'Opening time', endFieldName = 'Closing time') => {
   if (!startTime || !endTime) return null; // If one is missing, another validator should catch it if required
   // Basic HH:MM format check (can be expanded)
-  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/;
-  if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+  const timeRegexWithSeconds = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+  const timeRegexWithoutSeconds = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+  const isValidTimeFormat = (timeStr) => {
+      return timeRegexWithSeconds.test(timeStr) || timeRegexWithoutSeconds.test(timeStr);
+  };
+
+  if (!isValidTimeFormat(startTime) || !isValidTimeFormat(endTime)) {
     return 'Time must be in HH:MM or HH:MM:SS format.';
   }
 
@@ -39,10 +45,19 @@ export const validateTimeOrder = (startTime, endTime, startFieldName = 'Opening 
   const [endHour, endMinute] = endTime.split(':').map(Number);
 
   const startDate = new Date(0, 0, 0, startHour, startMinute);
-  const endDate = new Date(0, 0, 0, endHour, endMinute);
+  let endDate;
+  if (endHour < startHour || (endHour === startHour && endMinute < startMinute)) {
+    endDate = new Date(0, 0, 1, endHour, endMinute); // Next day
+  } else {
+    endDate = new Date(0, 0, 0, endHour, endMinute); // Same day
+  }
 
-  if (startDate >= endDate) {
+  if (startDate > endDate) {
     return `${startFieldName} must be before ${endFieldName}.`;
+  }
+  
+  if (startDate.getTime() === endDate.getTime()) {
+    return `For 24-hour operation, please specify different ${startFieldName} and ${endFieldName}.`;
   }
   return null;
 };
@@ -51,6 +66,6 @@ export const validateTimeOrder = (startTime, endTime, startFieldName = 'Opening 
 
 export const validatePhone = (phone, fieldName = 'Phone number') => {
   if (!phone) return null; // Optional field, so no validation if empty
-  if (!/^[\d\s\-\(\)]+$/.test(phone)) return `Invalid ${fieldName} format. Only digits, spaces, hyphens, and parentheses are allowed.`;
+  if (!/^[\d\s()-]+$/.test(phone)) return `Invalid ${fieldName} format. Only digits, spaces, hyphens, and parentheses are allowed.`;
   return null;
 }; 

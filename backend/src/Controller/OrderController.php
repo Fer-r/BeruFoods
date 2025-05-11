@@ -7,6 +7,7 @@ use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Repository\OrderRepository;
 use App\Repository\RestaurantRepository;
+use App\Repository\ArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,6 +19,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use JsonException;
 
 #[Route('/api/orders')] // Base route for orders
 final class OrderController extends AbstractController
@@ -96,19 +98,22 @@ final class OrderController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
-        RestaurantRepository $restaurantRepository // Needed to fetch the restaurant
+        RestaurantRepository $restaurantRepository,
+        ArticleRepository $articleRepository
     ): JsonResponse {
         $currentUser = $this->getUser();
         if (!$currentUser instanceof User) {
-            // This check is technically redundant due to IsGranted but good practice
             return $this->json(['message' => 'Only registered users can create orders.'], Response::HTTP_FORBIDDEN);
         }
 
-        $data = json_decode($request->getContent(), true);
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            return $this->json(['errors' => ['json' => 'Invalid JSON payload: ' . $e->getMessage()]], Response::HTTP_BAD_REQUEST);
+        }
 
-        // Basic check for required fields from client
-        if (!isset($data['restaurantId']) || !isset($data['items']) || !isset($data['total_price'])) {
-             return $this->json(['message' => 'Missing required fields: restaurantId, items, total_price'], Response::HTTP_BAD_REQUEST);
+        if (!isset($data['restaurantId']) || !isset($data['items'])) {
+             return $this->json(['message' => 'Missing required fields: restaurantId, items'], Response::HTTP_BAD_REQUEST);
         }
 
         $restaurant = $restaurantRepository->find($data['restaurantId']);
@@ -116,15 +121,20 @@ final class OrderController extends AbstractController
             return $this->json(['message' => 'Restaurant not found'], Response::HTTP_BAD_REQUEST);
         }
 
-        $order = new Order(); // Constructor sets created_at and default status
-        $order->setUser($currentUser); // Set current user
-        $order->setRestaurant($restaurant); // Set fetched restaurant
+        $order = new Order();
+        $order->setUser($currentUser);
+        $order->setRestaurant($restaurant);
+        $order->setItems($data['items']); 
 
-        // Manually set data from request (Serializer might be complex due to relations)
-        // Consider using a Data Transfer Object (DTO) for better validation/structure
-        $order->setItems($data['items']);
-        $order->setTotalPrice($data['total_price']);
-        // Status is set by constructor default
+        $priceCalculationResult = $this->calculateTotalPriceAndValidateItems($data['items'], $articleRepository, $restaurant);
+
+        if (isset($priceCalculationResult['errorResponse'])) {
+            return $priceCalculationResult['errorResponse'];
+        }
+        $calculatedTotalPrice = $priceCalculationResult['totalPrice'];
+
+        $order->setTotalPrice(sprintf('%.2f', $calculatedTotalPrice));
+
 
         $errors = $validator->validate($order);
         if (count($errors) > 0) {
@@ -136,9 +146,8 @@ final class OrderController extends AbstractController
         }
 
         $entityManager->persist($order);
-            $entityManager->flush();
+        $entityManager->flush();
 
-        // Return created order data
         $json = $serializer->serialize($order, 'json', ['groups' => 'order:read']);
         return new JsonResponse($json, Response::HTTP_CREATED, [], true);
     }
@@ -155,7 +164,11 @@ final class OrderController extends AbstractController
         // Voter checks general permission (is owner restaurant? is current state modifiable?)
         $this->denyAccessUnlessGranted('update_status', $order);
 
-        $data = json_decode($request->getContent(), true);
+        try {
+            $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            return $this->json(['errors' => ['json' => 'Invalid JSON payload: ' . $e->getMessage()]], Response::HTTP_BAD_REQUEST);
+        }
 
         if (!isset($data['status'])) {
             return $this->json(['message' => 'Missing status field'], Response::HTTP_BAD_REQUEST);
@@ -194,4 +207,52 @@ final class OrderController extends AbstractController
     }
 
     // Delete action likely not needed for orders, maybe only by admin via a dedicated endpoint/flag?
+
+    /**
+     * Validates items and calculates the total price.
+     *
+     * @param array|null $itemsData
+     * @param ArticleRepository $articleRepository
+     * @param Restaurant $restaurant
+     * @return array{totalPrice?: float, errorResponse?: JsonResponse}
+     */
+    private function calculateTotalPriceAndValidateItems(?array $itemsData, ArticleRepository $articleRepository, Restaurant $restaurant): array
+    {
+        if (empty($itemsData) || !is_array($itemsData)) {
+            return ['errorResponse' => $this->json(['message' => 'Items cannot be empty and must be an array.'], Response::HTTP_BAD_REQUEST)];
+        }
+
+        $calculatedTotalPrice = 0.0;
+
+        foreach ($itemsData as $itemData) {
+            if (!isset($itemData['articleId']) || !isset($itemData['quantity'])) {
+                return ['errorResponse' => $this->json(['message' => 'Each item must have articleId and quantity.'], Response::HTTP_BAD_REQUEST)];
+            }
+
+            $articleId = $itemData['articleId'];
+            $quantity = (int)$itemData['quantity'];
+
+            if ($quantity <= 0) {
+                return ['errorResponse' => $this->json(['message' => sprintf('Quantity for article %s must be positive.', $articleId)], Response::HTTP_BAD_REQUEST)];
+            }
+
+            $article = $articleRepository->find($articleId);
+
+            if (!$article) {
+                return ['errorResponse' => $this->json(['message' => sprintf('Article with ID %s not found.', $articleId)], Response::HTTP_BAD_REQUEST)];
+            }
+
+            if ($article->getRestaurant()->getId() !== $restaurant->getId()) {
+                return ['errorResponse' => $this->json(['message' => sprintf('Article %s does not belong to restaurant %s.', $articleId, $restaurant->getId())], Response::HTTP_BAD_REQUEST)];
+            }
+            
+            if (!$article->isAvailable() || !$article->isListed()) {
+                 return ['errorResponse' => $this->json(['message' => sprintf('Article %s (%s) is not available.', $articleId, $article->getName())], Response::HTTP_BAD_REQUEST)];
+            }
+
+            $calculatedTotalPrice += (float)$article->getPrice() * $quantity;
+        }
+
+        return ['totalPrice' => $calculatedTotalPrice];
+    }
 }

@@ -88,7 +88,7 @@ class Restaurant implements UserInterface, PasswordAuthenticatedUserInterface
         $this->foodTypes = new ArrayCollection();
     }
 
-    public function getId(): ?string
+    public function getId(): ?int
     {
         return $this->id;
     }

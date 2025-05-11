@@ -48,12 +48,14 @@ class ReservationVoter extends Voter
 
         switch ($attribute) {
             case self::VIEW:
-                return ($loggedInUser instanceof User && $reservationSubject->getUser() === $loggedInUser)
-                    || ($loggedInUser instanceof Restaurant && $reservationSubject->getRestaurant() === $loggedInUser);
+                return ($loggedInUser instanceof User
+                    && $reservationSubject->getUser()?->getId() === $loggedInUser->getId())
+                    || ($loggedInUser instanceof Restaurant
+                        && $reservationSubject->getRestaurant()?->getId() === $loggedInUser->getId());
 
             case self::UPDATE_STATE:
                 // Check: Is user the owning restaurant AND is the reservation in a state they can modify?
-                if (!$loggedInUser instanceof Restaurant || $reservationSubject->getRestaurant() !== $loggedInUser) {
+                if (!$loggedInUser instanceof Restaurant || $reservationSubject->getRestaurant()?->getId() !== $loggedInUser->getId()) {
                     return false;
                 }
                 // Restaurant can only modify 'pending' reservations (e.g., to confirm or cancel)
@@ -61,7 +63,7 @@ class ReservationVoter extends Voter
 
              case self::CANCEL:
                  // Check: Is user the owning user AND is the reservation in a cancellable state AND is the time okay?
-                 if (!$loggedInUser instanceof User || $reservationSubject->getUser() !== $loggedInUser) {
+                 if (!$loggedInUser instanceof User || $reservationSubject->getUser()?->getId() !== $loggedInUser->getId()) {
                      return false;
                  }
                  // User can cancel 'pending' or 'confirmed'

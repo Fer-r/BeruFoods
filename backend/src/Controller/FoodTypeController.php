@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\FoodType;
 use App\Repository\FoodTypeRepository;
+use App\Repository\ArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,6 +38,10 @@ class FoodTypeController extends AbstractController
     ): JsonResponse {
         $foodType = new FoodType();
         $data = json_decode($request->getContent(), true); // Decode JSON payload
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return $this->json(['errors' => ['json' => 'Invalid JSON payload: ' . json_last_error_msg()]], Response::HTTP_BAD_REQUEST);
+        }
 
         if (!isset($data['name'])) {
              return $this->json(['errors' => ['name' => 'Name is required']], Response::HTTP_BAD_REQUEST);
@@ -80,8 +85,11 @@ class FoodTypeController extends AbstractController
         ValidatorInterface $validator,
         SerializerInterface $serializer
     ): JsonResponse {
-
         $data = json_decode($request->getContent(), true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return $this->json(['errors' => ['json' => 'Invalid JSON payload: ' . json_last_error_msg()]], Response::HTTP_BAD_REQUEST);
+        }
 
         // Only update name if provided in the JSON payload
         if (isset($data['name'])) {
@@ -107,8 +115,17 @@ class FoodTypeController extends AbstractController
 
     #[Route('/{id}', name: 'api_food_type_delete', methods: ['DELETE'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function delete(FoodType $foodType, EntityManagerInterface $entityManager): JsonResponse
+    public function delete(FoodType $foodType, EntityManagerInterface $entityManager, ArticleRepository $articleRepository): JsonResponse
     {
+        $associatedArticlesCount = $articleRepository->count(['foodType' => $foodType]);
+
+        if ($associatedArticlesCount > 0) {
+            return new JsonResponse(
+                ['error' => 'Cannot delete this food type as it is associated with existing articles.'],
+                Response::HTTP_CONFLICT
+            );
+        }
+
         $entityManager->remove($foodType);
         $entityManager->flush();
 

@@ -25,7 +25,7 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 #[Route('/api/articles')] // Base route for articles
 final class ArticleController extends AbstractController
 {
-    private const ITEMS_PER_PAGE = 10; // Define items per page
+    private const ITEMS_PER_PAGE = 10; 
 
     public function __construct(
         private ImageUploader $imageUploader
@@ -36,6 +36,10 @@ final class ArticleController extends AbstractController
     {
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', self::ITEMS_PER_PAGE);
+
+        if ($limit < 1) {
+            $limit = self::ITEMS_PER_PAGE;
+        }
 
         $restaurantId = $request->query->get('restaurantId');
         $available = $request->query->get('available');
@@ -64,6 +68,9 @@ final class ArticleController extends AbstractController
         $processedResults = [];
         foreach ($results as $article) {
             $articleData = json_decode($serializer->serialize($article, 'json', ['groups' => 'article:read:collection']), true);
+            if ($articleData === null) {
+                return new JsonResponse(['message' => 'Error processing article data.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
             $articleData['imageUrl'] = $this->imageUploader->getImageUrl($article->getImageFilename());
             $processedResults[] = $articleData;
         }
@@ -85,6 +92,9 @@ final class ArticleController extends AbstractController
     public function show(Article $article, SerializerInterface $serializer): JsonResponse
     {
         $data = json_decode($serializer->serialize($article, 'json', ['groups' => 'article:read']), true);
+        if ($data === null) {
+            return new JsonResponse(['message' => 'Error processing article data.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
         $data['imageUrl'] = $this->imageUploader->getImageUrl($article->getImageFilename());
 
         return new JsonResponse($data, Response::HTTP_OK);
@@ -99,12 +109,12 @@ final class ArticleController extends AbstractController
         ValidatorInterface $validator,
         RestaurantRepository $restaurantRepository
     ): JsonResponse {
-        $article = $serializer->deserialize($request->getContent(), Article::class, 'json', [
+        $data = $request->request->all();
+        $article = $serializer->deserialize(json_encode($data), Article::class, 'json', [
             AbstractNormalizer::IGNORED_ATTRIBUTES => ['imageFilename']
         ]);
 
         $loggedInUser = $this->getUser();
-        $data = json_decode($request->getContent(), true); // Keep for restaurantId if admin
 
         if ($loggedInUser instanceof Restaurant) {
             $article->setRestaurant($loggedInUser);
@@ -138,6 +148,9 @@ final class ArticleController extends AbstractController
         $entityManager->flush();
 
         $articleData = json_decode($serializer->serialize($article, 'json', ['groups' => 'article:read']), true);
+        if ($articleData === null) {
+            return new JsonResponse(['message' => 'Error processing article data.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
         $articleData['imageUrl'] = $this->imageUploader->getImageUrl($article->getImageFilename());
 
         return new JsonResponse($articleData, Response::HTTP_CREATED);
@@ -157,7 +170,8 @@ final class ArticleController extends AbstractController
         $originalRestaurant = $article->getRestaurant();
         $originalImageFilename = $article->getImageFilename(); // Store old filename
 
-        $serializer->deserialize($request->getContent(), Article::class, 'json', [
+        $data = $request->request->all();
+        $serializer->deserialize(json_encode($data), Article::class, 'json', [
             AbstractNormalizer::OBJECT_TO_POPULATE => $article,
             AbstractNormalizer::IGNORED_ATTRIBUTES => ['restaurant', 'imageFilename']
         ]);

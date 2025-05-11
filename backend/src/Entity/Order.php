@@ -30,8 +30,9 @@ class Order
     #[ORM\Column(type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $created_at = null;
 
-    #[ORM\Column(type: 'text', nullable: false)]
-    private ?string $status = 'pendiente';
+    #[Assert\Choice(choices: ['pending', 'preparing', 'delivered', 'cancelled'])]
+    #[ORM\Column(type: 'string', length: 15, options: ['default' => 'pending'], nullable: false)]
+    private string $status = 'pending';
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: false)]
     private ?string $total_price = null;
@@ -44,7 +45,7 @@ class Order
 
     // --- Getters and Setters ---
 
-    public function getId(): ?string
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -82,14 +83,16 @@ class Order
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }
 
-    public function setStatus(?string $status): static
+    public function setStatus(string $status): static
     {
-        // Optional: Add validation based on CHECK constraint ('pendiente', 'preparando', 'entregado', 'cancelado')
+        if (!in_array($status, ['pending', 'preparing', 'delivered', 'cancelled'])) {
+            throw new \InvalidArgumentException("Invalid status value. Allowed values are: 'pending', 'preparing', 'delivered', 'cancelled'.");
+        }
         $this->status = $status;
         return $this;
     }
@@ -130,6 +133,7 @@ class Order
     public function __construct()
     { // Set defaults
         $this->created_at = new \DateTimeImmutable();
-        $this->status = 'pendiente';
+        $this->status = 'pending';
+        $this->items = [];
     }
 } 

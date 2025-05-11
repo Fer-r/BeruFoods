@@ -19,6 +19,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException; // For 404
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
 #[Route('/api/reservations')] // Base route for reservations
 final class ReservationController extends AbstractController
@@ -26,7 +27,6 @@ final class ReservationController extends AbstractController
     private const ITEMS_PER_PAGE = 10;
 
     #[Route('', name: 'api_reservation_index', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')] // Requires login, more specific checks below
     public function index(ReservationRepository $reservationRepository, SerializerInterface $serializer, Request $request): JsonResponse
     {
         // --- Handle Confirmation Code Lookup First ---
@@ -154,11 +154,27 @@ final class ReservationController extends AbstractController
         $entityManager->persist($reservation);
         $entityManager->flush(); // Flush first to get ID if needed
 
-        // Generate and set confirmation code *after* initial flush
-        // Ensure uniqueness (highly likely with random bytes, but could add a loop check if paranoid)
-        $confirmationCode = strtoupper(bin2hex(random_bytes(8))); // Example: 16 char hex
-        $reservation->setConfirmationCode($confirmationCode);
-        $entityManager->flush(); // Flush again to save the code
+        // Generate and set confirmation code with retry logic for uniqueness
+        $maxAttempts = 5; // Prevent infinite loop in extreme (and unlikely) scenarios
+        $attempt = 0;
+        do {
+            $confirmationCode = strtoupper(bin2hex(random_bytes(8)));
+            $reservation->setConfirmationCode($confirmationCode);
+            try {
+                $entityManager->flush(); // Attempt to save the code
+                break; // Exit loop if successful
+            } catch (UniqueConstraintViolationException $e) {
+                $attempt++;
+                if ($attempt >= $maxAttempts) {
+                    // Log the error or handle it more gracefully
+                    // For now, rethrow if max attempts reached, or return a specific error
+                    return $this->json(['message' => 'Failed to generate a unique confirmation code after several attempts.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
+                // If a duplicate is found, the loop will continue, and a new code will be generated.
+                // Optional: log the collision event for monitoring.
+                $entityManager->refresh($reservation); // Refresh the entity state before retrying
+            }
+        } while ($attempt < $maxAttempts);
 
         // Return created reservation data
         $json = $serializer->serialize($reservation, 'json', ['groups' => 'reservation:read']);
@@ -187,9 +203,11 @@ final class ReservationController extends AbstractController
 
         // Define allowed transitions *for restaurants*
         $allowedTransitions = [
-            'pending' => ['confirmed', 'cancelled_by_restaurant']
-            // Add other transitions if needed, e.g.:
-            // 'confirmed' => ['completed', 'cancelled_by_restaurant']
+            'pending' => ['confirmed', 'cancelled_by_restaurant'],
+            'confirmed' => ['completed', 'cancelled_by_restaurant'],
+            'completed' => [],  // Terminal state, no further transitions
+            'cancelled_by_restaurant' => [], // Terminal state
+            'cancelled_by_user' => [] // Terminal state
         ];
 
         // Check if this specific transition is allowed

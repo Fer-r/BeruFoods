@@ -3,10 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Restaurant;
+use App\Entity\RestaurantAddress; // Added import
 use App\Repository\RestaurantRepository;
 use App\Repository\FoodTypeRepository; // For handling food types update
 use App\Entity\FoodType; // For type hinting
-use App\Service\ImageUploader; 
+use App\Service\ImageUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +18,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert; // Import the Image constraint
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface; // Needed if password can be updated
 use Doctrine\Common\Collections\ArrayCollection; // Added ArrayCollection
 use Doctrine\ORM\Tools\Pagination\Paginator; // Import Paginator
@@ -35,6 +37,9 @@ use Symfony\Component\Filesystem\Filesystem; // To delete old files
 final class RestaurantController extends AbstractController
 {
     private const ITEMS_PER_PAGE = 10;
+    private const MAX_ITEMS_PER_PAGE = 100;
+    private const DEFAULT_RADIUS = 5000;
+    private const MAX_RADIUS = 50000;
 
     public function __construct(private ImageUploader $imageUploader) {}
 
@@ -42,18 +47,20 @@ final class RestaurantController extends AbstractController
     public function index(RestaurantRepository $restaurantRepository, SerializerInterface $serializer, Request $request): JsonResponse
     {
         $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', self::ITEMS_PER_PAGE);
+        $requestedLimit = $request->query->getInt('limit', self::ITEMS_PER_PAGE);
+        $limit = min($requestedLimit, self::MAX_ITEMS_PER_PAGE);
 
         $latitude = $request->query->get('latitude');
         $longitude = $request->query->get('longitude');
-        $radius = $request->query->get('radius', 5000);
+        $requestedRadius = $request->query->get('radius', self::DEFAULT_RADIUS);
+        $radius = min((int)$requestedRadius, self::MAX_RADIUS);
+
         $foodTypeIdsParam = $request->query->get('foodTypeId');
         $name = $request->query->get('name'); // Get name parameter
         $isOpenNow = $request->query->getBoolean('isOpenNow', false); // New parameter
 
-        $qb = null; // Initialize QueryBuilder variable
+        $qb = null;
 
-        // Convert comma-separated foodTypeId string to array of integers
         $foodTypeIds = null;
         if ($foodTypeIdsParam) {
             $foodTypeIds = array_map('intval', explode(',', $foodTypeIdsParam));
@@ -195,10 +202,10 @@ final class RestaurantController extends AbstractController
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         ValidatorInterface $validator,
-        FoodTypeRepository $foodTypeRepository, 
-        UserPasswordHasherInterface $passwordHasher, 
+        FoodTypeRepository $foodTypeRepository,
+        UserPasswordHasherInterface $passwordHasher,
     ): JsonResponse {
-        $this->denyAccessUnlessGranted('edit', $restaurant); 
+        $this->denyAccessUnlessGranted('edit', $restaurant);
 
         $originalFoodTypes = new ArrayCollection();
         foreach ($restaurant->getFoodTypes() as $foodType) {
@@ -207,7 +214,7 @@ final class RestaurantController extends AbstractController
 
         $serializer->deserialize($request->getContent(), Restaurant::class, 'json', [
             AbstractNormalizer::OBJECT_TO_POPULATE => $restaurant,
-            AbstractNormalizer::IGNORED_ATTRIBUTES => ['password', 'foodTypes', 'imageFilename'] 
+            AbstractNormalizer::IGNORED_ATTRIBUTES => ['password', 'foodTypes', 'imageFilename', 'address']
         ]);
 
         $data = json_decode($request->getContent(), true) ?? [];
@@ -216,7 +223,21 @@ final class RestaurantController extends AbstractController
         $imageFile = $request->files->get('imageFile');
 
         if ($imageFile) {
-            $originalImageFilename = $restaurant->getImageFilename(); 
+            $imageConstraint = new Assert\Image([
+                'maxSize' => '4M',
+            ]);
+
+            $imageErrors = $validator->validate($imageFile, $imageConstraint);
+
+            if (count($imageErrors) > 0) {
+                $errorMessages = [];
+                foreach ($imageErrors as $error) {
+                    $errorMessages['imageFile'][] = $error->getMessage();
+                }
+                return $this->json(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            }
+
+            $originalImageFilename = $restaurant->getImageFilename();
             try {
                 $newFilename = $this->imageUploader->uploadImage($imageFile);
                 $restaurant->setImageFilename($newFilename);
@@ -230,13 +251,61 @@ final class RestaurantController extends AbstractController
             }
         }
 
+        // Handle address update
+        if (isset($data['address']) && is_array($data['address'])) {
+            $addressData = $data['address'];
+            $restaurantAddress = $restaurant->getAddress();
+
+            if (!$restaurantAddress) {
+                // Assuming RestaurantAddress entity is App\Entity\RestaurantAddress
+                $restaurantAddressClassName = RestaurantAddress::class; // Use imported class
+                if (class_exists($restaurantAddressClassName)) {
+                    $restaurantAddress = new $restaurantAddressClassName();
+                    $restaurantAddress->setRestaurant($restaurant); // Link to the restaurant
+                } else {
+                    // This case should ideally not happen if your entities are set up correctly.
+                    return $this->json(['message' => 'RestaurantAddress entity not configured correctly.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
+            }
+
+            if ($restaurantAddress) {
+                // Whitelist of fields that can be updated on the RestaurantAddress.
+                // These fields are inherited from the Address base class.
+                // Adjust if your RestaurantAddress or base Address class has different/more fields.
+                $allowedAddressFieldsToUpdate = [
+                    'address_line' => 'setAddressLine',
+                    'province' => 'setProvince',
+                    'lat' => 'setLat',
+                    'lng' => 'setLng',
+                    // Add other address fields here if they exist and are updatable
+                    // e.g., 'city' => 'setCity', 'postal_code' => 'setPostalCode',
+                ];
+
+                foreach ($allowedAddressFieldsToUpdate as $field => $setterMethod) {
+                    if (array_key_exists($field, $addressData)) {
+                        if (method_exists($restaurantAddress, $setterMethod)) {
+                            $restaurantAddress->$setterMethod($addressData[$field]);
+                        }
+                    }
+                }
+                $restaurant->setAddress($restaurantAddress); // Persist the address to the restaurant
+            }
+        } elseif (array_key_exists('address', $data) && $data['address'] === null) {
+            // Handle explicit null to remove address
+            // If you want to delete the RestaurantAddress entity when set to null:
+            // if ($restaurant->getAddress()) {
+            //     $entityManager->remove($restaurant->getAddress());
+            // }
+            $restaurant->setAddress(null);
+        }
+
         if (isset($data['password']) && !empty($data['password'])) {
              if (strlen($data['password']) >= 6) {
                  $hashedPassword = $passwordHasher->hashPassword($restaurant, $data['password']);
                  $restaurant->setPassword($hashedPassword);
              } else {
                  return $this->json(['errors' => ['password' => ['Password must be at least 6 characters long']]], Response::HTTP_BAD_REQUEST);
-        }
+             }
         }
 
         if (isset($data['food_type_ids']) && is_array($data['food_type_ids'])) {
@@ -332,7 +401,7 @@ final class RestaurantController extends AbstractController
         $dateDiff = $endDate->diff($startDate);
         if ($dateDiff->days > 31) { // Example limit
             return $this->json(['message' => 'Date range cannot exceed 31 days.'], Response::HTTP_BAD_REQUEST);
-    }
+        }
 
         // Basic checks: ensure restaurant exists and is not banned
         if ($restaurant->isBanned()) {

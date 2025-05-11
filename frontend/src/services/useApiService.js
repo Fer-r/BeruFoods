@@ -66,8 +66,10 @@ const fetchDataFromEndpoint = async (endpoint, method = "GET", data = null, requ
     if (method === "DELETE" && response.status === 204) {
       return null;
     }
-    if (response.status === 204 || response.headers.get("content-length") === "0") {
-        return null;
+    const len = response.headers.get("content-length");
+    const ct  = response.headers.get("content-type") ?? "";
+    if (response.status === 204 || len === "0" || !ct.includes("application/json")) {
+      return null;
     }
     return await response.json();
 

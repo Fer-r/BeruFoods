@@ -1,14 +1,10 @@
 import { FaSun, FaMoon, FaGear } from 'react-icons/fa6';
-import { useThemeManager } from '../../../hooks/useThemeManager'; // Adjusted path
+import { useThemeManager } from '../../../hooks/useThemeManager';
 
 const ThemeToggleButton = () => {
   const [themePreference, setThemePreference] = useThemeManager();
 
-  const setTheme = (newTheme) => {
-    const dropdown = document.getElementById('theme-dropdown');
-    if (dropdown) {
-      dropdown.removeAttribute('open');
-    }
+  const handleThemeSelection = (newTheme) => {
     setThemePreference(newTheme);
   };
 
@@ -58,17 +54,25 @@ const ThemeToggleButton = () => {
 
   return (
     <>
-      <div role="button" className="btn flex items-center gap-2" title={getTooltipContent()}>
-        {getIcon()} 
+      <button
+        tabIndex={0}
+        type="button"
+        className="btn flex items-center w-full gap-2"
+        title={getTooltipContent()}
+      >
+        {getIcon()}
         <span className="text-sm font-medium hidden sm:inline">{getCurrentThemeLabel()}</span>
-      </div>
-      <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52">
+      </button>
+      <ul
+        tabIndex={0}
+        className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52"
+      >
         {themeOptions.map((option) => {
           const IconComponent = option.icon;
           return (
             <li key={option.name}>
               <button
-                onClick={() => setTheme(option.name)}
+                onClick={() => handleThemeSelection(option.name)}
                 className={`btn btn-sm btn-block btn-ghost justify-start ${themePreference === option.name ? 'btn-active' : ''}`}
               >
                 <IconComponent className="inline-block w-4 h-4 mr-2 stroke-current" /> {option.label}
@@ -77,8 +81,6 @@ const ThemeToggleButton = () => {
           );
         })}
       </ul>
-      {/* This details element is likely part of a DaisyUI dropdown structure. Keep if functional. */}
-      <details id="theme-dropdown" style={{ display: 'none' }}></details>
     </>
   );
 };

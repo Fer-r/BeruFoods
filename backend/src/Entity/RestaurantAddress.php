@@ -15,7 +15,7 @@ class RestaurantAddress extends Address
     #[ORM\Column(type: 'text', nullable: false)]
     #[Assert\NotBlank]
     #[Assert\Length(min: 5, max: 500)] // Standard string validation
-    protected ?string $address_line = null;
+    protected string $address_line;
 
     // Id is inherited from Address.
 
@@ -24,12 +24,12 @@ class RestaurantAddress extends Address
     #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: false)]
     private ?Restaurant $restaurant = null;
 
-    public function getAddressLine(): ?string
+    public function getAddressLine(): string
     {
         return $this->address_line;
     }
 
-    public function setAddressLine(?string $address_line): static
+    public function setAddressLine(string $address_line): static
     {
         $this->address_line = $address_line;
         return $this;

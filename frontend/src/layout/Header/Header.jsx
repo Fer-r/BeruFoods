@@ -1,12 +1,13 @@
 import logo from '../../assets/images/logoWithName.svg';
-import { useState } from 'react';
 import { NavLink } from 'react-router';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import UserLoginModal from './components/UserLoginModal.jsx';
 import AppDrawer from './components/AppDrawer.jsx';
+import { useModal } from '../../context/ModalContext.jsx';
+import { useState } from 'react';
 
 const Header = () => {
-  const [openLoginModal, setOpenLoginModal] = useState(false);
+  const { isLoginModalOpen, openLoginModal, closeLoginModal } = useModal();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const toggleDrawer = () => {
@@ -14,17 +15,8 @@ const Header = () => {
   };
 
   const handleOpenLoginModal = () => {
-    setOpenLoginModal(true);
+    openLoginModal();
     setIsDrawerOpen(false);
-  };
-
-  const handleCloseLoginModal = () => {
-    setOpenLoginModal(false);
-  };
-
-  const handleRegisterClick = () => {
-    console.log("Register clicked");
-    toggleDrawer();
   };
 
   return (
@@ -66,10 +58,9 @@ const Header = () => {
       <AppDrawer 
         toggleDrawer={toggleDrawer} 
         handleOpenLoginModal={handleOpenLoginModal}
-        handleRegisterClick={handleRegisterClick}
       />
 
-      <UserLoginModal open={openLoginModal} handleClose={handleCloseLoginModal} />
+      <UserLoginModal open={isLoginModalOpen} handleClose={closeLoginModal} />
     </div>
   );
 };

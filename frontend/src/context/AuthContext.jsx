@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
 
       // Assuming the backend returns the authenticated entity in `data.entity`
       // and the token in `data.token`
-      if (data && data.entity && data.token) {
+      if (data?.entity && data?.token) {
         setEntity(data.entity);
         setToken(data.token);
         localStorage.setItem("token", data.token);

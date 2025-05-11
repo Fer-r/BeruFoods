@@ -35,6 +35,7 @@ security:
         # Firewall for Restaurant login (New)
         restaurant_login:
             pattern: ^/api/restaurant/login
+            stateless: true
             json_login:
                 check_path: /api/restaurant/login
                 username_path: email

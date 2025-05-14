@@ -6,7 +6,7 @@ App\Entity\Article:
         name:
             groups: ['article:read', 'article:read:collection']
         description:
-            groups: ['article:read'] # Only show description in detailed view
+            groups: ['article:read', 'article:read:collection'] # Added collection group
         imageFilename:
             groups: ['article:read', 'article:read:collection']
         listed:
@@ -14,7 +14,7 @@ App\Entity\Article:
         price:
             groups: ['article:read', 'article:read:collection']
         allergies:
-            groups: ['article:read'] # Only show allergies in detailed view
+            groups: ['article:read', 'article:read:collection'] # Added collection group
         available:
             groups: ['article:read', 'article:read:collection']
         restaurant:

@@ -66,6 +66,7 @@ security:
         - { path: ^/api/auth/register/restaurant, roles: PUBLIC_ACCESS }
         - { path: ^/api/food-types, roles: PUBLIC_ACCESS }
         - { path: ^/api/restaurants, roles: PUBLIC_ACCESS }
+        - { path: ^/api/articles, roles: PUBLIC_ACCESS }
         # Secure the rest of the API
         - { path: ^/api, roles: [IS_AUTHENTICATED_FULLY] }
         - { path: ^/, roles: PUBLIC_ACCESS }

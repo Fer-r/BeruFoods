@@ -7,9 +7,7 @@ const RestaurantRedirect = () => {
   const { isAuthenticated, entity } = useAuth(); // Get isAuthenticated and entity from useAuth
 
   useEffect(() => {
-    const authenticated = isAuthenticated();
-
-    if (!authenticated) {
+    if (!isAuthenticated()) {
       // If not authenticated, always go to login
       navigate('/restaurant/login');
     } else {

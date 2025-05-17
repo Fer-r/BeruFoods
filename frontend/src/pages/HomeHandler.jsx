@@ -6,15 +6,13 @@ import { Suspense, lazy } from 'react';
 const Home = lazy(() => import("../pages/Home/Home.jsx"));
 
 const HomeHandler = () => {
-  const { isAuthenticated, entity, loading } = useAuth();
+  const { loading, isRestaurant } = useAuth();
 
   if (loading) {
     return <LoadingFallback />;
   }
 
-  const isRestaurant = entity && entity.roles && entity.roles.includes('ROLE_RESTAURANT');
-
-  if (isAuthenticated() && isRestaurant) {
+  if (isRestaurant) {
     return <Navigate to="/restaurant/dashboard" replace />;
   }
 

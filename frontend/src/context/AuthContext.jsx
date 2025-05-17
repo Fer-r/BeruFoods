@@ -50,6 +50,13 @@ export const AuthProvider = ({ children }) => {
             roles,
             address, 
           };
+
+          if (decodedToken.restaurant_id) {
+            entityDataToStore.restaurantId = decodedToken.restaurant_id;
+          } else if (decodedToken.user_id) {
+            entityDataToStore.userId = decodedToken.user_id;
+          }
+
         } else {
           console.error("Token is missing required fields (roles, username, address with address_line) or has invalid types. Decoded token:", decodedToken);
         }
@@ -96,6 +103,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("authenticatedEntity");
   }, [setEntity, setToken, setError]);
 
+  const isRestaurant = isAuthenticated() && entity?.roles?.includes('ROLE_RESTAURANT');
+  const isUser = isAuthenticated() && entity?.roles?.includes('ROLE_USER') && !isRestaurant;
+
   const value = {
     entity, 
     token,
@@ -105,7 +115,9 @@ export const AuthProvider = ({ children }) => {
     logOut,
     error,
     loading,
-    setEntity 
+    setEntity,
+    isRestaurant,
+    isUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

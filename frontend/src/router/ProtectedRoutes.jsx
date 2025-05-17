@@ -11,7 +11,7 @@ export const AuthenticatedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children ? children : <Outlet />;
@@ -28,7 +28,7 @@ export const AdminRoute = ({ children }) => {
   const isAdmin = entity && entity.roles && entity.roles.includes('ROLE_ADMIN');
 
   if (!isAuthenticated() || !isAdmin) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children ? children : <Outlet />;
@@ -48,8 +48,7 @@ export const UserRoute = ({ children }) => {
                  !entity.roles.includes('ROLE_ADMIN');
 
   if (!isAuthenticated() || !isUser) {
-    // Redirect to login or an appropriate page if not a 'user'
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children ? children : <Outlet />;
@@ -66,7 +65,6 @@ export const RestaurantRoute = ({ children }) => {
   const isRestaurant = entity && entity.roles && entity.roles.includes('ROLE_RESTAURANT');
 
   if (!isAuthenticated() || !isRestaurant) {
-    // Redirect to restaurant login or an appropriate page
     return <Navigate to="/restaurant/login" replace />;
   }
 

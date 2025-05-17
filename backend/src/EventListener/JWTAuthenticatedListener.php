@@ -26,6 +26,12 @@ class JWTAuthenticatedListener
         $payload = $event->getData();
         $subject = $event->getUser();
 
+        if ($subject instanceof Restaurant) {
+            $payload['restaurant_id'] = $subject->getId();
+        } elseif ($subject instanceof User) {
+            $payload['user_id'] = $subject->getId();
+        }
+
         $addressEntity = null;
         if ($subject instanceof User) {
             $addressEntity = $subject->getAddress();

@@ -11,10 +11,7 @@ import { FaUserCircle, FaShoppingCart } from 'react-icons/fa';
 const Header = () => {
   const { isLoginModalOpen, openLoginModal, closeLoginModal } = useModal();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { entity, isAuthenticated, logOut } = useAuth();
-
-  const isRestaurant = isAuthenticated() && entity?.roles?.includes('ROLE_RESTAURANT');
-  const isUser = isAuthenticated() && entity && !isRestaurant;
+  const { entity, isAuthenticated, logOut, isRestaurant, isUser } = useAuth();
 
   const toggleDrawer = () => {
     if (!isAuthenticated()) {
@@ -25,10 +22,6 @@ const Header = () => {
   const handleOpenLoginModal = () => {
     openLoginModal();
     setIsDrawerOpen(false);
-  };
-
-  const handleLogout = () => {
-    logOut();
   };
 
   return (
@@ -82,7 +75,7 @@ const Header = () => {
                     <li>
                       <NavLink to="/restaurant/profile">Profile</NavLink>
                     </li>
-                    <li><button onClick={handleLogout}>Logout</button></li>
+                    <li><button onClick={logOut}>Logout</button></li>
                     <li className="divider lg:hidden"></li>
                     <li className="lg:hidden"><NavLink to="/restaurant/dashboard">Dashboard</NavLink></li>
                     <li className="lg:hidden"><NavLink to="/restaurant/orders">Order History</NavLink></li>
@@ -92,7 +85,7 @@ const Header = () => {
                 </div>
               ) : isUser ? (
                 <>
-                  <NavLink to="/cart" className="btn btn-ghost btn-circle">
+                  <NavLink to="/cart" className="btn btn-ghost btn-circle mr-4">
                     <FaShoppingCart className="w-5 h-5" />
                   </NavLink>
                   <div className="dropdown dropdown-end">
@@ -105,7 +98,7 @@ const Header = () => {
                       <li><NavLink to="/user/profile">Profile</NavLink></li>
                       <li><NavLink to="/user/orders">Order History</NavLink></li>
                       <li><NavLink to="/user/reservations">Reservations</NavLink></li>
-                      <li><button onClick={handleLogout}>Logout</button></li>
+                      <li><button onClick={logOut}>Logout</button></li>
                     </ul>
                   </div>
                 </>

@@ -194,37 +194,151 @@ final class RestaurantController extends AbstractController
         return new JsonResponse($data, Response::HTTP_OK);
     }
 
-    #[Route('/{id}', name: 'api_restaurant_update', methods: ['PUT', 'PATCH'])]
-    #[IsGranted('edit', 'restaurant')] // Assumes RestaurantVoter for ownership check
+    #[Route('/{id}', name: 'api_restaurant_update', methods: ['PUT', 'PATCH', 'POST'])]
+    #[IsGranted('edit', 'restaurant')]
     public function update(
         Request $request,
         Restaurant $restaurant,
         EntityManagerInterface $entityManager,
-        SerializerInterface $serializer,
         ValidatorInterface $validator,
         FoodTypeRepository $foodTypeRepository,
         UserPasswordHasherInterface $passwordHasher,
+        SerializerInterface $serializer // Added for potential 200 OK response with entity
     ): JsonResponse {
+        error_log('--- RESTAURANT UPDATE ACTION ---');
+        error_log('Request Method: ' . $request->getMethod());
+        error_log('Content-Type: ' . $request->headers->get('Content-Type'));
+        error_log('Request Query Parameters: ' . print_r($request->query->all(), true));
+        error_log('Request Request Parameters (parsed body): ' . print_r($request->request->all(), true));
+        error_log('Request Files: ' . print_r($request->files->all(), true));
+        $content = $request->getContent();
+        error_log('Request Raw Content (first 1000 chars): ' . substr($content, 0, 1000));
+        $contentType = $request->headers->get('Content-Type', '');
+        if (empty($content) && !in_array($request->getMethod(), ['GET', 'DELETE']) && !str_contains(strtolower($contentType), 'application/json')) {
+            error_log('WARNING: Request method ' . $request->getMethod() . ' with non-JSON content type (' . $contentType . ') has an empty raw body. This might indicate $request->request will also be empty if not handled by a listener or server config.');
+        }
+
         $this->denyAccessUnlessGranted('edit', $restaurant);
+
+        $_entityWasModified_ = false; // Flag to track actual changes
 
         $originalFoodTypes = new ArrayCollection();
         foreach ($restaurant->getFoodTypes() as $foodType) {
             $originalFoodTypes->add($foodType);
         }
 
-        $serializer->deserialize($request->getContent(), Restaurant::class, 'json', [
-            AbstractNormalizer::OBJECT_TO_POPULATE => $restaurant,
-            AbstractNormalizer::IGNORED_ATTRIBUTES => ['password', 'foodTypes', 'imageFilename', 'address']
-        ]);
+        $isJsonRequest = str_contains($request->headers->get('Content-Type', ''), 'application/json');
+        $data = [];
 
-        $data = json_decode($request->getContent(), true) ?? [];
+        if ($isJsonRequest) {
+            $jsonData = json_decode($request->getContent(), true);
+            if ($jsonData === null && json_last_error() !== JSON_ERROR_NONE) {
+                return $this->json(['message' => 'Invalid JSON body'], Response::HTTP_BAD_REQUEST);
+            }
+            $data = $jsonData ?? [];
+        } else {
+            // For form-data or x-www-form-urlencoded
+            // Note: PUT requests with multipart/form-data can be tricky and might not populate $request->request as expected by default in all PHP/Symfony setups without workarounds.
+            // However, Symfony generally handles this by parsing the body for PUT if Content-Type is appropriate.
+            // If $request->request is empty for PUT with FormData, this indicates a deeper issue or need for a listener to parse the body.
+            // For simplicity, we assume $request->request will be populated or $request->get() works.
+            $data = $request->request->all();
+        }
+
+        // Helper to get data from request, prioritizing direct request parameters if not JSON
+        $getRequestParam = function(string $key, $default = null) use ($request, $isJsonRequest, $data) {
+            if ($isJsonRequest) {
+                return array_key_exists($key, $data) ? $data[$key] : $default;
+            }
+            return $request->request->get($key, $default);
+        };
+        
+        $getRequestParamAll = function() use ($request, $isJsonRequest, $data) {
+            if ($isJsonRequest) {
+                return $data;
+            }
+            return $request->request->all();
+        };
+
+
+        // Update fields - prioritize fields from request data
+        $nameValue = $getRequestParam('name');
+        if ($nameValue !== null && !empty(trim($nameValue))) {
+            if ($restaurant->getName() !== trim($nameValue)) {
+                $restaurant->setName(trim($nameValue));
+                $_entityWasModified_ = true;
+            }
+        }
+
+        // Email is no longer updatable through this endpoint
+        // $emailValue = $getRequestParam('email');
+        // if ($emailValue !== null && $emailValue !== $restaurant->getEmail()) {
+        //     $emailConstraint = new Assert\Email();
+        //     $emailErrors = $validator->validate($emailValue, $emailConstraint);
+        //     if (count($emailErrors) > 0) {
+        //          return $this->json(['errors' => ['email' => $emailErrors[0]->getMessage()]], Response::HTTP_BAD_REQUEST);
+        //     }
+        //     $restaurant->setEmail($emailValue);
+        //     $_entityWasModified_ = true;
+        // }
+
+        $phoneValue = $getRequestParam('phone');
+        if ($phoneValue !== null) { 
+            $newPhone = empty($phoneValue) ? null : $phoneValue;
+            if ($restaurant->getPhone() !== $newPhone) {
+                $restaurant->setPhone($newPhone);
+                $_entityWasModified_ = true;
+            }
+        }
+
+        $openingTimeStr = $getRequestParam('openingTime');
+        if ($openingTimeStr !== null) {
+            $newOpeningTime = null;
+            if (!empty($openingTimeStr)) {
+                try {
+                    $newOpeningTime = new DateTimeImmutable($openingTimeStr);
+                } catch (\Exception $e) {
+                    return $this->json(['errors' => ['openingTime' => 'Invalid opening time format. Use HH:MM.']], Response::HTTP_BAD_REQUEST);
+                }
+            }
+            // Compare string representations or formatted times if $restaurant->getOpeningTime() is not null
+            $currentOpeningTimeStr = $restaurant->getOpeningTime() ? $restaurant->getOpeningTime()->format('H:i:s') : null;
+            $newOpeningTimeStr = $newOpeningTime ? $newOpeningTime->format('H:i:s') : null;
+            if ($currentOpeningTimeStr !== $newOpeningTimeStr) {
+                 $restaurant->setOpeningTime($newOpeningTime);
+                 $_entityWasModified_ = true;
+            }
+        }
+
+        $closingTimeStr = $getRequestParam('closingTime');
+        if ($closingTimeStr !== null) {
+            $newClosingTime = null;
+            if (!empty($closingTimeStr)) {
+                try {
+                    $newClosingTime = new DateTimeImmutable($closingTimeStr);
+                } catch (\Exception $e) {
+                    return $this->json(['errors' => ['closingTime' => 'Invalid closing time format. Use HH:MM.']], Response::HTTP_BAD_REQUEST);
+                }
+            }
+            $currentClosingTimeStr = $restaurant->getClosingTime() ? $restaurant->getClosingTime()->format('H:i:s') : null;
+            $newClosingTimeStr = $newClosingTime ? $newClosingTime->format('H:i:s') : null;
+            if ($currentClosingTimeStr !== $newClosingTimeStr) {
+                $restaurant->setClosingTime($newClosingTime);
+                $_entityWasModified_ = true;
+            }
+        }
 
         /** @var UploadedFile|null $imageFile */
         $imageFile = $request->files->get('imageFile');
 
         if ($imageFile) {
             $imageConstraint = new Assert\Image([
-                'maxSize' => '4M',
+                'maxSize' => '4M', // Default is 2M, example allows larger
+                // 'mimeTypes' => [ // Examage/jpeg',
+                //ple mime types
+                //     'im     'image/png',
+                //     'image/webp',
+                // ]
             ]);
 
             $imageErrors = $validator->validate($imageFile, $imageConstraint);
@@ -240,84 +354,99 @@ final class RestaurantController extends AbstractController
             $originalImageFilename = $restaurant->getImageFilename();
             try {
                 $newFilename = $this->imageUploader->uploadImage($imageFile);
-                $restaurant->setImageFilename($newFilename);
-                // Delete old file AFTER successful upload of new one and entity update
-                if ($originalImageFilename && $originalImageFilename !== $newFilename) {
-                    $this->imageUploader->deleteImage($originalImageFilename);
+                if ($originalImageFilename !== $newFilename) { // Also check if filename actually changed
+                    $restaurant->setImageFilename($newFilename);
+                    $_entityWasModified_ = true; // Image changed
+                    if ($originalImageFilename) {
+                        $this->imageUploader->deleteImage($originalImageFilename);
+                    }
+                } elseif (!$originalImageFilename && $newFilename) { // Was null, now has a name
+                     $restaurant->setImageFilename($newFilename);
+                    $_entityWasModified_ = true;
                 }
             } catch (FileException $e) {
-                // Use $e->getMessage() which is set in ImageService
                 return $this->json(['errors' => ['imageFile' => $e->getMessage()]], Response::HTTP_BAD_REQUEST);
             }
         }
+        
+        $allRequestData = $getRequestParamAll(); // Get all data for food_type_ids, password, address
 
-        // Handle address update
-        if (isset($data['address']) && is_array($data['address'])) {
-            $addressData = $data['address'];
+        // Handle address update (simplified change detection)
+        $addressData = $allRequestData['address'] ?? null;
+        if (is_array($addressData)) {
             $restaurantAddress = $restaurant->getAddress();
-
+            $addressModified = false;
             if (!$restaurantAddress) {
-                // Assuming RestaurantAddress entity is App\Entity\RestaurantAddress
-                $restaurantAddressClassName = RestaurantAddress::class; // Use imported class
-                if (class_exists($restaurantAddressClassName)) {
-                    $restaurantAddress = new $restaurantAddressClassName();
-                    $restaurantAddress->setRestaurant($restaurant); // Link to the restaurant
-                } else {
-                    // This case should ideally not happen if your entities are set up correctly.
-                    return $this->json(['message' => 'RestaurantAddress entity not configured correctly.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-                }
+                $restaurantAddress = new RestaurantAddress();
+                $restaurantAddress->setRestaurant($restaurant);
+                // If a new address is created, it's definitely a modification if it has data
+                if (!empty($addressData['address_line'])) $addressModified = true; 
             }
-
-            if ($restaurantAddress) {
-                // Whitelist of fields that can be updated on the RestaurantAddress.
-                // These fields are inherited from the Address base class.
-                // Adjust if your RestaurantAddress or base Address class has different/more fields.
-                $allowedAddressFieldsToUpdate = [
-                    'address_line' => 'setAddressLine',
-                    'province' => 'setProvince',
-                    'lat' => 'setLat',
-                    'lng' => 'setLng',
-                    // Add other address fields here if they exist and are updatable
-                    // e.g., 'city' => 'setCity', 'postal_code' => 'setPostalCode',
-                ];
-
-                foreach ($allowedAddressFieldsToUpdate as $field => $setterMethod) {
+            // Example: only check one field for simplicity, expand as needed
+            if (isset($addressData['address_line']) && $restaurantAddress->getAddressLine() !== $addressData['address_line']) {
+                $addressModified = true;
+            }
+            // ... (set other address fields as before) ...
+            // Assuming setters are called, if addressModified is true, then _entityWasModified_ should be true
+            if ($addressModified) {
+                 // Set all fields before this point
+                $allowedAddressFields = ['address_line', 'province', 'lat', 'lng'];
+                foreach($allowedAddressFields as $field) {
                     if (array_key_exists($field, $addressData)) {
+                        $setterMethod = 'set' . ucfirst(str_replace('_', '', ucwords($field, '_')));
                         if (method_exists($restaurantAddress, $setterMethod)) {
-                            $restaurantAddress->$setterMethod($addressData[$field]);
+                            // Further check if value actually changes before calling setter & setting modified flag
+                             $getterMethod = 'get' . ucfirst(str_replace('_', '', ucwords($field, '_')));
+                            if (!method_exists($restaurantAddress, $getterMethod) || $restaurantAddress->$getterMethod() !== $addressData[$field]) {
+                                $restaurantAddress->$setterMethod($addressData[$field]);
+                                $_entityWasModified_ = true; // Mark as modified
+                            }
                         }
                     }
                 }
-                $restaurant->setAddress($restaurantAddress); // Persist the address to the restaurant
+                $restaurant->setAddress($restaurantAddress);
             }
-        } elseif (array_key_exists('address', $data) && $data['address'] === null) {
-            // Handle explicit null to remove address
-            // If you want to delete the RestaurantAddress entity when set to null:
-            // if ($restaurant->getAddress()) {
-            //     $entityManager->remove($restaurant->getAddress());
-            // }
-            $restaurant->setAddress(null);
+        } elseif (array_key_exists('address', $allRequestData) && $allRequestData['address'] === null) {
+            if ($restaurant->getAddress() !== null) {
+                $restaurant->setAddress(null);
+                $_entityWasModified_ = true;
+            }
         }
 
-        if (isset($data['password']) && !empty($data['password'])) {
-             if (strlen($data['password']) >= 6) {
-                 $hashedPassword = $passwordHasher->hashPassword($restaurant, $data['password']);
+        if (isset($allRequestData['password']) && !empty($allRequestData['password'])) {
+             if (strlen($allRequestData['password']) >= 6) {
+                 // Password change is always a modification if new password is provided
+                 $hashedPassword = $passwordHasher->hashPassword($restaurant, $allRequestData['password']);
                  $restaurant->setPassword($hashedPassword);
+                 $_entityWasModified_ = true;
              } else {
                  return $this->json(['errors' => ['password' => ['Password must be at least 6 characters long']]], Response::HTTP_BAD_REQUEST);
              }
         }
-
-        if (isset($data['food_type_ids']) && is_array($data['food_type_ids'])) {
-            foreach ($originalFoodTypes as $foodType) {
-                if (!in_array($foodType->getId(), $data['food_type_ids'])) {
-                    $restaurant->removeFoodType($foodType);
+        
+        $foodTypeIdsInput = $allRequestData['food_type_ids'] ?? null;
+        if ($foodTypeIdsInput !== null && !is_array($foodTypeIdsInput)) {
+             $foodTypeIdsInput = [$foodTypeIdsInput];
+        }
+        if (is_array($foodTypeIdsInput)) {
+            $foodTypeIdsInput = array_map('intval', $foodTypeIdsInput);
+            $currentFoodTypeIds = $restaurant->getFoodTypes()->map(fn(FoodType $ft) => $ft->getId())->toArray();
+            sort($currentFoodTypeIds);
+            sort($foodTypeIdsInput);
+            if ($currentFoodTypeIds !== $foodTypeIdsInput) { // Compare sorted arrays of IDs
+                $_entityWasModified_ = true; 
+                // Remove food types not in the new list
+                foreach ($originalFoodTypes as $foodType) {
+                    if (!in_array($foodType->getId(), $foodTypeIdsInput, true)) {
+                        $restaurant->removeFoodType($foodType);
+                    }
                 }
-            }
-            foreach ($data['food_type_ids'] as $foodTypeId) {
-                $foodType = $foodTypeRepository->find($foodTypeId);
-                if ($foodType && !$restaurant->getFoodTypes()->contains($foodType)) {
-                    $restaurant->addFoodType($foodType);
+                // Add new food types
+                foreach ($foodTypeIdsInput as $foodTypeId) {
+                    $foodType = $foodTypeRepository->find($foodTypeId);
+                    if ($foodType && !$restaurant->getFoodTypes()->contains($foodType)) {
+                        $restaurant->addFoodType($foodType);
+                    }
                 }
             }
         }
@@ -331,9 +460,27 @@ final class RestaurantController extends AbstractController
             return $this->json(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
         }
 
-        $entityManager->flush();
+        if (!$_entityWasModified_) {
+            // Option 1: Return 304 Not Modified (typically used for GET with caching headers, but can signify no change)
+            // return new JsonResponse(null, Response::HTTP_NOT_MODIFIED);
+            // Option 2: Return 200 OK with a specific message or the original entity
+            $json = $serializer->serialize($restaurant, 'json', ['groups' => 'restaurant:read']);
+            return new JsonResponse([
+                'message' => 'No changes detected. Profile data remains the same.',
+                'data' => json_decode($json) // Send current data back
+            ], Response::HTTP_OK);
+        }
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        try {
+            $entityManager->flush();
+        } catch (\Exception $e) {
+            // Log the exception $e->getMessage()
+            return $this->json(['message' => 'An error occurred while saving changes.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        
+        // If entity was modified and flush was successful
+        $json = $serializer->serialize($restaurant, 'json', ['groups' => 'restaurant:read']);
+        return new JsonResponse(json_decode($json), Response::HTTP_OK); // Return 200 OK with updated entity
     }
 
     #[Route('/{id}', name: 'api_restaurant_delete', methods: ['DELETE'])]

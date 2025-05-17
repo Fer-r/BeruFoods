@@ -110,11 +110,17 @@ const isAuthorized = () => {
   try {
     const decodedToken = jwtDecode(token);
     if (typeof decodedToken.exp !== 'number') {
-        console.warn("Token does not contain an 'exp' claim.");
+        console.warn("Token does not contain a valid 'exp' claim.");
+        localStorage.removeItem("token");
         return false;
     }
     const currentTime = Date.now() / 1000;
-    return decodedToken.exp > currentTime;
+    if (decodedToken.exp <= currentTime) {
+        console.warn("Token has expired.");
+        localStorage.removeItem("token");
+        return false;
+    }
+    return true;
   } catch (error) {
     console.error("Error decoding token:", error);
     localStorage.removeItem("token");

@@ -1,90 +1,103 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 import { fetchDataFromEndpoint, isAuthorized } from "../services/useApiService";
+import { jwtDecode } from "jwt-decode";
 
-// Create the AuthContext
 const AuthContext = createContext();
 
-// AuthProvider component
 export const AuthProvider = ({ children }) => {
-  // State to hold the authenticated entity (user or restaurant)
   const [entity, setEntity] = useState(() => {
     const storedEntity = localStorage.getItem("authenticatedEntity");
     return storedEntity ? JSON.parse(storedEntity) : null;
   });
 
-  // State to hold the authentication token
   const [token, setToken] = useState(localStorage.getItem("token") || null);
 
-  // State for error messages
   const [error, setError] = useState(null);
 
-  // State for loading indicator
   const [loading, setLoading] = useState(false);
 
-  // Function to check if the user is authenticated and token is valid
-  const isAuthenticated = () => {
+  const isAuthenticated = useCallback(() => {
     return isAuthorized();
-  };
+  }, [isAuthorized]);
 
-  // Helper function to handle the login process for a given endpoint
-  const handleLogin = async (endpoint, { email, password }) => {
+  const handleLogin = useCallback(async (endpoint, { email, password }) => {
     setError(null);
     setLoading(true);
+    let resultEntityData = null; 
     try {
       const data = await fetchDataFromEndpoint(
         endpoint,
         "POST",
         { email, password },
-        false // Login does not require authentication initially
+        false 
       );
 
-      // Assuming the backend returns the authenticated entity in `data.entity`
-      // and the token in `data.token`
-      if (data?.entity && data?.token) {
-        setEntity(data.entity);
-        setToken(data.token);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("authenticatedEntity", JSON.stringify(data.entity));
+      if (data?.token) {
+        const decodedToken = jwtDecode(data.token);
+        let entityDataToStore = null;
+
+        if (decodedToken && 
+            Array.isArray(decodedToken.roles) && decodedToken.roles.length > 0 &&
+            typeof decodedToken.username === 'string' && 
+            typeof decodedToken.address === 'object' && decodedToken.address !== null &&
+            typeof decodedToken.address.address_line !== 'undefined' 
+            ) {
+
+          const { username, roles, address } = decodedToken;
+          
+          entityDataToStore = {
+            username,
+            roles,
+            address, 
+          };
+        } else {
+          console.error("Token is missing required fields (roles, username, address with address_line) or has invalid types. Decoded token:", decodedToken);
+        }
+
+        if (entityDataToStore) {
+          setEntity(entityDataToStore);
+          setToken(data.token);
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("authenticatedEntity", JSON.stringify(entityDataToStore));
+          resultEntityData = entityDataToStore;
+        } else {
+          const errorMessage = "Token did not contain valid or complete entity information.";
+          throw new Error(errorMessage); 
+        }
       } else {
-        // Handle case where backend response is not as expected
-        const errorMessage = "Invalid response from server during login.";
+        const errorMessage = "Invalid response from server during login (missing token).";
         setError(errorMessage);
         throw new Error(errorMessage);
       }
-      return data.entity; // Return the authenticated entity
+      return resultEntityData; 
     } catch (error) {
       console.error(`Error al iniciar sesión en ${endpoint}:`, error);
-      // Check if the error is an API error with details
       const errorMessage = error.details?.message || error.message || "Error desconocido al iniciar sesión";
       setError(errorMessage);
-      throw error; // Re-throw to handle in the component
+      throw error; 
     } finally {
       setLoading(false);
     }
-  };
+  }, [setEntity, setToken, setError, setLoading]);
 
-  // Function to handle user login
-  const loginUser = async ({ email, password }) => {
+  const loginUser = useCallback(async ({ email, password }) => {
     return handleLogin("/login", { email, password });
-  };
+  }, [handleLogin]);
 
-  // Function to handle restaurant login
-  const loginRestaurant = async ({ email, password }) => {
+  const loginRestaurant = useCallback(async ({ email, password }) => {
     return handleLogin("/restaurant/login", { email, password });
-  };
+  }, [handleLogin]);
 
-  // Function to handle logout
-  const logOut = () => {
+  const logOut = useCallback(() => {
     setEntity(null);
     setToken(null);
     setError(null);
     localStorage.removeItem("token");
     localStorage.removeItem("authenticatedEntity");
-  };
+  }, [setEntity, setToken, setError]);
 
-  // Value object provided by the context
   const value = {
-    entity, // Can be user or restaurant object
+    entity, 
     token,
     isAuthenticated,
     loginUser,
@@ -92,14 +105,12 @@ export const AuthProvider = ({ children }) => {
     logOut,
     error,
     loading,
-    setEntity // Allow setting the entity manually if needed
+    setEntity 
   };
 
-  // Provide the context value to children components
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook to use the AuthContext
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

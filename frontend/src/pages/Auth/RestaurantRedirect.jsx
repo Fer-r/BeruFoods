@@ -1,34 +1,32 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { jwtDecode } from 'jwt-decode'; // Ensure jwt-decode is installed
+import { useAuth } from '../../context/AuthContext.jsx'; // Import useAuth
 
 const RestaurantRedirect = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, entity } = useAuth(); // Get isAuthenticated and entity from useAuth
 
   useEffect(() => {
-    const token = localStorage.getItem('jwtToken'); // Adjust 'jwtToken' if your key is different
-    let hasRestaurantRole = false;
+    const authenticated = isAuthenticated();
 
-    if (token) {
-      try {
-        const decodedToken = jwtDecode(token);
-        // Assuming roles are stored in an array under 'roles' key
-        if (decodedToken.roles && Array.isArray(decodedToken.roles)) {
-          hasRestaurantRole = decodedToken.roles.includes('ROLE_RESTAURANT');
-        }
-      } catch (error) {
-        console.error('Error decoding token:', error);
-        // Handle invalid token, e.g., remove it and redirect to login
-        localStorage.removeItem('jwtToken');
+    if (!authenticated) {
+      // If not authenticated, always go to login
+      navigate('/restaurant/login');
+    } else {
+      // If authenticated, check roles from the entity
+      let hasRestaurantRole = false;
+      if (entity && entity.roles && Array.isArray(entity.roles)) {
+        hasRestaurantRole = entity.roles.includes('ROLE_RESTAURANT');
+      }
+
+      if (hasRestaurantRole) {
+        navigate('/restaurant/dashboard');
+      } else {
+        // If authenticated but not a restaurant, redirect to home
+        navigate('/');
       }
     }
-
-    if (hasRestaurantRole) {
-      navigate('/restaurant/dashboard');
-    } else {
-      navigate('/restaurant/login');
-    }
-  }, [navigate]);
+  }, [navigate, isAuthenticated, entity]);
 
   // Render nothing or a loading indicator while redirecting
   return null;

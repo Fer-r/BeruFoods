@@ -11,7 +11,7 @@ const UserLoginModal = ({ open, handleClose }) => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   // Error and loading states will be handled by AuthContext
-  const { loginUser, error: authError, loading: authLoading, entity } = useAuth();
+  const { loginUser, error: authError, loading: authLoading } = useAuth();
 
   useEffect(() => {
     const modalElement = modalRef.current;
@@ -29,12 +29,6 @@ const UserLoginModal = ({ open, handleClose }) => {
       }
     }
   }, [open]);
-
-  useEffect(() => {
-    if (entity && open) {
-      handleClose(); 
-    }
-  }, [entity, open, handleClose]);
 
   const handleDialogNativeClose = useCallback(() => {
     if (open) {
@@ -59,10 +53,11 @@ const UserLoginModal = ({ open, handleClose }) => {
     }
     try {
       await loginUser({ email, password });
+      handleClose();
     } catch (err) {
       console.error("Login attempt failed (UserLoginModal):", err);
     }
-  }, [email, password, loginUser]);
+  }, [email, password, loginUser, handleClose]);
 
   const stopPropagation = (e) => e.stopPropagation();
 
@@ -115,11 +110,9 @@ const UserLoginModal = ({ open, handleClose }) => {
           />
           {passwordError && <AlertMessage type="error" message={passwordError} />}
           <div className="modal-action mt-4">
-            <form method="dialog" className="inline-block">
-                <button type="submit" className="btn btn-ghost" disabled={authLoading}>
-                    Cancel
-                </button>
-            </form>
+            <button type="button" className="btn btn-ghost" onClick={handleClose} disabled={authLoading}>
+              Cancel
+            </button>
             <button type="submit" className="btn btn-primary" disabled={authLoading}>
               {authLoading ? <span className="loading loading-spinner loading-xs"></span> : 'Sign In'}
             </button>

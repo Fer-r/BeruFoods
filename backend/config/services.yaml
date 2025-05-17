@@ -69,3 +69,7 @@ services:
         tags: ['controller.service_arguments']
         bind:
             App\Service\ImageUploader: '@app.image_uploader.restaurant'
+
+    App\EventListener\JWTAuthenticatedListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }

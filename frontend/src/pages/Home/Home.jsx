@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { Navigate } from 'react-router';
+import { useAuth } from '../../context/AuthContext';
 import useRestaurants from '../../hooks/useRestaurants';
 import useFoodTypes from '../../hooks/useFoodTypes';
 import useLocation, { DEFAULT_LOCATION } from '../../hooks/useLocation';
@@ -6,7 +8,19 @@ import FilterControls from '../../components/FilterControls';
 import CuisineFilter from '../../components/CuisineFilter';
 import RestaurantList from '../../components/RestaurantList';
 
-const Home = () => {
+// Component for logged-in regular users (placeholder)
+const UserHomeContent = () => {
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Welcome, User!</h1>
+      <p>This is your personalized home page content.</p>
+      {/* Add user-specific components here */}
+    </div>
+  );
+};
+
+// Component for public/anonymous users (existing Home logic)
+const PublicHomeContent = () => {
   const [selectedFoodTypeIds, setSelectedFoodTypeIds] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
@@ -37,7 +51,7 @@ const Home = () => {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchText(searchText);
-    }, 500); 
+    }, 500);
     return () => clearTimeout(handler);
   }, [searchText]);
 
@@ -133,6 +147,25 @@ const Home = () => {
       />
     </div>
   );
+};
+
+// Main Home component that decides what to render or redirect
+const Home = () => {
+  const { isAuthenticated, entity } = useAuth();
+
+  if (isAuthenticated() && entity?.roles) {
+    const isRestaurant = entity.roles.includes('ROLE_RESTAURANT');
+    const isUser = entity.roles.includes('ROLE_USER');
+
+    if (isRestaurant) {
+      return <Navigate to="/restaurant/dashboard" replace />;
+    }
+    if (isUser && !isRestaurant) { 
+      return <UserHomeContent />;
+    }
+  }
+
+  return <PublicHomeContent />;
 };
 
 export default Home;

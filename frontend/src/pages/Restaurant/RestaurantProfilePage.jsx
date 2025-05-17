@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router'; // Changed from react-router
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import useFoodTypes from '../../hooks/useFoodTypes';
 import { fetchDataFromEndpoint } from '../../services/useApiService';
-import FoodTypeModal from '../Auth/components/FoodTypeModal'; // Corrected path
+import FoodTypeModal from '../Auth/components/FoodTypeModal'; 
 import StyledInput from '../../components/StyledInput';
 import AlertMessage from '../../components/AlertMessage';
 // import RadarMapDisplay from '../../components/RadarMapDisplay'; // Address update deferred

@@ -5,154 +5,151 @@ import MinimalLayout from "../layout/MinimalLayout";
 import AuthLayout from "../layout/AuthLayout.jsx";
 import LoadingFallback from "../components/LoadingFallback.jsx";
 import { RestaurantRoute, UserRoute } from "./ProtectedRoutes.jsx";
-const ErrorPage = lazy(() => import("../pages/ErrorPage.jsx"));
 
+// Page Components
+const ErrorPage = lazy(() => import("../pages/ErrorPage.jsx"));
 const HomeHandler = lazy(() => import("../pages/HomeHandler.jsx"));
 const UserRegister = lazy(() => import("../pages/Auth/UserRegister"));
 const RestaurantLogin = lazy(() => import("../pages/Auth/RestaurantLogin.jsx"));
 const RestaurantDashboard = lazy(() => import("../pages/Restaurant/RestaurantDashboard.jsx"));
 const RestaurantRedirect = lazy(() => import("../pages/Auth/RestaurantRedirect.jsx"));
 const RestaurantRegister = lazy(() => import("../pages/Auth/RestaurantRegister"));
-const RestaurantArticlesPage = lazy(() => import("../pages/RestaurantArticlesPage.jsx"));
+const RestaurantMenuPage = lazy(() => import("../pages/RestaurantMenuPage.jsx"));
 const RestaurantProfilePage = lazy(() => import("../pages/Restaurant/RestaurantProfilePage.jsx"));
 const RestaurantOrdersPage = lazy(() => import("../pages/Restaurant/RestaurantOrdersPage.jsx"));
 const RestaurantBookingsPage = lazy(() => import("../pages/Restaurant/RestaurantBookingsPage.jsx"));
-
+const RestaurantArticlesManagementPage = lazy(() => import("../pages/Restaurant/RestaurantArticlesManagementPage.jsx"));
+const ArticleFormPage = lazy(() => import("../pages/Restaurant/ArticleFormPage.jsx"));
 const UserProfilePage = lazy(() => import("../pages/User/UserProfilePage.jsx"));
 const UserOrdersPage = lazy(() => import("../pages/User/UserOrdersPage.jsx"));
 const UserReservationsPage = lazy(() => import("../pages/User/UserReservationsPage.jsx"));
 const UserCartPage = lazy(() => import("../pages/User/UserCartPage.jsx"));
 
+const PATHS = {
+  ROOT: "/",
+  RESTAURANTS_ARTICLES_SLUG: "/restaurants/:restaurantId/articles",
+  RESTAURANT_DASHBOARD: "/restaurant/dashboard",
+  RESTAURANT_PROFILE: "/restaurant/profile",
+  RESTAURANT_ORDERS: "/restaurant/orders",
+  RESTAURANT_BOOKINGS: "/restaurant/bookings",
+  RESTAURANT_ARTICLES: "/restaurant/articles",
+  RESTAURANT_ARTICLES_NEW: "/restaurant/articles/new",
+  RESTAURANT_ARTICLES_EDIT: "/restaurant/articles/:articleId/edit",
+  RESTAURANT_ROOT: "/restaurant",
+  RESTAURANT_REGISTER: "/restaurant/register",
+  RESTAURANT_LOGIN: "/restaurant/login",
+  USER_PROFILE: "/user/profile",
+  USER_ORDERS: "/user/orders",
+  USER_RESERVATIONS: "/user/reservations",
+  USER_CART: "/cart",
+  REGISTER: "/register",
+};
+
+const renderSuspendedPage = (LazyComponent, fallback = <LoadingFallback />) => (
+  <Suspense fallback={fallback}>
+    <LazyComponent />
+  </Suspense>
+);
+
+const renderProtectedPage = (ProtectionComponent, LazyComponent, fallback = <LoadingFallback />) => (
+  <ProtectionComponent>
+    <Suspense fallback={fallback}>
+      <LazyComponent />
+    </Suspense>
+  </ProtectionComponent>
+);
+
 export const router = createBrowserRouter([
   {
     element: <PublicHeaderLayout />,
-    errorElement: <Suspense fallback={<LoadingFallback />}><ErrorPage /></Suspense>,
+    errorElement: renderSuspendedPage(ErrorPage),
     children: [
+      // General Public Routes
       {
-        path: "/",
-        element: <Suspense fallback={<LoadingFallback />}><HomeHandler /></Suspense>,
+        path: PATHS.ROOT,
+        element: renderSuspendedPage(HomeHandler),
       },
       {
-        path: "/restaurants/:restaurantId/articles",
-        element: <Suspense fallback={<LoadingFallback />}><RestaurantArticlesPage /></Suspense>,
+        path: PATHS.RESTAURANTS_ARTICLES_SLUG,
+        element: renderSuspendedPage(RestaurantMenuPage),
+      },
+      // User Routes (Protected)
+      {
+        path: PATHS.USER_PROFILE,
+        element: renderProtectedPage(UserRoute, UserProfilePage),
       },
       {
-        path: "/restaurant/dashboard",
-        element: (
-          <RestaurantRoute>
-            <Suspense fallback={<LoadingFallback />}>
-              <RestaurantDashboard />
-            </Suspense>
-          </RestaurantRoute>
-        ),
+        path: PATHS.USER_ORDERS,
+        element: renderProtectedPage(UserRoute, UserOrdersPage),
       },
       {
-        path: "/restaurant/profile",
-        element: (
-          <RestaurantRoute>
-            <Suspense fallback={<LoadingFallback />}>
-              <RestaurantProfilePage />
-            </Suspense>
-          </RestaurantRoute>
-        ),
+        path: PATHS.USER_RESERVATIONS,
+        element: renderProtectedPage(UserRoute, UserReservationsPage),
       },
       {
-        path: "/restaurant/orders",
-        element: (
-          <RestaurantRoute>
-            <Suspense fallback={<LoadingFallback />}>
-              <RestaurantOrdersPage />
-            </Suspense>
-          </RestaurantRoute>
-        ),
+        path: PATHS.USER_CART,
+        element: renderProtectedPage(UserRoute, UserCartPage),
+      },
+      // Restaurant Routes (Protected)
+      {
+        path: PATHS.RESTAURANT_DASHBOARD,
+        element: renderProtectedPage(RestaurantRoute, RestaurantDashboard),
       },
       {
-        path: "/restaurant/bookings",
-        element: (
-          <RestaurantRoute>
-            <Suspense fallback={<LoadingFallback />}>
-              <RestaurantBookingsPage />
-            </Suspense>
-          </RestaurantRoute>
-        ),
+        path: PATHS.RESTAURANT_PROFILE,
+        element: renderProtectedPage(RestaurantRoute, RestaurantProfilePage),
       },
       {
-        path: "/restaurant/articles",
-        element: (
-          <RestaurantRoute>
-            <Suspense fallback={<LoadingFallback />}>
-              <RestaurantArticlesPage />
-            </Suspense>
-          </RestaurantRoute>
-        ),
+        path: PATHS.RESTAURANT_ORDERS,
+        element: renderProtectedPage(RestaurantRoute, RestaurantOrdersPage),
       },
       {
-        path: "/user/profile",
-        element: (
-          <UserRoute>
-            <Suspense fallback={<LoadingFallback />}>
-              <UserProfilePage />
-            </Suspense>
-          </UserRoute>
-        ),
+        path: PATHS.RESTAURANT_BOOKINGS,
+        element: renderProtectedPage(RestaurantRoute, RestaurantBookingsPage),
       },
       {
-        path: "/user/orders",
-        element: (
-          <UserRoute>
-            <Suspense fallback={<LoadingFallback />}>
-              <UserOrdersPage />
-            </Suspense>
-          </UserRoute>
-        ),
+        path: PATHS.RESTAURANT_ARTICLES,
+        element: renderProtectedPage(RestaurantRoute, RestaurantArticlesManagementPage),
+      },
+      // Restaurant Article Management Routes
+      {
+        path: PATHS.RESTAURANT_ARTICLES_NEW,
+        element: renderProtectedPage(RestaurantRoute, ArticleFormPage),
       },
       {
-        path: "/user/reservations",
-        element: (
-          <UserRoute>
-            <Suspense fallback={<LoadingFallback />}>
-              <UserReservationsPage />
-            </Suspense>
-          </UserRoute>
-        ),
-      },
-      {
-        path: "/cart",
-        element: (
-          <UserRoute>
-            <Suspense fallback={<LoadingFallback />}>
-              <UserCartPage />
-            </Suspense>
-          </UserRoute>
-        ),
+        path: PATHS.RESTAURANT_ARTICLES_EDIT,
+        element: renderProtectedPage(RestaurantRoute, ArticleFormPage),
       },
     ],
   },
   {
     element: <MinimalLayout />,
-    errorElement: <Suspense fallback={<LoadingFallback />}><ErrorPage /></Suspense>,
+    errorElement: renderSuspendedPage(ErrorPage),
     children: [
+      // Restaurant Routes
       {
-        path: "/restaurant",
-        element: <Suspense fallback={<LoadingFallback />}><RestaurantRedirect /></Suspense>,
+        path: PATHS.RESTAURANT_ROOT,
+        element: renderSuspendedPage(RestaurantRedirect),
       },
     ],
   },
   {
     element: <AuthLayout />,
-    errorElement: <Suspense fallback={<LoadingFallback />}><ErrorPage /></Suspense>,
+    errorElement: renderSuspendedPage(ErrorPage),
     children: [
+      // User Auth Routes
       {
-        path: "/register",
-        element: <Suspense fallback={<LoadingFallback />}><UserRegister /></Suspense>,
+        path: PATHS.REGISTER,
+        element: renderSuspendedPage(UserRegister),
+      },
+      // Restaurant Auth Routes
+      {
+        path: PATHS.RESTAURANT_REGISTER,
+        element: renderSuspendedPage(RestaurantRegister),
       },
       {
-        path: "/restaurant/register",
-        element: <Suspense fallback={<LoadingFallback />}><RestaurantRegister /></Suspense>,
-      },
-      {
-        path: "/restaurant/login",
-        element: <Suspense fallback={<LoadingFallback />}><RestaurantLogin /></Suspense>,
+        path: PATHS.RESTAURANT_LOGIN,
+        element: renderSuspendedPage(RestaurantLogin),
       },
     ],
   },

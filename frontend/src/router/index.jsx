@@ -24,6 +24,7 @@ const UserProfilePage = lazy(() => import("../pages/User/UserProfilePage.jsx"));
 const UserOrdersPage = lazy(() => import("../pages/User/UserOrdersPage.jsx"));
 const UserReservationsPage = lazy(() => import("../pages/User/UserReservationsPage.jsx"));
 const UserCartPage = lazy(() => import("../pages/User/UserCartPage.jsx"));
+const OrderDetailsPage = lazy(() => import("../pages/User/OrderDetailsPage.jsx"));
 
 const PATHS = {
   ROOT: "/",
@@ -40,6 +41,7 @@ const PATHS = {
   RESTAURANT_LOGIN: "/restaurant/login",
   USER_PROFILE: "/user/profile",
   USER_ORDERS: "/user/orders",
+  USER_ORDER_DETAILS: "/user/orders/:orderId",
   USER_RESERVATIONS: "/user/reservations",
   USER_CART: "/cart",
   REGISTER: "/register",
@@ -81,6 +83,10 @@ export const router = createBrowserRouter([
       {
         path: PATHS.USER_ORDERS,
         element: renderProtectedPage(UserRoute, UserOrdersPage),
+      },
+      {
+        path: PATHS.USER_ORDER_DETAILS,
+        element: renderProtectedPage(UserRoute, OrderDetailsPage),
       },
       {
         path: PATHS.USER_RESERVATIONS,

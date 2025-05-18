@@ -99,7 +99,7 @@ const RestaurantMenuPage = () => {
   } = useRestaurantArticles(restaurantId);
 
   const renderArticle = (article) => (
-    <ArticleCard key={article.id} article={article} />
+    <ArticleCard key={article.id} article={article} restaurantId={restaurantId} />
   );
 
   // Combined loading state for initial page render (restaurant details OR initial articles)

@@ -1,7 +1,0 @@
-# config/serialization/Allergy.yaml
-App\Entity\Allergy:
-    attributes:
-        id:
-            groups: ['allergy:read', 'allergy:read:collection']
-        name:
-            groups: ['allergy:read', 'allergy:read:collection'] 

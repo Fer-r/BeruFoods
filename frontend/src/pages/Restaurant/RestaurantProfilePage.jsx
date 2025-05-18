@@ -93,11 +93,14 @@ const RestaurantProfilePage = () => {
     setCurrentImageUrl(''); // Clear old preview if a new file is selected
   };
 
-  const handleFoodTypeChange = (foodTypeId) => {
+  const handleFoodTypeChange = (e) => {
+    const { value, checked } = e.target;
+    const foodTypeId = parseInt(value, 10);
+
     setFormData((prev) => {
-      const newSelectedFoodTypeIds = prev.selectedFoodTypeIds.includes(foodTypeId)
-        ? prev.selectedFoodTypeIds.filter((id) => id !== foodTypeId)
-        : [...prev.selectedFoodTypeIds, foodTypeId];
+      const newSelectedFoodTypeIds = checked
+        ? [...prev.selectedFoodTypeIds, foodTypeId]
+        : prev.selectedFoodTypeIds.filter((id) => id !== foodTypeId);
       return { ...prev, selectedFoodTypeIds: newSelectedFoodTypeIds };
     });
   };

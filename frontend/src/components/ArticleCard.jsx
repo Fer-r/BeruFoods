@@ -2,7 +2,7 @@ const ArticleCard = ({ article }) => {
   if (!article) return null;
 
   return (
-    <div className="border rounded-lg p-4 mb-4 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row">
+    <div className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row">
       {article.imageUrl && (
         <img 
           src={article.imageUrl} // Assuming imageUrl is the full URL or API_BASE_URL is prepended where it's used

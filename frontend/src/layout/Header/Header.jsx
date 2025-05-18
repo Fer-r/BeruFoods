@@ -7,11 +7,12 @@ import { useModal } from '../../context/ModalContext.jsx';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { FaUserCircle, FaShoppingCart } from 'react-icons/fa';
+import { GrRestaurant } from "react-icons/gr";
 
 const Header = () => {
   const { isLoginModalOpen, openLoginModal, closeLoginModal } = useModal();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { entity, isAuthenticated, logOut, isRestaurant, isUser } = useAuth();
+  const { isAuthenticated, logOut, isRestaurant, isUser } = useAuth();
 
   const toggleDrawer = () => {
     if (!isAuthenticated()) {
@@ -63,12 +64,8 @@ const Header = () => {
               isRestaurant ? (
                 <div className="dropdown dropdown-end">
                   <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                    <div className="w-10 rounded-full">
-                      {entity.imageUrl ? (
-                        <img src={entity.imageUrl} alt={entity.name || 'Restaurant'} />
-                      ) : (
-                        <FaUserCircle className="w-full h-full" />
-                      )}
+                    <div className="w-10 h-10 rounded-full bg-base-200 relative">
+                      <GrRestaurant className="w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                     </div>
                   </label>
                   <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">

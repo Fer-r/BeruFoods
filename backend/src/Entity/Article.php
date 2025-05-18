@@ -134,4 +134,9 @@ class Article
         $this->available = $available;
         return $this;
     }
+
+    public function getRestaurantId(): ?int
+    {
+        return $this->restaurant?->getId();
+    }
 }

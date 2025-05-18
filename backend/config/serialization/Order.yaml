@@ -12,7 +12,7 @@ App\Entity\Order:
         items:
             groups: ['order:read'] # Only show full item details in single order view
         user:
-            groups: ['order:read', 'order:read:collection', 'user:read:nested'] # Use nested user group
+            groups: ['order:read', 'order:read:collection'] # Use parent groups
         restaurant:
-            groups: ['order:read', 'order:read:collection', 'restaurant:read:nested'] # Use nested restaurant group
+            groups: ['order:read', 'order:read:collection'] # Use parent groups
             # Use less detailed group, e.g., 'restaurant:read:nested' defined in Restaurant.yaml (id, name?) 

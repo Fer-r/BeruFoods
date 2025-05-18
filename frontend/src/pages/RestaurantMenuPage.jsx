@@ -59,6 +59,7 @@ const RestaurantArticlesDisplay = ({
   if ((!articlesError || articles.length > 0) && (articles.length > 0 || hasMoreArticles || initialLoadingArticles)) {
     return (
       <InfiniteScrollContainer
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" 
         data={articles}
         fetchMoreData={fetchMoreArticles}
         hasMore={hasMoreArticles}
@@ -79,7 +80,7 @@ const RestaurantArticlesDisplay = ({
   return null; // Fallback if no other condition is met (should ideally be covered)
 };
 
-const RestaurantArticlesPage = () => {
+const RestaurantMenuPage = () => {
   const { restaurantId } = useParams();
 
   const {
@@ -135,4 +136,4 @@ const RestaurantArticlesPage = () => {
   );
 };
 
-export default RestaurantArticlesPage; 
+export default RestaurantMenuPage; 

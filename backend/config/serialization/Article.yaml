@@ -6,7 +6,7 @@ App\Entity\Article:
         name:
             groups: ['article:read', 'article:read:collection']
         description:
-            groups: ['article:read', 'article:read:collection'] # Added collection group
+            groups: ['article:read', 'article:read:collection'] 
         imageFilename:
             groups: ['article:read', 'article:read:collection']
         listed:
@@ -14,11 +14,10 @@ App\Entity\Article:
         price:
             groups: ['article:read', 'article:read:collection']
         allergies:
-            groups: ['article:read', 'article:read:collection'] # Added collection group
+            groups: ['article:read', 'article:read:collection'] 
         available:
             groups: ['article:read', 'article:read:collection']
         restaurant:
-            groups: ['article:read', 'article:read:collection', 'restaurant:read:nested'] # Use nested restaurant group
-            # Needs Restaurant.yaml to define which fields of restaurant are included
-            # Careful: Use a less detailed group for Restaurant here to avoid recursion/too much data
-            # Example: groups: ['restaurant:read:nested'] -> define this group in Restaurant.yaml 
+            groups: ['article:read', 'restaurant:read:nested'] 
+        restaurantId:
+            groups: ['article:read:collection'] 

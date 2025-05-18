@@ -2,13 +2,13 @@
 App\Entity\Restaurant:
     attributes:
         id:
-            groups: ['restaurant:read', 'restaurant:read:collection', 'restaurant:read:nested']
+            groups: ['restaurant:read', 'restaurant:read:collection', 'restaurant:read:nested', 'order:read', 'order:read:collection']
         email:
             groups: ['restaurant:read', 'restaurant:read:collection'] # Maybe only admin needs email in collection?
         roles: # Added roles property
             groups: ['admin:read'] # Only readable by admin
         name:
-            groups: ['restaurant:read', 'restaurant:read:collection', 'restaurant:read:nested']
+            groups: ['restaurant:read', 'restaurant:read:collection', 'restaurant:read:nested', 'order:read', 'order:read:collection']
         phone:
             groups: ['restaurant:read'] # Phone might not be needed in list view
         banned:

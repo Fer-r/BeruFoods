@@ -70,8 +70,8 @@ class ImageUploader
      */
     private function validateImage(UploadedFile $file): void
     {
-        if (!in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/gif'])) {
-            throw new FileException('Invalid file type. Only JPG, PNG, GIF allowed.');
+        if (!in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/webp'])) {
+            throw new FileException('Invalid file type. Only JPG, PNG, WEBP allowed.');
         }
         if ($file->getSize() > 4 * 1024 * 1024) {
             throw new FileException('File is too large. Max 4MB allowed.');

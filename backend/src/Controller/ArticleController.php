@@ -42,7 +42,6 @@ final class ArticleController extends AbstractController
         }
 
         $restaurantId = $request->query->get('restaurantId');
-        $available = $request->query->get('available');
 
         $qb = $articleRepository->createQueryBuilder('a');
 
@@ -50,10 +49,9 @@ final class ArticleController extends AbstractController
             $qb->andWhere('a.restaurant = :restaurantId')
                ->setParameter('restaurantId', $restaurantId);
         }
-        if ($available !== null) {
-            $qb->andWhere('a.available = :available')
-               ->setParameter('available', filter_var($available, FILTER_VALIDATE_BOOLEAN));
-        }
+        
+        $qb->andWhere('a.listed = :listed')
+           ->setParameter('listed', true);
 
         $qb->orderBy('a.name', 'ASC')
            ->setFirstResult(($page - 1) * $limit)
@@ -88,6 +86,55 @@ final class ArticleController extends AbstractController
         return new JsonResponse($data, Response::HTTP_OK); // Data is already an array structure
     }
 
+    #[Route('/restaurant-owner', name: 'api_article_restaurant_owner_index', methods: ['GET'])]
+    #[IsGranted('ROLE_RESTAURANT')]
+    public function restaurantOwnerIndex(ArticleRepository $articleRepository, SerializerInterface $serializer, Request $request): JsonResponse
+    {
+        $loggedInUser = $this->getUser();
+        if (!$loggedInUser instanceof Restaurant) {
+            return new JsonResponse(['message' => 'User is not a restaurant owner.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', self::ITEMS_PER_PAGE);
+        if ($limit < 1) $limit = self::ITEMS_PER_PAGE;
+
+        $qb = $articleRepository->createQueryBuilder('a')
+            ->where('a.restaurant = :restaurantId')
+            ->setParameter('restaurantId', $loggedInUser->getId())
+            ->orderBy('a.name', 'ASC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+
+        $paginator = new Paginator($qb->getQuery(), true);
+        $totalItems = count($paginator);
+        $pagesCount = ceil($totalItems / $limit);
+
+        $results = iterator_to_array($paginator->getIterator());
+
+        $processedResults = [];
+        foreach ($results as $article) {
+            $articleData = json_decode($serializer->serialize($article, 'json', ['groups' => 'article:read:collection']), true);
+            if ($articleData === null) {
+                return new JsonResponse(['message' => 'Error processing article data.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+            $articleData['imageUrl'] = $this->imageUploader->getImageUrl($article->getImageFilename());
+            $processedResults[] = $articleData;
+        }
+
+        $data = [
+            'items' => $processedResults,
+            'pagination' => [
+                'totalItems' => $totalItems,
+                'currentPage' => $page,
+                'itemsPerPage' => $limit,
+                'totalPages' => $pagesCount
+            ]
+        ];
+
+        return new JsonResponse($data, Response::HTTP_OK);
+    }
+
     #[Route('/{id}', name: 'api_article_show', methods: ['GET'])]
     public function show(Article $article, SerializerInterface $serializer): JsonResponse
     {
@@ -110,6 +157,14 @@ final class ArticleController extends AbstractController
         RestaurantRepository $restaurantRepository
     ): JsonResponse {
         $data = $request->request->all();
+
+        if (isset($data['listed'])) {
+            $data['listed'] = filter_var($data['listed'], FILTER_VALIDATE_BOOLEAN);
+        }
+        if (isset($data['available'])) {
+            $data['available'] = filter_var($data['available'], FILTER_VALIDATE_BOOLEAN);
+        }
+
         $article = $serializer->deserialize(json_encode($data), Article::class, 'json', [
             AbstractNormalizer::IGNORED_ATTRIBUTES => ['imageFilename']
         ]);
@@ -156,7 +211,7 @@ final class ArticleController extends AbstractController
         return new JsonResponse($articleData, Response::HTTP_CREATED);
     }
 
-    #[Route('/{id}', name: 'api_article_update', methods: ['PUT', 'PATCH'])]
+    #[Route('/{id}', name: 'api_article_update', methods: ['PUT', 'PATCH', 'POST'])]
     #[IsGranted('edit', 'article')]
     public function update(
         Request $request,
@@ -171,6 +226,15 @@ final class ArticleController extends AbstractController
         $originalImageFilename = $article->getImageFilename(); // Store old filename
 
         $data = $request->request->all();
+        
+        // Convert boolean-like strings to actual booleans before deserialization
+        if (isset($data['listed'])) {
+            $data['listed'] = filter_var($data['listed'], FILTER_VALIDATE_BOOLEAN);
+        }
+        if (isset($data['available'])) {
+            $data['available'] = filter_var($data['available'], FILTER_VALIDATE_BOOLEAN);
+        }
+
         $serializer->deserialize(json_encode($data), Article::class, 'json', [
             AbstractNormalizer::OBJECT_TO_POPULATE => $article,
             AbstractNormalizer::IGNORED_ATTRIBUTES => ['restaurant', 'imageFilename']

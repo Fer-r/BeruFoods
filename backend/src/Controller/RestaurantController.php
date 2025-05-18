@@ -333,12 +333,12 @@ final class RestaurantController extends AbstractController
 
         if ($imageFile) {
             $imageConstraint = new Assert\Image([
-                'maxSize' => '4M', // Default is 2M, example allows larger
-                // 'mimeTypes' => [ // Examage/jpeg',
-                //ple mime types
-                //     'im     'image/png',
-                //     'image/webp',
-                // ]
+                'maxSize' => '4M',
+                'mimeTypes' => [
+                    'image/jpeg',
+                    'image/png',
+                    'image/webp',
+                ]
             ]);
 
             $imageErrors = $validator->validate($imageFile, $imageConstraint);

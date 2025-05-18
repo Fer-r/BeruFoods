@@ -6,6 +6,7 @@ import AppDrawer from './components/AppDrawer.jsx';
 import { useModal } from '../../context/ModalContext.jsx';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useCart } from '../../context/CartContext.jsx';
 import { FaUserCircle, FaShoppingCart } from 'react-icons/fa';
 import { GrRestaurant } from "react-icons/gr";
 
@@ -13,6 +14,7 @@ const Header = () => {
   const { isLoginModalOpen, openLoginModal, closeLoginModal } = useModal();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { isAuthenticated, logOut, isRestaurant, isUser } = useAuth();
+  const { getCartTotalItems } = useCart();
 
   const toggleDrawer = () => {
     if (!isAuthenticated()) {
@@ -24,6 +26,8 @@ const Header = () => {
     openLoginModal();
     setIsDrawerOpen(false);
   };
+
+  const totalCartItems = getCartTotalItems();
 
   return (
     <div className="drawer">
@@ -57,6 +61,12 @@ const Header = () => {
                 <li><NavLink to="/restaurant/articles">Articles</NavLink></li>
               </ul>
             )}
+            {isUser && (
+              <ul className="menu menu-horizontal px-1">
+                <li><NavLink to="/user/orders">Order History</NavLink></li>
+                <li><NavLink to="/user/reservations">Reservations</NavLink></li>
+              </ul>
+            )}
           </div>
 
           <div className="navbar-end">
@@ -82,7 +92,10 @@ const Header = () => {
                 </div>
               ) : isUser ? (
                 <>
-                  <NavLink to="/cart" className="btn btn-ghost btn-circle mr-4">
+                  <NavLink to="/cart" className="btn btn-ghost btn-circle mr-4 indicator">
+                    {totalCartItems > 0 && (
+                      <span className="indicator-item badge badge-secondary badge-sm">{totalCartItems}</span>
+                    )}
                     <FaShoppingCart className="w-5 h-5" />
                   </NavLink>
                   <div className="dropdown dropdown-end">
@@ -93,8 +106,6 @@ const Header = () => {
                     </label>
                     <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
                       <li><NavLink to="/user/profile">Profile</NavLink></li>
-                      <li><NavLink to="/user/orders">Order History</NavLink></li>
-                      <li><NavLink to="/user/reservations">Reservations</NavLink></li>
                       <li><button onClick={logOut}>Logout</button></li>
                     </ul>
                   </div>

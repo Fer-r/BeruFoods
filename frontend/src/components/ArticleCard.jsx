@@ -1,5 +1,25 @@
-const ArticleCard = ({ article }) => {
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import { useModal } from '../context/ModalContext';
+import { useNavigate } from 'react-router';
+
+const ArticleCard = ({ article, restaurantId }) => {
+  const { isAuthenticated, isUser } = useAuth();
+  const { addToCart } = useCart();
+  const { openLoginModal } = useModal();
+  const navigate = useNavigate();
+
   if (!article) return null;
+
+  const handleAddToCart = () => {
+    if (isAuthenticated() && isUser) {
+      // Ensure restaurantId is part of the article object for cart context logic
+      addToCart({ ...article, restaurantId }); 
+    } else {
+      navigate('/');
+      openLoginModal();
+    }
+  };
 
   return (
     <div className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row">
@@ -30,6 +50,23 @@ const ArticleCard = ({ article }) => {
 
         {!article.available && (
           <span className="text-sm text-red-500 font-semibold mt-1 block">Not Available</span>
+        )}
+
+        {article.available && isUser && (
+          <button 
+            onClick={handleAddToCart} 
+            className="btn btn-sm btn-primary mt-2"
+          >
+            Add to Cart
+          </button>
+        )}
+         {article.available && !isAuthenticated() && (
+          <button 
+            onClick={handleAddToCart} 
+            className="btn btn-sm btn-primary mt-2"
+          >
+            Add to Cart
+          </button>
         )}
       </div>
     </div>

@@ -25,11 +25,21 @@ class JWTAuthenticatedListener
     {
         $payload = $event->getData();
         $subject = $event->getUser();
+        $subscribeTopics = [];
 
-        if ($subject instanceof Restaurant) {
+        if ($subject instanceof Restaurant && $subject->getId()) {
             $payload['restaurant_id'] = $subject->getId();
-        } elseif ($subject instanceof User) {
+            // Topic for this specific restaurant's notifications
+            $subscribeTopics[] = sprintf("/restaurants/%d/notifications", $subject->getId());
+            // Potentially other general topics a restaurant might listen to
+            // $subscribeTopics[] = "/restaurants/all/updates"; 
+
+        } elseif ($subject instanceof User && $subject->getId()) {
             $payload['user_id'] = $subject->getId();
+            // Topic for this specific user's notifications
+            $subscribeTopics[] = sprintf("/users/%d/notifications", $subject->getId());
+            // Potentially other general topics a user might listen to
+            // $subscribeTopics[] = "/users/all/promotions";
         }
 
         $addressEntity = null;
@@ -48,6 +58,14 @@ class JWTAuthenticatedListener
             ];
         } else {
             $payload['address'] = null;
+        }
+
+        // Add Mercure claims if there are topics to subscribe to
+        if (!empty($subscribeTopics)) {
+            $payload['mercure'] = [
+                'subscribe' => $subscribeTopics,
+                // 'publish' => [] // Optionally, if users/restaurants can publish to certain topics directly
+            ];
         }
 
         $event->setData($payload);

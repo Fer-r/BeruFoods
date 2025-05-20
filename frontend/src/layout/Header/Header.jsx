@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useCart } from '../../context/CartContext.jsx';
 import { FaUserCircle, FaShoppingCart } from 'react-icons/fa';
 import { GrRestaurant } from "react-icons/gr";
+import NotificationBell from '../../components/NotificationBell';
 
 const Header = () => {
   const { isLoginModalOpen, openLoginModal, closeLoginModal } = useModal();
@@ -69,30 +70,34 @@ const Header = () => {
             )}
           </div>
 
-          <div className="navbar-end">
+          <div className="navbar-end space-x-2">
             {isAuthenticated() ? (
               isRestaurant ? (
-                <div className="dropdown dropdown-end">
-                  <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                    <div className="w-10 h-10 rounded-full bg-base-200 relative">
-                      <GrRestaurant className="w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                    </div>
-                  </label>
-                  <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                    <li>
-                      <NavLink to="/restaurant/profile">Profile</NavLink>
-                    </li>
-                    <li><button onClick={logOut}>Logout</button></li>
-                    <li className="divider lg:hidden"></li>
-                    <li className="lg:hidden"><NavLink to="/restaurant/dashboard">Dashboard</NavLink></li>
-                    <li className="lg:hidden"><NavLink to="/restaurant/orders">Order History</NavLink></li>
-                    <li className="lg:hidden"><NavLink to="/restaurant/bookings">Booking History</NavLink></li>
-                    <li className="lg:hidden"><NavLink to="/restaurant/articles">Articles</NavLink></li>
-                  </ul>
-                </div>
+                <>
+                  <NotificationBell />
+                  <div className="dropdown dropdown-end">
+                    <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+                      <div className="w-10 h-10 rounded-full bg-base-200 relative">
+                        <GrRestaurant className="w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                      </div>
+                    </label>
+                    <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+                      <li>
+                        <NavLink to="/restaurant/profile">Profile</NavLink>
+                      </li>
+                      <li><button onClick={logOut}>Logout</button></li>
+                      <li className="divider lg:hidden"></li>
+                      <li className="lg:hidden"><NavLink to="/restaurant/dashboard">Dashboard</NavLink></li>
+                      <li className="lg:hidden"><NavLink to="/restaurant/orders">Order History</NavLink></li>
+                      <li className="lg:hidden"><NavLink to="/restaurant/bookings">Booking History</NavLink></li>
+                      <li className="lg:hidden"><NavLink to="/restaurant/articles">Articles</NavLink></li>
+                    </ul>
+                  </div>
+                </>
               ) : isUser ? (
                 <>
-                  <NavLink to="/cart" className="btn btn-ghost btn-circle mr-4 indicator">
+                  <NotificationBell />
+                  <NavLink to="/cart" className="btn btn-ghost btn-circle mr-0 indicator">
                     {totalCartItems > 0 && (
                       <span className="indicator-item badge badge-secondary badge-sm">{totalCartItems}</span>
                     )}

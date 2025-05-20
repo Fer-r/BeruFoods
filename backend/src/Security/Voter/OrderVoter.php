@@ -54,7 +54,7 @@ class OrderVoter extends Voter
 
                 // Check: Is the order currently in a state the restaurant can change?
                 $currentState = $orderSubject->getStatus();
-                $modifiableStates = ['pendiente', 'preparando']; // Restaurant can change from these states
+                $modifiableStates = ['pending', 'preparing']; // Restaurant can change from these states
 
                 return in_array($currentState, $modifiableStates);
         }

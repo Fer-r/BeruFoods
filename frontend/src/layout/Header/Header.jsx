@@ -55,9 +55,9 @@ const Header = () => {
           <div className="navbar-center hidden lg:flex">
             {isRestaurant && (
               <ul className="menu menu-horizontal px-1">
-                <li><NavLink to="/restaurant/dashboard">Dashboard</NavLink></li>
+                {/* <li><NavLink to="/restaurant/dashboard">Dashboard</NavLink></li> */}
                 <li><NavLink to="/restaurant/orders">Order History</NavLink></li>
-                <li><NavLink to="/restaurant/bookings">Booking History</NavLink></li>
+                {/* <li><NavLink to="/restaurant/bookings">Booking History</NavLink></li> */}
                 <li><NavLink to="/restaurant/articles">Articles</NavLink></li>
               </ul>
             )}
@@ -84,7 +84,7 @@ const Header = () => {
                     </li>
                     <li><button onClick={logOut}>Logout</button></li>
                     <li className="divider lg:hidden"></li>
-                    <li className="lg:hidden"><NavLink to="/restaurant/dashboard">Dashboard</NavLink></li>
+                    {/* <li className="lg:hidden"><NavLink to="/restaurant/dashboard">Dashboard</NavLink></li> */}
                     <li className="lg:hidden"><NavLink to="/restaurant/orders">Order History</NavLink></li>
                     <li className="lg:hidden"><NavLink to="/restaurant/bookings">Booking History</NavLink></li>
                     <li className="lg:hidden"><NavLink to="/restaurant/articles">Articles</NavLink></li>

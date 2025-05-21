@@ -13,7 +13,7 @@ const HomeHandler = () => {
   }
 
   if (isRestaurant) {
-    return <Navigate to="/restaurant/dashboard" replace />;
+    return <Navigate to="/restaurant/profile" replace />;
   }
 
   return (

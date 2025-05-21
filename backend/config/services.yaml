@@ -13,7 +13,7 @@ parameters:
     article_images_directory: '%kernel.project_dir%/public/uploads/article_images'
     # Public base path for article images
     article_images_public_path: '/uploads/article_images/'
-
+    # TODO : Modify this path 
     # Define the directory where images will be uploaded
     uploads_directory: '%kernel.project_dir%/public/uploads/images' # Or your desired path
 

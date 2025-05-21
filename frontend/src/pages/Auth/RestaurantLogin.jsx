@@ -14,7 +14,7 @@ const RestaurantLogin = () => {
 
   useEffect(() => {
     if (entity && token) {
-      navigate('/restaurant/dashboard');
+      navigate('/restaurant/profile');
     }
   }, [entity, token, navigate]);
 

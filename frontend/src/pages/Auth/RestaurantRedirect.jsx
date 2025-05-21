@@ -18,7 +18,7 @@ const RestaurantRedirect = () => {
       }
 
       if (hasRestaurantRole) {
-        navigate('/restaurant/dashboard');
+        navigate('/restaurant/profile');
       } else {
         // If authenticated but not a restaurant, redirect to home
         navigate('/');

@@ -10,9 +10,9 @@ parameters:
     restaurant_images_public_path: '/uploads/images/restaurants' # Path accessible from the web
 
     # Path for article image uploads
-    article_images_directory: '%kernel.project_dir%/public/uploads/article_images'
+    article_images_directory: '%kernel.project_dir%/public/uploads/images/article_images'
     # Public base path for article images
-    article_images_public_path: '/uploads/article_images/'
+    article_images_public_path: '/uploads/images/article_images/'
 
     # Define the directory where images will be uploaded
     uploads_directory: '%kernel.project_dir%/public/uploads/images' # Or your desired path

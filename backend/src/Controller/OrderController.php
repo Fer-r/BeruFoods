@@ -27,7 +27,7 @@ final class OrderController extends AbstractController
     use ApiResponseTrait;
 
     #[Route('', name: 'api_order_index', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')] // Requires at least a logged-in user (specific filtering below)
+    #[IsGranted('IS_AUTHENTICATED_FULLY')] // Requires authentication (specific role filtering below)
     public function index(OrderRepository $orderRepository, Request $request): JsonResponse
     {
         $currentUser = $this->getUser();
@@ -49,6 +49,35 @@ final class OrderController extends AbstractController
             $qb->andWhere('o.user = :userId')->setParameter('userId', $currentUser->getId());
         } else {
             return $this->apiErrorResponse('Unauthorized access to orders.', Response::HTTP_FORBIDDEN);
+        }
+
+        // Status filtering
+        if ($status = $request->query->get('status')) {
+            $validStatuses = ['pending', 'preparing', 'delivered', 'cancelled'];
+            if (in_array($status, $validStatuses)) {
+                $qb->andWhere('o.status = :status')->setParameter('status', $status);
+            }
+        }
+
+        // Date filtering
+        if ($dateFrom = $request->query->get('dateFrom')) {
+            try {
+                $fromDate = new \DateTime($dateFrom);
+                $fromDate->setTime(0, 0, 0); // Start of day
+                $qb->andWhere('o.created_at >= :dateFrom')->setParameter('dateFrom', $fromDate);
+            } catch (\Exception $e) {
+                // Invalid date format, ignore filter
+            }
+        }
+
+        if ($dateTo = $request->query->get('dateTo')) {
+            try {
+                $toDate = new \DateTime($dateTo);
+                $toDate->setTime(23, 59, 59); // End of day
+                $qb->andWhere('o.created_at <= :dateTo')->setParameter('dateTo', $toDate);
+            } catch (\Exception $e) {
+                // Invalid date format, ignore filter
+            }
         }
 
         // Apply pagination
@@ -147,8 +176,8 @@ final class OrderController extends AbstractController
         $currentState = $order->getStatus();
 
         $allowedTransitions = [
-            'pendiente' => ['preparando', 'cancelado'],
-            'preparando' => ['entregado', 'cancelado']
+            'pending' => ['preparing', 'cancelled'],
+            'preparing' => ['delivered', 'cancelled']
         ];
 
         if (!isset($allowedTransitions[$currentState]) || !in_array($newState, $allowedTransitions[$currentState])) {

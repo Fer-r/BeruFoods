@@ -33,8 +33,7 @@ const useUserOrders = (initialPageSize = 10) => {
         `/orders?page=${currentPage}&limit=${initialPageSize}`,
         'GET',
         null,
-        true, // isProtected
-        token
+        true // isProtected
       );
 
       if (data && data.items) {

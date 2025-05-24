@@ -49,7 +49,7 @@ const RestaurantList = ({
         gridItemClassName="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2"
         loader={isLoadingMore ? <p className="text-center py-4 col-span-full">Loading more...</p> : <div /> }
         endMessage={<p className="text-center py-4 col-span-full"><b>You have seen it all!</b></p>}
-        scrollThreshold="0.95" 
+        scrollThreshold="95%" 
         isLoadingMore={isLoadingMore} 
       />
     );

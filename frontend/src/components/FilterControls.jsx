@@ -46,7 +46,7 @@ const FilterControls = ({
           <input
             id="locationSearch"
             type="text"
-            placeholder="City, Province, or Address..."
+            placeholder="City or Address..."
             className="input input-bordered w-full p-4 bg-base-200 text-lg focus:outline-none focus:border-primary"
             value={locationInputText}
             onChange={onLocationInputChange}

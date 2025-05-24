@@ -42,10 +42,10 @@ class JWTAuthenticatedListener
         if ($addressEntity) {
             $payload['address'] = [
                 'address_line' => $addressEntity->getAddressLine(),
-                'province' => $addressEntity->getProvince(),
                 'latitude' => $addressEntity->getLat(),
                 'longitude' => $addressEntity->getLng(),
             ];
+            $subject instanceof Restaurant ? $payload['address']['city'] = null : $payload['address']['city'] = $addressEntity->getCity();
         } else {
             $payload['address'] = null;
         }

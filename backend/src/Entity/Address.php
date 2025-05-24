@@ -16,7 +16,7 @@ class Address
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 100)]
-    protected ?string $province = null;
+    protected ?string $city = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 7, nullable: false)]
     #[Assert\NotBlank]
@@ -34,14 +34,14 @@ class Address
         return $this->id;
     }
 
-    public function getProvince(): ?string
+    public function getCity(): ?string
     {
-        return $this->province;
+        return $this->city;
     }
 
-    public function setProvince(?string $province): static
+    public function setCity(?string $city): static
     {
-        $this->province = $province;
+        $this->city = $city;
         return $this;
     }
 

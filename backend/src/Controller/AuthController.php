@@ -81,7 +81,7 @@ final class AuthController extends AbstractController
             $userAddress->setAddressLine($addressData['address_line'] ?? null);
             $userAddress->setLat($addressData['lat'] ?? null);
             $userAddress->setLng($addressData['lng'] ?? null);
-            $userAddress->setProvince($addressData['province'] ?? null);
+            $userAddress->setCity($addressData['city'] ?? null);
             $user->setAddress($userAddress); // Associate for validation only if address data is provided
         }
         // If addressData is not an array, $user->address remains null (or uninitialized).
@@ -161,8 +161,8 @@ final class AuthController extends AbstractController
         }
 
         // Address structure validation
-        if (!isset($addressData['address_line']) || !isset($addressData['lat']) || !isset($addressData['lng']) || !isset($addressData['province'])) {
-             return $this->json(['message' => 'Invalid address structure in \'address\' field. Required keys: address_line, lat, lng, province'], Response::HTTP_BAD_REQUEST);
+        if (!isset($addressData['address_line']) || !isset($addressData['lat']) || !isset($addressData['lng'])) {
+             return $this->json(['message' => 'Invalid address structure in \'address\' field. Required keys: address_line, lat, lng'], Response::HTTP_BAD_REQUEST);
         }
          // Food type IDs validation
         if (empty($foodTypeIds)) { // Already checked if it's an array and not empty above
@@ -253,7 +253,7 @@ final class AuthController extends AbstractController
         $address->setAddressLine($addressData['address_line']);
         $address->setLat($addressData['lat']); // Assuming these are strings from JSON
         $address->setLng($addressData['lng']);
-        $address->setProvince($addressData['province']);
+        // RestaurantAddress doesn't use city/province
         $address->setRestaurant($restaurant); // Link address to restaurant
         $restaurant->setAddress($address); // Link restaurant to address
 

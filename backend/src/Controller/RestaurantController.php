@@ -390,7 +390,7 @@ final class RestaurantController extends AbstractController
             // Assuming setters are called, if addressModified is true, then _entityWasModified_ should be true
             if ($addressModified) {
                  // Set all fields before this point
-                $allowedAddressFields = ['address_line', 'province', 'lat', 'lng'];
+                $allowedAddressFields = ['address_line', 'lat', 'lng'];
                 foreach($allowedAddressFields as $field) {
                     if (array_key_exists($field, $addressData)) {
                         $setterMethod = 'set' . ucfirst(str_replace('_', '', ucwords($field, '_')));

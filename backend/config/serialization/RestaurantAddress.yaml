@@ -9,7 +9,5 @@ App\Entity\RestaurantAddress:
             groups: ['restaurant:read', 'restaurant:read:collection'] # Lat/Lng needed for list view map?
         lng:
             groups: ['restaurant:read', 'restaurant:read:collection']
-        province:
-            groups: ['restaurant:read', 'restaurant:read:collection']
         # restaurant: # Avoid serializing back to restaurant
         #     groups: [] 

@@ -5,7 +5,7 @@ App\Entity\UserAddress:
             groups: ['user:read'] # Show ID when address is included
         address_line:
             groups: ['user:read']
-        province:
+        city:
             groups: ['user:read']
         lat:
             groups: ['user:read']

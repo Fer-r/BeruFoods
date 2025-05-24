@@ -92,7 +92,7 @@ final class UserController extends AbstractController
             if ($userAddress) {
                 $allowedAddressFieldsToUpdate = [
                     'address_line' => 'setAddressLine',
-                    'province' => 'setProvince',
+                    'city' => 'setCity',
                     'lat' => 'setLat',
                     'lng' => 'setLng',
                 ];

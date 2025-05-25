@@ -6,7 +6,7 @@ import { fetchDataFromEndpoint } from '../../services/useApiService';
 import FoodTypeModal from '../Auth/components/FoodTypeModal'; 
 import StyledInput from '../../components/StyledInput';
 import AlertMessage from '../../components/AlertMessage';
-// import RadarMapDisplay from '../../components/RadarMapDisplay'; // Address update deferred
+// import GoogleMapDisplay from '../../components/GoogleMapDisplay'; // Address update deferred
 
 const RestaurantProfilePage = () => {
   const { entity, token, logOut } = useAuth();
@@ -19,11 +19,11 @@ const RestaurantProfilePage = () => {
     openingTime: '',
     closingTime: '',
     selectedFoodTypeIds: [],
-    // address fields can be added here if RadarMapDisplay is used
+    // address fields can be added here if GoogleMapDisplay is used
     // fullAddress: '',
     // lat: null,
     // lng: null,
-    // province: '',
+    // Restaurant addresses don't use city
   });
   const [imageFile, setImageFile] = useState(null);
   const [currentImageUrl, setCurrentImageUrl] = useState('');
@@ -66,7 +66,7 @@ const RestaurantProfilePage = () => {
           // fullAddress: data.address?.address_line || '',
           // lat: data.address?.lat || null,
           // lng: data.address?.lng || null,
-          // province: data.address?.province || '',
+          // Restaurant addresses don't use city
         });
         setCurrentImageUrl(data.imageUrl || '');
       } catch (err) {
@@ -111,7 +111,7 @@ const RestaurantProfilePage = () => {
   //       fullAddress: addressDetails.fullAddress,
   //       lat: addressDetails.lat,
   //       lng: addressDetails.lng,
-  //       province: addressDetails.province,
+        //       Restaurant addresses don't use city
   //   }));
   //   if (error === 'Please select a valid address using the autocomplete search.') {
   //       setError('');
@@ -330,10 +330,10 @@ const RestaurantProfilePage = () => {
             </div>
         )}
         
-        {/* RadarMapDisplay for address update - Deferred
+        {/* GoogleMapDisplay for address update - Deferred
         <div className="w-full mt-4">
             <label className="label"><span className="label-text">Update Address (Optional)</span></label>
-            <RadarMapDisplay
+            <GoogleMapDisplay
                 onAddressSelect={handleAddressSelected}
                 initialLat={formData.lat}
                 initialLng={formData.lng}
@@ -342,7 +342,7 @@ const RestaurantProfilePage = () => {
             {formData.fullAddress && (
             <div className="text-xs text-gray-600 mt-2 p-2 bg-base-200 rounded">
                 Selected: {formData.fullAddress}<br/>
-                (Lat: {formData.lat}, Lng: {formData.lng}, Province: {formData.province})
+                (Lat: {formData.lat}, Lng: {formData.lng})
             </div>
             )}
         </div>

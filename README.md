@@ -40,6 +40,17 @@ Este proyecto utiliza Docker y Docker Compose para crear un entorno de desarroll
     APP_ENV=dev
     APP_SECRET=tu_secreto_aqui # Cambia esto por un secreto real
 
+    # CORS Configuration
+    CORS_ALLOW_ORIGIN=^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$
+
+    # Google Maps API Configuration (Frontend)
+    # Get your API key from: https://console.cloud.google.com/apis/credentials
+    # Make sure to enable: Maps JavaScript API, Places API, Geocoding API
+    VITE_GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY_HERE
+
+    # API Base URL (Frontend)
+    VITE_URL_API=http://localhost/api
+
     # Opcional: Versión de MySQL si es diferente a la configurada en docker-compose.yml
     # MYSQL_VERSION=8.0
     ```
@@ -97,5 +108,34 @@ El `Makefile` proporciona atajos convenientes para las operaciones comunes de Do
 *   `make frontend`: Construir assets del frontend para producción (ejecuta `npm run build`).
 
 Para ver todos los comandos disponibles, ejecuta `make help` o simplemente `make`.
+
+## Configuración de Google Maps API
+
+Este proyecto utiliza Google Maps API para funcionalidades de ubicación y mapas. Para configurarlo:
+
+1. **Crear un proyecto en Google Cloud Console:**
+   - Ve a [Google Cloud Console](https://console.cloud.google.com/)
+   - Crea un nuevo proyecto o selecciona uno existente
+
+2. **Habilitar las APIs necesarias:**
+   - Maps JavaScript API
+   - Places API
+   - Geocoding API
+
+3. **Crear credenciales:**
+   - Ve a "APIs y servicios" > "Credenciales"
+   - Haz clic en "Crear credenciales" > "Clave de API"
+   - Copia la clave generada
+
+4. **Configurar restricciones (recomendado):**
+   - Restringe la clave a tu dominio para mayor seguridad
+   - Limita las APIs que puede usar la clave
+
+5. **Agregar la clave al archivo `.env`:**
+   ```
+   VITE_GOOGLE_MAPS_API_KEY=tu_clave_de_api_aqui
+   ```
+
+**Nota:** Sin una clave de API válida, las funcionalidades de ubicación usarán valores por defecto y la búsqueda de direcciones no funcionará.
 
 

@@ -253,7 +253,7 @@ final class AuthController extends AbstractController
         $address->setAddressLine($addressData['address_line']);
         $address->setLat($addressData['lat']); // Assuming these are strings from JSON
         $address->setLng($addressData['lng']);
-        // RestaurantAddress doesn't use city/province
+        $address->setCity($addressData['city'] ?? null); // Set city field to satisfy validation
         $address->setRestaurant($restaurant); // Link address to restaurant
         $restaurant->setAddress($address); // Link restaurant to address
 

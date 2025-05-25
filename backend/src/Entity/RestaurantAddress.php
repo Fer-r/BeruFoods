@@ -17,6 +17,7 @@ class RestaurantAddress extends Address
     #[Assert\Length(min: 5, max: 500)]
     protected string $address_line;
 
+    #[Assert\Length(max: 100)]
     protected ?string $city = null;
 
 
@@ -48,11 +49,12 @@ class RestaurantAddress extends Address
 
     public function getCity(): ?string
     {
-        return null;
+        return $this->city;
     }
 
     public function setCity(?string $city): static
     {
+        $this->city = $city;
         return $this;
     }
 } 

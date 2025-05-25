@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import RadarMapDisplay from '../../components/RadarMapDisplay';
+import GoogleMapDisplay from '../../components/GoogleMapDisplay';
 import useFoodTypes from '../../hooks/useFoodTypes';
 import useRestaurantRegistration from '../../hooks/useRestaurantRegistration';
 import FoodTypeModal from './components/FoodTypeModal';
@@ -179,15 +179,10 @@ const RestaurantRegister = () => {
             {imageFile && <p className="text-xs mt-1 text-gray-500">Selected: {imageFile.name}</p>}
 
             <div className="w-full mt-4">
-              <RadarMapDisplay
+              <GoogleMapDisplay
                   onAddressSelect={onAddressSelect}
+                  showMap={false}
               />
-              {formData.fullAddress && (
-                <div className="text-xs text-gray-600 mt-2 p-2 bg-gray-100 rounded">
-                    Selected: {formData.fullAddress}<br/>
-                    (Lat: {formData.lat}, Lng: {formData.lng}, Province: {formData.province})
-                </div>
-              )}
             </div>
 
             <button type="submit" className="btn btn-primary w-full mt-6" disabled={loading}>

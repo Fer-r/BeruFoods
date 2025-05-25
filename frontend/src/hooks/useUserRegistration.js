@@ -47,8 +47,11 @@ const useUserRegistration = () => {
       city: addressDetails.city || '',
       fullAddress: addressDetails.fullAddress || '',
     }));
-    setError('');
-  }, []);
+    // Clear address-related error when a valid address is selected
+    if (error === 'Please select a valid address using the autocomplete search.') {
+      setError('');
+    }
+  }, [error]);
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
@@ -156,7 +159,8 @@ const useUserRegistration = () => {
     loading,
     handleChange,
     handleSubmit,
-    handleAddressSelected
+    handleAddressSelected,
+    setError
   };
 };
 

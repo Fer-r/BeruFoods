@@ -23,7 +23,7 @@ const RestaurantDetailsDisplay = ({ restaurant }) => (
         )}
         {restaurant.address && (
           <p className="text-sm text-base-content opacity-75 mb-1">
-            {restaurant.address.address_line}, {restaurant.address.city}, {restaurant.address.postal_code}, {restaurant.address.province}
+            {restaurant.address.address_line}
           </p>
         )}
         {restaurant.openingTime && restaurant.closingTime && (

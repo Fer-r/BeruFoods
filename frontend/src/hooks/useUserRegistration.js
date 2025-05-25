@@ -17,9 +17,10 @@ const initialFormData = {
   name: '',
   phone: '',
   addressLine: '',
+  addressLine2: '',
   lat: '',
   lng: '',
-  province: '',
+  city: '',
   fullAddress: ''
 };
 
@@ -43,7 +44,7 @@ const useUserRegistration = () => {
       addressLine: addressDetails.addressLine || '',
       lat: addressDetails.lat || '',
       lng: addressDetails.lng || '',
-      province: addressDetails.province || '',
+      city: addressDetails.city || '',
       fullAddress: addressDetails.fullAddress || '',
     }));
     setError('');
@@ -83,8 +84,8 @@ const useUserRegistration = () => {
     const lngError = validateRequired(formData.lng, 'Longitude');
     if (lngError) { setError(lngError); return; }
 
-    const provinceError = validateRequired(formData.province, 'Province');
-    if (provinceError) { setError(provinceError); return; }
+    const cityError = validateRequired(formData.city, 'City');
+    if (cityError) { setError(cityError); return; }
 
     if (formData.name) {
       const nameError = validateMinLength(formData.name, 2, 'Full Name');
@@ -99,16 +100,21 @@ const useUserRegistration = () => {
     setLoading(true);
 
     try {
+      const addressLines = [formData.addressLine];
+      if (formData.addressLine2 && formData.addressLine2.trim()) {
+        addressLines.push(formData.addressLine2.trim());
+      }
+
       const registrationData = {
         email: formData.email,
         password: formData.password,
         name: formData.name || null,
         phone: formData.phone || null,
         address: {
-          address_line: [formData.addressLine],
+          address_line: addressLines,
           lat: formData.lat,
           lng: formData.lng,
-          province: formData.province,
+          city: formData.city,
         }
       };
 

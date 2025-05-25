@@ -1,11 +1,11 @@
+import GoogleMapDisplay from './GoogleMapDisplay';
 
 const FilterControls = ({
   searchText,
   onSearchChange,
   searchInputRef,
   locationInputText,
-  onLocationInputChange,
-  onLocationSearch,
+  onLocationSelect,
   isOpenNow,
   onIsOpenNowChange,
   selectedRadius,
@@ -39,19 +39,12 @@ const FilterControls = ({
 
       {/* Location Search Bar */}
       <div className="md:col-span-1">
-        <label htmlFor="locationSearch" className="label">
-          <span className="label-text">Near</span>
-        </label>
-        <div className="flex gap-2">
-          <input
-            id="locationSearch"
-            type="text"
+        <div className="location-search-container">
+          <GoogleMapDisplay 
+            onAddressSelect={onLocationSelect} 
+            showMap={false}
             placeholder="City or Address..."
-            className="input input-bordered w-full p-4 bg-base-200 text-lg focus:outline-none focus:border-primary"
-            value={locationInputText}
-            onChange={onLocationInputChange}
-            onBlur={onLocationSearch} // Search on blur
-            onKeyPress={(e) => e.key === 'Enter' && onLocationSearch()} // Search on Enter
+            defaultValue={locationInputText}
           />
         </div>
       </div>

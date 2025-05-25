@@ -20,7 +20,7 @@ const initialFormData = {
   addressLine: '',
   lat: '',
   lng: '',
-  province: '',
+  city: '',
   fullAddress: '',
   selectedFoodTypeIds: [],
 };
@@ -75,7 +75,7 @@ const useRestaurantRegistration = () => {
         addressLine: addressDetails.addressLine,
         lat: addressDetails.lat,
         lng: addressDetails.lng,
-        province: addressDetails.province,
+        city: addressDetails.city,
         fullAddress: addressDetails.fullAddress,
     }));
     setError(''); // Clear error on change
@@ -138,7 +138,7 @@ const useRestaurantRegistration = () => {
       address_line: formData.addressLine,
       lat: formData.lat,
       lng: formData.lng,
-      province: formData.province,
+      city: formData.city,
     });
     submitFormData.append('address', addressPayload);
 

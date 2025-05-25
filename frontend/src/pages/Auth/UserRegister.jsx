@@ -3,7 +3,7 @@ import { useCallback, useEffect } from "react";
 import useUserRegistration from "../../hooks/useUserRegistration";
 import StyledInput from "../../components/StyledInput";
 import AlertMessage from "../../components/AlertMessage";
-import RadarMapDisplay from "../../components/RadarMapDisplay";
+import GoogleMapDisplay from "../../components/GoogleMapDisplay";
 import { useModal } from "../../context/ModalContext.jsx";
 
 const UserRegister = () => {
@@ -15,21 +15,15 @@ const UserRegister = () => {
     handleChange,
     handleSubmit,
     handleAddressSelected,
-    setError,
   } = useUserRegistration();
   const { openLoginModal } = useModal();
   const navigate = useNavigate();
 
   const onAddressSelect = useCallback(
     (addressDetails) => {
-      if (handleAddressSelected) {
-        handleAddressSelected(addressDetails);
-      }
-      if (error === "Please select a valid address.") {
-        if (setError) setError("");
-      }
+      handleAddressSelected(addressDetails);
     },
-    [handleAddressSelected, error, setError]
+    [handleAddressSelected]
   );
 
   useEffect(() => {
@@ -105,13 +99,18 @@ const UserRegister = () => {
         />
 
         <div className="form-control w-full">
-          <RadarMapDisplay onAddressSelect={onAddressSelect} showMap={false} />
-          {formData.fullAddress && (
-            <div className="text-xs text-gray-600 mt-1 p-1 bg-gray-50 rounded">
-              Selected: {formData.fullAddress}
-            </div>
-          )}
+          <GoogleMapDisplay onAddressSelect={onAddressSelect} showMap={false} />
         </div>
+
+        <StyledInput
+          type="text"
+          id="addressLine2"
+          name="addressLine2"
+          label="Address details (Optional)"
+          placeholder="Apartment, suite, unit, building, or floor"
+          value={formData.addressLine2 || ''}
+          onChange={handleChange}
+        />
 
         <button
           type="submit"

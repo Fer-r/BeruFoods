@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '../context/AuthContext';
-import LoadingFallback from '../components/LoadingFallback';
+import LoadingFallback from '../components/common/LoadingFallback';
 
 // Protected route for any authenticated user
 export const AuthenticatedRoute = ({ children }) => {

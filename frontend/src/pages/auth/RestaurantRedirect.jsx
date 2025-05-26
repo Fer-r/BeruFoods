@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { useAuth } from '../../../context/AuthContext.jsx'; // Import useAuth
+import { useAuth } from '../../context/AuthContext.jsx'; // Import useAuth
 
 const RestaurantRedirect = () => {
   const navigate = useNavigate();

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useCart } from '../../../context/CartContext';
-import CartItemCard from '../components/CartItemCard';
+import { useCart } from '../../context/CartContext.jsx';
+import CartItemCard from '../../features/cart/components/CartItemCard.jsx';
 import { Link, useNavigate } from 'react-router';
-import { fetchDataFromEndpoint } from '../../../services/useApiService';
-import AlertMessage from '../../../components/common/AlertMessage';
-import { useAuth } from '../../../context/AuthContext';
+import { fetchDataFromEndpoint } from '../../services/useApiService';
+import AlertMessage from '../../components/common/AlertMessage.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 const UserCartPage = () => {
   const { cartItems, getCartTotalPrice, clearCart, getRestaurantIdInCart } = useCart();

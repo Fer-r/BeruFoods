@@ -1,8 +1,8 @@
-import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
-import useUserOrders from '../hooks/useUserOrders';
-import OrderListItem from '../components/OrderListItem';
-import LoadingFallback from '../../../components/common/LoadingFallback';
-import AlertMessage from '../../../components/common/AlertMessage';
+import InfiniteScrollContainer from '../../components/common/InfiniteScrollContainer';
+import useUserOrders from '../../features/user/hooks/useUserOrders';
+import OrderListItem from '../../features/user/components/OrderListItem';
+import LoadingFallback from '../../components/common/LoadingFallback';
+import AlertMessage from '../../components/common/AlertMessage';
 
 const UserOrdersPage = () => {
   const { 

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { useAuth } from '../../../context/AuthContext';
-import useFoodTypes from '../hooks/useFoodTypes';
-import { fetchDataFromEndpoint } from '../../../services/useApiService';
-import FoodTypeModal from '../../auth/components/FoodTypeModal'; 
-import StyledInput from '../../../components/common/StyledInput';
-import AlertMessage from '../../../components/common/AlertMessage';
+import { useAuth } from '../../context/AuthContext.jsx';
+import useFoodTypes from '../../features/restaurant/hooks/useFoodTypes';
+import { fetchDataFromEndpoint } from '../../services/useApiService';
+import FoodTypeModal from '../../features/auth/components/FoodTypeModal'; 
+import StyledInput from '../../components/common/StyledInput';
+import AlertMessage from '../../components/common/AlertMessage';
 // import GoogleMapDisplay from '../../components/GoogleMapDisplay'; // Address update deferred
 
 const RestaurantProfilePage = () => {

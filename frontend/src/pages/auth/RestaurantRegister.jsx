@@ -1,11 +1,11 @@
 import { useEffect, useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import GoogleMapDisplay from '../../../components/common/GoogleMapDisplay';
-import useFoodTypes from '../../restaurant/hooks/useFoodTypes';
-import useRestaurantRegistration from '../../restaurant/hooks/useRestaurantRegistration';
-import FoodTypeModal from '../components/FoodTypeModal';
-import StyledInput from '../../../components/common/StyledInput';
-import AlertMessage from '../../../components/common/AlertMessage';
+import GoogleMapDisplay from '../../components/common/GoogleMapDisplay';
+import useFoodTypes from '../../features/restaurant/hooks/useFoodTypes';
+import useRestaurantRegistration from '../../features/restaurant/hooks/useRestaurantRegistration';
+import FoodTypeModal from '../../features/auth/components/FoodTypeModal';
+import StyledInput from '../../components/common/StyledInput';
+import AlertMessage from '../../components/common/AlertMessage';
 
 const RestaurantRegister = () => {
   const {

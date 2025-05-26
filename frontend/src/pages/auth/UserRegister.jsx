@@ -1,10 +1,10 @@
 import { Link, useNavigate } from "react-router";
 import { useCallback, useEffect } from "react";
-import useUserRegistration from "../hooks/useUserRegistration";
-import StyledInput from "../../../components/common/StyledInput";
-import AlertMessage from "../../../components/common/AlertMessage";
-import GoogleMapDisplay from "../../../components/common/GoogleMapDisplay";
-import { useModal } from "../../../context/ModalContext.jsx";
+import useUserRegistration from "../../features/auth/hooks/useUserRegistration";
+import StyledInput from "../../components/common/StyledInput";
+import AlertMessage from "../../components/common/AlertMessage";
+import GoogleMapDisplay from "../../components/common/GoogleMapDisplay";
+import { useModal } from "../../context/ModalContext.jsx";
 
 const UserRegister = () => {
   const {

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router';
-import { fetchDataFromEndpoint } from '../../../services/useApiService';
-import { useAuth } from '../../../context/AuthContext';
-import AlertMessage from '../../../components/common/AlertMessage';
-import LoadingFallback from '../../../components/common/LoadingFallback';
-import useRestaurantArticles from '../../restaurant/hooks/useRestaurantArticles';
+import { fetchDataFromEndpoint } from '../../services/useApiService';
+import { useAuth } from '../../context/AuthContext.jsx';
+import AlertMessage from '../../components/common/AlertMessage.jsx';
+import LoadingFallback from '../../components/common/LoadingFallback.jsx';
+import useRestaurantArticles from '../../features/restaurant/hooks/useRestaurantArticles';
 
 const OrderDetailsPage = () => {
   const { orderId } = useParams();

@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import useRestaurants from '../../restaurant/hooks/useRestaurants';
-import useFoodTypes from '../../restaurant/hooks/useFoodTypes';
-import useGoogleLocation, { DEFAULT_LOCATION } from '../../../hooks/useGoogleLocation';
-import { useAuth } from '../../../context/AuthContext';
-import FilterControls from '../../restaurant/components/FilterControls';
-import CuisineFilter from '../../restaurant/components/CuisineFilter';
-import RestaurantList from '../../restaurant/components/RestaurantList';
+import useRestaurants from '../../features/restaurant/hooks/useRestaurants';
+import useFoodTypes from '../../features/restaurant/hooks/useFoodTypes';
+import useGoogleLocation, { DEFAULT_LOCATION } from '../../hooks/useGoogleLocation';
+import { useAuth } from '../../context/AuthContext.jsx';
+import FilterControls from '../../features/restaurant/components/FilterControls';
+import CuisineFilter from '../../features/restaurant/components/CuisineFilter';
+import RestaurantList from '../../features/restaurant/components/RestaurantList';
 
 
 const Home = () => {

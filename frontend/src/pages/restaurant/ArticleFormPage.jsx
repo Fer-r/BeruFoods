@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { useAuth } from '../../../context/AuthContext';
-import articleService from '../services/articleService'; // Using actual service
-import LoadingFallback from '../../../components/common/LoadingFallback';
+import { useAuth } from '../../context/AuthContext.jsx';
+import articleService from '../../features/restaurant/services/articleService'; // Using actual service
+import LoadingFallback from '../../components/common/LoadingFallback';
 
 // TODO: Later, import PATHS from router or a constants file if it's extracted
 const PATHS = {

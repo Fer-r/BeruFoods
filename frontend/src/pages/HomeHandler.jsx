@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import LoadingFallback from '../components/common/LoadingFallback';
 import { Suspense, lazy } from 'react';
 
-const Home = lazy(() => import("../features/home/pages/Home.jsx"));
+const Home = lazy(() => import("./home/Home.jsx"));
 
 const HomeHandler = () => {
   const { loading, isRestaurant } = useAuth();

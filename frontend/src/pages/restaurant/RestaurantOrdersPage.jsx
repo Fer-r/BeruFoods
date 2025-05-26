@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { MdAccessTime, MdRestaurantMenu, MdCheckCircle, MdCancel } from 'react-icons/md';
-import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
-import useRestaurantOrders from '../hooks/useRestaurantOrders';
-import RestaurantOrderItem from '../components/RestaurantOrderItem';
-import DateFilter from '../components/DateFilter';
-import LoadingFallback from '../../../components/common/LoadingFallback';
-import AlertMessage from '../../../components/common/AlertMessage';
+import InfiniteScrollContainer from '../../components/common/InfiniteScrollContainer';
+import useRestaurantOrders from '../../features/restaurant/hooks/useRestaurantOrders';
+import RestaurantOrderItem from '../../features/restaurant/components/RestaurantOrderItem';
+import DateFilter from '../../features/restaurant/components/DateFilter';
+import LoadingFallback from '../../components/common/LoadingFallback';
+import AlertMessage from '../../components/common/AlertMessage';
 
 const RestaurantOrdersPage = () => {
   const { 

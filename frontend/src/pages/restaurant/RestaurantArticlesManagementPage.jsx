@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
-import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
-import RestaurantArticleCard from '../components/RestaurantArticleCard';
-import useRestaurantOwnedArticles from '../hooks/useRestaurantOwnedArticles';
-import LoadingFallback from '../../../components/common/LoadingFallback';
-import articleService from '../services/articleService';
+import InfiniteScrollContainer from '../../components/common/InfiniteScrollContainer';
+import RestaurantArticleCard from '../../features/restaurant/components/RestaurantArticleCard';
+import useRestaurantOwnedArticles from '../../features/restaurant/hooks/useRestaurantOwnedArticles';
+import LoadingFallback from '../../components/common/LoadingFallback';
+import articleService from '../../features/restaurant/services/articleService';
 
 // TODO: Later, import PATHS from router or a constants file if it's extracted
 const PATHS = {

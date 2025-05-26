@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router';
-import { validateEmail, validatePassword } from '../../../utils/formValidation';
-import StyledInput from '../../../components/common/StyledInput';
-import AlertMessage from '../../../components/common/AlertMessage';
-import { useAuth } from '../../../context/AuthContext.jsx';
+import { validateEmail, validatePassword } from '../../utils/formValidation';
+import StyledInput from '../../components/common/StyledInput';
+import AlertMessage from '../../components/common/AlertMessage';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 const RestaurantLogin = () => {
   const [email, setEmail] = useState('');

@@ -1,8 +1,8 @@
 import { useParams } from "react-router";
-import InfiniteScrollContainer from "../../../components/common/InfiniteScrollContainer";
-import useRestaurantDetails from '../hooks/useRestaurantDetails';
-import useRestaurantArticles from '../hooks/useRestaurantArticles';
-import ArticleCard from '../components/ArticleCard';
+import InfiniteScrollContainer from "../../components/common/InfiniteScrollContainer";
+import useRestaurantDetails from '../../features/restaurant/hooks/useRestaurantDetails';
+import useRestaurantArticles from '../../features/restaurant/hooks/useRestaurantArticles';
+import ArticleCard from '../../features/restaurant/components/ArticleCard';
 
 
 // Helper component to display restaurant details

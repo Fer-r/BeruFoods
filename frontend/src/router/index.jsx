@@ -1,30 +1,30 @@
 import { createBrowserRouter } from "react-router";
 import { Suspense, lazy } from 'react';
-import PublicHeaderLayout from "../layout/PublicHeaderLayout.jsx";
-import MinimalLayout from "../layout/MinimalLayout";
-import AuthLayout from "../layout/AuthLayout.jsx";
-import LoadingFallback from "../components/LoadingFallback.jsx";
+import PublicHeaderLayout from "../layouts/PublicHeaderLayout.jsx";
+import MinimalLayout from "../layouts/MinimalLayout";
+import AuthLayout from "../layouts/AuthLayout.jsx";
+import LoadingFallback from "../components/common/LoadingFallback.jsx";
 import { RestaurantRoute, UserRoute } from "./ProtectedRoutes.jsx";
 
 // Page Components
 const ErrorPage = lazy(() => import("../pages/ErrorPage.jsx"));
 const HomeHandler = lazy(() => import("../pages/HomeHandler.jsx"));
-const UserRegister = lazy(() => import("../pages/Auth/UserRegister"));
-const RestaurantLogin = lazy(() => import("../pages/Auth/RestaurantLogin.jsx"));
-const RestaurantDashboard = lazy(() => import("../pages/Restaurant/RestaurantDashboard.jsx"));
-const RestaurantRedirect = lazy(() => import("../pages/Auth/RestaurantRedirect.jsx"));
-const RestaurantRegister = lazy(() => import("../pages/Auth/RestaurantRegister"));
-const RestaurantMenuPage = lazy(() => import("../pages/RestaurantMenuPage.jsx"));
-const RestaurantProfilePage = lazy(() => import("../pages/Restaurant/RestaurantProfilePage.jsx"));
-const RestaurantOrdersPage = lazy(() => import("../pages/Restaurant/RestaurantOrdersPage.jsx"));
-const RestaurantBookingsPage = lazy(() => import("../pages/Restaurant/RestaurantBookingsPage.jsx"));
-const RestaurantArticlesManagementPage = lazy(() => import("../pages/Restaurant/RestaurantArticlesManagementPage.jsx"));
-const ArticleFormPage = lazy(() => import("../pages/Restaurant/ArticleFormPage.jsx"));
-const UserProfilePage = lazy(() => import("../pages/User/UserProfilePage.jsx"));
-const UserOrdersPage = lazy(() => import("../pages/User/UserOrdersPage.jsx"));
-const UserReservationsPage = lazy(() => import("../pages/User/UserReservationsPage.jsx"));
-const UserCartPage = lazy(() => import("../pages/User/UserCartPage.jsx"));
-const OrderDetailsPage = lazy(() => import("../pages/User/OrderDetailsPage.jsx"));
+const UserRegister = lazy(() => import("../pages/auth/UserRegister.jsx"));
+const RestaurantLogin = lazy(() => import("../pages/auth/RestaurantLogin.jsx"));
+const RestaurantDashboard = lazy(() => import("../pages/restaurant/RestaurantDashboard.jsx"));
+const RestaurantRedirect = lazy(() => import("../pages/auth/RestaurantRedirect.jsx"));
+const RestaurantRegister = lazy(() => import("../pages/auth/RestaurantRegister.jsx"));
+const RestaurantMenuPage = lazy(() => import("../pages/restaurant/RestaurantMenuPage.jsx"));
+const RestaurantProfilePage = lazy(() => import("../pages/restaurant/RestaurantProfilePage.jsx"));
+const RestaurantOrdersPage = lazy(() => import("../pages/restaurant/RestaurantOrdersPage.jsx"));
+const RestaurantBookingsPage = lazy(() => import("../pages/restaurant/RestaurantBookingsPage.jsx"));
+const RestaurantArticlesManagementPage = lazy(() => import("../pages/restaurant/RestaurantArticlesManagementPage.jsx"));
+const ArticleFormPage = lazy(() => import("../pages/restaurant/ArticleFormPage.jsx"));
+const UserProfilePage = lazy(() => import("../pages/user/UserProfilePage.jsx"));
+const UserOrdersPage = lazy(() => import("../pages/user/UserOrdersPage.jsx"));
+const UserReservationsPage = lazy(() => import("../pages/user/UserReservationsPage.jsx"));
+const UserCartPage = lazy(() => import("../pages/cart/UserCartPage.jsx"));
+const OrderDetailsPage = lazy(() => import("../pages/user/OrderDetailsPage.jsx"));
 
 const PATHS = {
   ROOT: "/",

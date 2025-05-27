@@ -104,7 +104,7 @@ services:
         use_jwt_cookie mercure_authorization
     # In production, Caddyfile should be configured for HTTPS and use a valid domain.
     # The default dev Caddyfile serves over HTTP on port 80.
-    command: /usr/bin/caddy run --config /etc/caddy/Caddyfile.dev --adapter caddyfile
+    # command: /usr/bin/caddy run --config /etc/caddy/Caddyfile.dev --adapter caddyfile
     ports:
       - "9090:80" # Map host 9090 to container 80 for Mercure
     volumes:

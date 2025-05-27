@@ -23,14 +23,8 @@ function deleteCookie(name) {
 
 const AuthContext = createContext();
 
-// Helper to get Mercure URL from environment variables
 const getMercurePublicUrl = () => {
-  if (import.meta.env.VITE_MERCURE_PUBLIC_URL) {
-    return import.meta.env.VITE_MERCURE_PUBLIC_URL;
-  }
-  // Fallback for other environments if necessary, or could throw an error
-  // console.warn("VITE_MERCURE_PUBLIC_URL not found, Mercure might not work.");
-  return null; 
+  return import.meta.env.VITE_MERCURE_PUBLIC_URL || null;
 };
 
 export const AuthProvider = ({ children }) => {
@@ -178,23 +172,27 @@ export const AuthProvider = ({ children }) => {
     fetchInitialNotifications();
 
     let eventSource;
-    let topic;
+    let reconnectTimeout;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
     const entityId = entity.type === 'user' ? entity.userId : entity.restaurantId;
-
-    if (entity.type === 'user') {
-      topic = `/users/${entityId}/notifications`;
-    } else if (entity.type === 'restaurant') {
-      topic = `/restaurants/${entityId}/notifications`;
-    } else {
-      return; // Unknown entity type
-    }
+    
+    const topic = entity.type === 'user' 
+      ? `/users/${entityId}/notifications`
+      : `/restaurants/${entityId}/notifications`;
 
     const connectMercure = () => {
       try {
+        // Clean up existing connection
+        if (eventSource) {
+          eventSource.close();
+        }
+
         const url = new URL(MERCURE_PUBLIC_URL);
         url.searchParams.append('topic', topic);
 
-        console.log(`Connecting to Mercure: ${url.toString()} with credentials`);
+        console.log(`[${entity.type}] Connecting to Mercure topic: ${topic}`);
+        
         eventSource = new EventSource(url.toString(), {
           withCredentials: true
         });
@@ -202,10 +200,10 @@ export const AuthProvider = ({ children }) => {
         eventSource.onmessage = (event) => {
           try {
             const newNotification = JSON.parse(event.data);
-            console.log('Received Mercure notification:', newNotification);
-            // Add new notification to the start, ensuring no duplicates if events fire rapidly
+            console.log(`[${entity.type}] Received Mercure notification:`, newNotification);
             setNotifications((prev) => [newNotification, ...prev.filter(n => n.id !== newNotification.id)]);
             setNotificationError(null);
+            reconnectAttempts = 0; // Reset on successful message
           } catch (parseError) {
             console.error('Failed to parse notification data:', parseError, event.data);
             setNotificationError('Failed to parse incoming notification.');
@@ -213,20 +211,33 @@ export const AuthProvider = ({ children }) => {
         };
 
         eventSource.onerror = (err) => {
-          console.error('Mercure EventSource failed:', err);
-          setNotificationError('Notification service connection error. May attempt to reconnect.');
-          // EventSource has built-in reconnection logic. 
-          // If it closes permanently, this error handler will be called with eventSource.readyState === EventSource.CLOSED
-          if (eventSource && eventSource.readyState === EventSource.CLOSED) {
-            console.log("Mercure connection permanently closed. Will not attempt to reconnect automatically here.");
-            // Optionally, you could try to re-initiate connection after a delay
-            // For example, if the token was refreshed, this useEffect would re-run.
+          console.error(`[${entity.type}] Mercure EventSource error:`, {
+            readyState: eventSource?.readyState,
+            url: eventSource?.url,
+            error: err
+          });
+          
+          if (eventSource?.readyState === EventSource.CLOSED) {
+            console.log(`[${entity.type}] Connection closed, attempting reconnect...`);
+            if (reconnectAttempts < maxReconnectAttempts) {
+              reconnectAttempts++;
+              const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // Exponential backoff, max 30s
+              console.log(`[${entity.type}] Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+              
+              reconnectTimeout = setTimeout(() => {
+                connectMercure();
+              }, delay);
+            } else {
+              console.error(`[${entity.type}] Max reconnection attempts reached`);
+              setNotificationError('Connection lost. Please refresh the page.');
+            }
           }
         };
 
         eventSource.onopen = () => {
-          console.log(`Mercure connection opened for topic: ${topic}`);
+          console.log(`[${entity.type}] Mercure connection opened for topic: ${topic}`);
           setNotificationError(null);
+          reconnectAttempts = 0;
         };
 
       } catch (e) {
@@ -238,22 +249,21 @@ export const AuthProvider = ({ children }) => {
     connectMercure();
 
     return () => {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
       if (eventSource) {
-        console.log(`Closing Mercure connection for topic: ${topic}`);
+        console.log(`[${entity.type}] Closing Mercure connection for topic: ${topic}`);
         eventSource.close();
       }
-      // Optionally clear notifications on disconnect, or keep them until logout
-      // setNotifications([]); 
-      // setNotificationError(null);
     };
-  // entity object itself might be unstable if not memoized, be specific with dependencies
+  // Simplified dependencies - only reconnect when token or entity fundamentally changes
   }, [token, entity?.type, entity?.userId, entity?.restaurantId]); 
 
   const markNotificationAsRead = useCallback(async (notificationId) => {
     try {
-      const response = await fetchDataFromEndpoint(`/notifications/${notificationId}/read`, 'PUT', null, true);
-    setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
-      console.log(`Notification ${notificationId} marked as read`);
+      await fetchDataFromEndpoint(`/notifications/${notificationId}/read`, 'PUT', null, true);
+      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
       setNotificationError('Failed to update notification');
@@ -263,8 +273,7 @@ export const AuthProvider = ({ children }) => {
   const clearAllNotifications = useCallback(async () => {
     try {
       await fetchDataFromEndpoint('/notifications/clear', 'DELETE', null, true);
-    setNotifications([]);
-      console.log('All notifications cleared');
+      setNotifications([]);
     } catch (error) {
       console.error('Failed to clear notifications:', error);
       setNotificationError('Failed to clear notifications');

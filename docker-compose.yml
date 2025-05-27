@@ -94,16 +94,17 @@ services:
     restart: unless-stopped
     environment:
       SERVER_NAME: ':80' # Exposes on port 80 within the container, will be mapped to 9090 on host
-      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_KEY}
-      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_KEY}
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins ${MERCURE_CORS_ALLOWED_ORIGINS}
         anonymous
         subscriptions
         publish_origins *
+        use_jwt_cookie mercure_authorization
     # In production, Caddyfile should be configured for HTTPS and use a valid domain.
     # The default dev Caddyfile serves over HTTP on port 80.
-    command: /usr/bin/caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    command: /usr/bin/caddy run --config /etc/caddy/Caddyfile.dev --adapter caddyfile
     ports:
       - "9090:80" # Map host 9090 to container 80 for Mercure
     volumes:

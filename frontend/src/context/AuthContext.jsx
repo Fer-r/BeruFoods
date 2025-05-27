@@ -162,6 +162,21 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
+    // Fetch initial notifications from API
+    const fetchInitialNotifications = async () => {
+      try {
+        const response = await fetchDataFromEndpoint('/notifications', 'GET', null, true);
+        if (Array.isArray(response)) {
+          setNotifications(response);
+        }
+      } catch (error) {
+        console.error('Failed to fetch initial notifications:', error);
+        setNotificationError('Failed to load notifications');
+      }
+    };
+
+    fetchInitialNotifications();
+
     let eventSource;
     let topic;
     const entityId = entity.type === 'user' ? entity.userId : entity.restaurantId;
@@ -234,16 +249,26 @@ export const AuthProvider = ({ children }) => {
   // entity object itself might be unstable if not memoized, be specific with dependencies
   }, [token, entity?.type, entity?.userId, entity?.restaurantId]); 
 
-  const markNotificationAsRead = useCallback((notificationId) => {
-    // TODO: Implement API call to backend to mark as read
+  const markNotificationAsRead = useCallback(async (notificationId) => {
+    try {
+      const response = await fetchDataFromEndpoint(`/notifications/${notificationId}/read`, 'PUT', null, true);
     setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
-    console.log(`Notification ${notificationId} marked as read (frontend state only)`);
+      console.log(`Notification ${notificationId} marked as read`);
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+      setNotificationError('Failed to update notification');
+    }
   }, [setNotifications]);
 
-  const clearAllNotifications = useCallback(() => {
-    // TODO: Implement API call to backend to mark all as read or delete
+  const clearAllNotifications = useCallback(async () => {
+    try {
+      await fetchDataFromEndpoint('/notifications/clear', 'DELETE', null, true);
     setNotifications([]);
-    console.log('All notifications cleared (frontend state only)');
+      console.log('All notifications cleared');
+    } catch (error) {
+      console.error('Failed to clear notifications:', error);
+      setNotificationError('Failed to clear notifications');
+    }
   }, [setNotifications]);
   // ---------------------------------
 

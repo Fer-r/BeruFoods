@@ -3,3 +3,4 @@
 # Override .gitignore to include .env files for Cursor
 !.env
 !.env.*
+!*.*

@@ -94,8 +94,28 @@ services:
     restart: unless-stopped
     environment:
       SERVER_NAME: ':80' # Exposes on port 80 within the container, will be mapped to 9090 on host
-      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET}
-      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
+      MERCURE_PUBLISHER_JWT_KEY: |
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA12cqznvNigoUuQBnPZID
+        7eV/9Cm5lAqAlv/AXwJivcUDIRpryEDjkTH+8+SR5cZPYnNuDNRDHVSFRs+V5pHr
+        d4RUiqWKieudisTCOqB8il4aV34RCgkbhoRkkxvE5cXomgBDBaefcInhw4bSuQHX
+        UHR+sVJKskXC0busSOwxnlyvCMLE0jQ4/n4xG+YGRaSssvI1PlgJ2YkWK8qKxxLE
+        tTxze6oD+L7QiiehbEa5wWAYMPW5a6PeIjm5to2zeBQvd9YbSeUCBfAUoK9JpOVq
+        7OSWiOqgcWdTaBsEtrT/3PqmUqbOIWN9nO066LtGksxG5HH58H4tSFTq5tIvFsuD
+        9QIDAQAB
+        -----END PUBLIC KEY-----
+      MERCURE_PUBLISHER_JWT_ALG: RS256
+      MERCURE_SUBSCRIBER_JWT_KEY: |
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA12cqznvNigoUuQBnPZID
+        7eV/9Cm5lAqAlv/AXwJivcUDIRpryEDjkTH+8+SR5cZPYnNuDNRDHVSFRs+V5pHr
+        d4RUiqWKieudisTCOqB8il4aV34RCgkbhoRkkxvE5cXomgBDBaefcInhw4bSuQHX
+        UHR+sVJKskXC0busSOwxnlyvCMLE0jQ4/n4xG+YGRaSssvI1PlgJ2YkWK8qKxxLE
+        tTxze6oD+L7QiiehbEa5wWAYMPW5a6PeIjm5to2zeBQvd9YbSeUCBfAUoK9JpOVq
+        7OSWiOqgcWdTaBsEtrT/3PqmUqbOIWN9nO066LtGksxG5HH58H4tSFTq5tIvFsuD
+        9QIDAQAB
+        -----END PUBLIC KEY-----
+      MERCURE_SUBSCRIBER_JWT_ALG: RS256
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins ${MERCURE_CORS_ALLOWED_ORIGINS}
         anonymous

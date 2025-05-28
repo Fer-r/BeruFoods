@@ -1,6 +1,42 @@
-import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { fetchDataFromEndpoint, isAuthorized } from "../services/useApiService";
 import { jwtDecode } from "jwt-decode";
+
+// Constants
+const COOKIE_EXPIRY_DAYS = 7;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const MAX_RECONNECT_DELAY_MS = 30000;
+const BASE_RECONNECT_DELAY_MS = 1000;
+const NOTIFICATION_API_ENDPOINTS = {
+  LIST: '/notifications',
+  MARK_READ: '/notifications/{id}/read',
+  CLEAR_ALL: '/notifications/clear'
+};
+
+// Error Messages
+const ERROR_MESSAGES = {
+  PARSE_ENTITY: 'Failed to parse stored entity',
+  INVALID_TOKEN: 'Token is missing required fields (roles, username) or has invalid types',
+  INVALID_RESPONSE: 'Invalid response from server during login (missing token)',
+  LOGIN_GENERAL: 'Error desconocido al iniciar sesión',
+  NOTIFICATION_PARSE: 'Failed to parse incoming notification',
+  NOTIFICATION_LOAD: 'Failed to load notifications',
+  NOTIFICATION_UPDATE: 'Failed to update notification',
+  NOTIFICATION_CLEAR: 'Failed to clear notifications',
+  CONNECTION_LOST: 'Connection lost. Please refresh the page',
+  CONNECTION_FAILED: 'Could not connect to notification service'
+};
+
+// Storage Keys
+const STORAGE_KEYS = {
+  TOKEN: 'token',
+  ENTITY: 'authenticatedEntity'
+};
+
+// Cookie Names
+const COOKIE_NAMES = {
+  MERCURE_AUTH: 'mercure_authorization'
+};
 
 // Helper function to set cookies
 function setCookie(name, value, days) {
@@ -13,7 +49,7 @@ function setCookie(name, value, days) {
   // For development (HTTP), Secure flag must not be set or be false.
   // For production (HTTPS), Secure flag should be true.
   // Path=/ ensures cookie is available for all paths.
-  document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax"; 
+  document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax";
 }
 
 // Helper function to delete cookies
@@ -27,105 +63,145 @@ const getMercurePublicUrl = () => {
   return import.meta.env.VITE_MERCURE_PUBLIC_URL || null;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [entity, setEntity] = useState(() => {
-    const storedEntity = localStorage.getItem("authenticatedEntity");
-    try {
-      return storedEntity ? JSON.parse(storedEntity) : null;
-    } catch (e) {
-      console.error("Failed to parse stored entity:", e);
-      localStorage.removeItem("authenticatedEntity");
-      return null;
-    }
-  });
+const createMercureTopic = (entityType, entityId) => {
+  return entityType === 'user' 
+    ? `/users/${entityId}/notifications`
+    : `/restaurants/${entityId}/notifications`;
+};
 
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
+const calculateReconnectDelay = (attemptNumber) => {
+  return Math.min(BASE_RECONNECT_DELAY_MS * Math.pow(2, attemptNumber), MAX_RECONNECT_DELAY_MS);
+};
+
+const getStoredEntity = () => {
+  const storedEntity = localStorage.getItem(STORAGE_KEYS.ENTITY);
+  try {
+    return storedEntity ? JSON.parse(storedEntity) : null;
+  } catch (e) {
+    console.error(ERROR_MESSAGES.PARSE_ENTITY, e);
+    localStorage.removeItem(STORAGE_KEYS.ENTITY);
+    return null;
+  }
+};
+
+const validateTokenPayload = (decodedToken) => {
+  return decodedToken && 
+    Array.isArray(decodedToken.roles) && 
+    decodedToken.roles.length > 0 &&
+    typeof decodedToken.username === 'string' && 
+    (typeof decodedToken.address === 'object' || decodedToken.address === null);
+};
+
+const createEntityFromToken = (decodedToken) => {
+  const { username, roles, address } = decodedToken;
+  
+  const entityData = {
+    username,
+    roles,
+    address: address || null,
+  };
+
+  if (decodedToken.restaurant_id) {
+    entityData.restaurantId = decodedToken.restaurant_id;
+    entityData.type = 'restaurant';
+  } else if (decodedToken.user_id) {
+    entityData.userId = decodedToken.user_id;
+    entityData.type = 'user';
+  }
+
+  return entityData;
+};
+
+const clearAuthStorage = () => {
+  localStorage.removeItem(STORAGE_KEYS.TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.ENTITY);
+  deleteCookie(COOKIE_NAMES.MERCURE_AUTH);
+};
+
+const saveAuthData = (token, entityData) => {
+  localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+  setCookie(COOKIE_NAMES.MERCURE_AUTH, token, COOKIE_EXPIRY_DAYS);
+  localStorage.setItem(STORAGE_KEYS.ENTITY, JSON.stringify(entityData));
+};
+
+export const AuthProvider = ({ children }) => {
+  const [entity, setEntity] = useState(getStoredEntity);
+  const [token, setToken] = useState(localStorage.getItem(STORAGE_KEYS.TOKEN) || null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  // --- Mercure Notifications State ---
   const [notifications, setNotifications] = useState([]);
   const [notificationError, setNotificationError] = useState(null);
-  // ----------------------------------
+
+  // Stable entity values to prevent unnecessary Mercure reconnections
+  const stableEntityValues = useMemo(() => {
+    if (!entity) return null;
+    return {
+      type: entity.type,
+      id: entity.userId || entity.restaurantId
+    };
+  }, [entity?.type, entity?.userId, entity?.restaurantId]);
+
+  // Track current connection to prevent unnecessary reconnections
+  const currentConnectionRef = useRef(null);
+  const connectionCleanupRef = useRef(null);
 
   const isAuthenticated = useCallback(() => {
-    return isAuthorized(); // This function from useApiService likely checks the token validity
-  }, []); // Removed isAuthorized from dependencies as it should be stable
+    return isAuthorized();
+  }, []);
+
+  const fetchInitialNotifications = async () => {
+    try {
+      const response = await fetchDataFromEndpoint(NOTIFICATION_API_ENDPOINTS.LIST, 'GET', null, true);
+      if (Array.isArray(response)) {
+        setNotifications(response);
+      }
+    } catch (error) {
+      console.error('Failed to fetch initial notifications:', error);
+      setNotificationError(ERROR_MESSAGES.NOTIFICATION_LOAD);
+    }
+  };
 
   const handleLogin = useCallback(async (endpoint, { email, password }) => {
     setError(null);
     setLoading(true);
-    let resultEntityData = null; 
+    
     try {
-      const data = await fetchDataFromEndpoint(
-        endpoint,
-        "POST",
-        { email, password },
-        false 
-      );
+      const data = await fetchDataFromEndpoint(endpoint, "POST", { email, password }, false);
 
-      if (data?.token) {
-        const decodedToken = jwtDecode(data.token);
-        let entityDataToStore = null;
-
-        // Enhanced check for decoded token properties
-        if (decodedToken && 
-            Array.isArray(decodedToken.roles) && decodedToken.roles.length > 0 &&
-            typeof decodedToken.username === 'string' && 
-            // Address is optional in JWT as per JWTAuthenticatedListener logic, handle its absence
-            (typeof decodedToken.address === 'object' || decodedToken.address === null)
-            ) {
-
-          const { username, roles, address } = decodedToken;
-          
-          entityDataToStore = {
-            username,
-            roles,
-            address: address || null, // Ensure address is null if not present
-          };
-
-          if (decodedToken.restaurant_id) {
-            entityDataToStore.restaurantId = decodedToken.restaurant_id;
-            entityDataToStore.type = 'restaurant'; // Add type for Mercure topic
-          } else if (decodedToken.user_id) {
-            entityDataToStore.userId = decodedToken.user_id;
-            entityDataToStore.type = 'user'; // Add type for Mercure topic
-          }
-
-        } else {
-          console.error("Token is missing required fields (roles, username) or has invalid types. Decoded token:", decodedToken);
-        }
-
-        if (entityDataToStore && entityDataToStore.type) { // Ensure type is set
-          setEntity(entityDataToStore);
-          setToken(data.token);
-          localStorage.setItem("token", data.token);
-          setCookie("mercure_authorization", data.token, 7); // Store for 7 days
-          localStorage.setItem("authenticatedEntity", JSON.stringify(entityDataToStore));
-          resultEntityData = entityDataToStore;
-        } else {
-          const errorMessage = "Token did not contain valid or complete entity information (type missing).";
-          throw new Error(errorMessage); 
-        }
-      } else {
-        const errorMessage = "Invalid response from server during login (missing token).";
-        setError(errorMessage);
-        throw new Error(errorMessage);
+      if (!data?.token) {
+        throw new Error(ERROR_MESSAGES.INVALID_RESPONSE);
       }
-      return resultEntityData; 
+
+      const decodedToken = jwtDecode(data.token);
+      
+      if (!validateTokenPayload(decodedToken)) {
+        console.error(ERROR_MESSAGES.INVALID_TOKEN, decodedToken);
+        throw new Error(ERROR_MESSAGES.INVALID_TOKEN);
+      }
+
+      const entityData = createEntityFromToken(decodedToken);
+      
+      if (!entityData.type) {
+        throw new Error("Token did not contain valid or complete entity information (type missing).");
+      }
+
+      setEntity(entityData);
+      setToken(data.token);
+      saveAuthData(data.token, entityData);
+      
+      return entityData;
     } catch (error) {
       console.error(`Error al iniciar sesión en ${endpoint}:`, error);
-      const errorMessage = error.details?.message || error.message || "Error desconocido al iniciar sesión";
+      const errorMessage = error.details?.message || error.message || ERROR_MESSAGES.LOGIN_GENERAL;
       setError(errorMessage);
-      setEntity(null); // Clear entity on login failure
+      setEntity(null);
       setToken(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("authenticatedEntity");
-      throw error; 
+      clearAuthStorage();
+      throw error;
     } finally {
       setLoading(false);
     }
-  }, [setEntity, setToken, setError, setLoading]);
+  }, []);
 
   const loginUser = useCallback(async ({ email, password }) => {
     return handleLogin("/login", { email, password });
@@ -139,147 +215,271 @@ export const AuthProvider = ({ children }) => {
     setEntity(null);
     setToken(null);
     setError(null);
-    setNotifications([]); // Clear notifications on logout
+    setNotifications([]);
     setNotificationError(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("authenticatedEntity");
-    deleteCookie("mercure_authorization"); // Delete Mercure cookie on logout
-  }, [setEntity, setToken, setError, setNotifications, setNotificationError]);
+    clearAuthStorage();
+  }, []);
 
-  // --- Mercure Notification Logic --- 
-  useEffect(() => {
-    const MERCURE_PUBLIC_URL = getMercurePublicUrl();
-
-    if (!token || !entity?.type || !(entity.userId || entity.restaurantId) || !MERCURE_PUBLIC_URL) {
-      setNotifications([]); // Clear if not authenticated or info missing
+  const handleMercureMessage = (event, entityType) => {
+    try {
+      const newNotification = JSON.parse(event.data);
+      console.log(`[${entityType}] Received Mercure notification:`, newNotification);
+      setNotifications((prev) => {
+        console.log(`[${entityType}] Updating notifications, current count:`, prev.length);
+        const updated = [
+          newNotification, 
+          ...prev.filter(n => n.id !== newNotification.id)
+        ];
+        console.log(`[${entityType}] New notifications count:`, updated.length);
+        return updated;
+      });
       setNotificationError(null);
-      return;
+      return true;
+    } catch (parseError) {
+      console.error('Failed to parse notification data:', parseError, event.data);
+      setNotificationError(ERROR_MESSAGES.NOTIFICATION_PARSE);
+      return false;
     }
+  };
 
-    // Fetch initial notifications from API
-    const fetchInitialNotifications = async () => {
-      try {
-        const response = await fetchDataFromEndpoint('/notifications', 'GET', null, true);
-        if (Array.isArray(response)) {
-          setNotifications(response);
-        }
-      } catch (error) {
-        console.error('Failed to fetch initial notifications:', error);
-        setNotificationError('Failed to load notifications');
+  const handleMercureError = (err, eventSource, entityType, reconnectAttempts, setReconnectAttempts, connectMercure) => {
+    console.error(`[${entityType}] Mercure EventSource error:`, {
+      readyState: eventSource?.readyState,
+      url: eventSource?.url,
+      error: err
+    });
+    
+    if (eventSource?.readyState === EventSource.CLOSED) {
+      console.log(`[${entityType}] Connection closed, attempting reconnect...`);
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        const newAttempts = reconnectAttempts + 1;
+        setReconnectAttempts(newAttempts);
+        const delay = calculateReconnectDelay(newAttempts);
+        console.log(`[${entityType}] Reconnecting in ${delay}ms (attempt ${newAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+        
+        return setTimeout(() => {
+          connectMercure();
+        }, delay);
+      } else {
+        console.error(`[${entityType}] Max reconnection attempts reached`);
+        setNotificationError(ERROR_MESSAGES.CONNECTION_LOST);
       }
-    };
+    }
+    return null;
+  };
 
-    fetchInitialNotifications();
-
+  const createMercureConnection = (topic, entityType) => {
+    const MERCURE_PUBLIC_URL = getMercurePublicUrl();
     let eventSource;
     let reconnectTimeout;
+    let statusInterval;
     let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
-    const entityId = entity.type === 'user' ? entity.userId : entity.restaurantId;
     
-    const topic = entity.type === 'user' 
-      ? `/users/${entityId}/notifications`
-      : `/restaurants/${entityId}/notifications`;
+    const setReconnectAttempts = (attempts) => {
+      reconnectAttempts = attempts;
+    };
 
     const connectMercure = () => {
       try {
-        // Clean up existing connection
         if (eventSource) {
+          console.log(`[${entityType}] Closing existing EventSource`);
           eventSource.close();
         }
 
         const url = new URL(MERCURE_PUBLIC_URL);
         url.searchParams.append('topic', topic);
 
-        console.log(`[${entity.type}] Connecting to Mercure topic: ${topic}`);
+        console.log(`[${entityType}] Connecting to Mercure topic: ${topic}`);
+        console.log(`[${entityType}] Full URL: ${url.toString()}`);
         
         eventSource = new EventSource(url.toString(), {
           withCredentials: true
         });
 
+        console.log(`[${entityType}] EventSource created, readyState:`, eventSource.readyState);
+
+        // Add event listeners for debugging
+        eventSource.addEventListener('open', (e) => {
+          console.log(`[${entityType}] addEventListener 'open' fired:`, e);
+        });
+
+        eventSource.addEventListener('message', (e) => {
+          console.log(`[${entityType}] addEventListener 'message' fired:`, e);
+          console.log(`[${entityType}] Message data:`, e.data);
+          
+          // ACTUALLY HANDLE THE MESSAGE HERE TOO
+          if (handleMercureMessage(e, entityType)) {
+            reconnectAttempts = 0;
+          }
+        });
+
+        eventSource.addEventListener('error', (e) => {
+          console.log(`[${entityType}] addEventListener 'error' fired:`, e);
+          console.log(`[${entityType}] Error details:`, {
+            target: e.target,
+            readyState: e.target?.readyState,
+            type: e.type
+          });
+        });
+
         eventSource.onmessage = (event) => {
-          try {
-            const newNotification = JSON.parse(event.data);
-            console.log(`[${entity.type}] Received Mercure notification:`, newNotification);
-            setNotifications((prev) => [newNotification, ...prev.filter(n => n.id !== newNotification.id)]);
-            setNotificationError(null);
-            reconnectAttempts = 0; // Reset on successful message
-          } catch (parseError) {
-            console.error('Failed to parse notification data:', parseError, event.data);
-            setNotificationError('Failed to parse incoming notification.');
+          console.log(`[${entityType}] EventSource onmessage triggered!`, event);
+          if (handleMercureMessage(event, entityType)) {
+            reconnectAttempts = 0;
           }
         };
 
         eventSource.onerror = (err) => {
-          console.error(`[${entity.type}] Mercure EventSource error:`, {
-            readyState: eventSource?.readyState,
-            url: eventSource?.url,
-            error: err
-          });
-          
-          if (eventSource?.readyState === EventSource.CLOSED) {
-            console.log(`[${entity.type}] Connection closed, attempting reconnect...`);
-            if (reconnectAttempts < maxReconnectAttempts) {
-              reconnectAttempts++;
-              const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // Exponential backoff, max 30s
-              console.log(`[${entity.type}] Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
-              
-              reconnectTimeout = setTimeout(() => {
-                connectMercure();
-              }, delay);
-            } else {
-              console.error(`[${entity.type}] Max reconnection attempts reached`);
-              setNotificationError('Connection lost. Please refresh the page.');
-            }
-          }
+          console.log(`[${entityType}] EventSource onerror triggered, readyState:`, eventSource?.readyState, err);
+          reconnectTimeout = handleMercureError(err, eventSource, entityType, reconnectAttempts, setReconnectAttempts, connectMercure);
         };
 
         eventSource.onopen = () => {
-          console.log(`[${entity.type}] Mercure connection opened for topic: ${topic}`);
+          console.log(`[${entityType}] EventSource onopen triggered! Connection opened for topic: ${topic}`);
+          console.log(`[${entityType}] EventSource readyState:`, eventSource.readyState);
           setNotificationError(null);
           reconnectAttempts = 0;
+          
+          // Debug: Check connection status every 10 seconds
+          statusInterval = setInterval(() => {
+            if (eventSource) {
+              console.log(`[${entityType}] EventSource status check - readyState:`, eventSource.readyState, 'URL:', eventSource.url);
+            } else {
+              clearInterval(statusInterval);
+            }
+          }, 10000);
         };
 
       } catch (e) {
         console.error('Failed to initialize EventSource for Mercure:', e);
-        setNotificationError('Could not connect to notification service.');
+        setNotificationError(ERROR_MESSAGES.CONNECTION_FAILED);
       }
     };
 
     connectMercure();
 
     return () => {
+      console.log(`[${entityType}] === CLEANING UP MERCURE CONNECTION ===`);
+      console.log(`[${entityType}] Cleanup reason: useEffect dependency change or component unmount`);
       if (reconnectTimeout) {
         clearTimeout(reconnectTimeout);
+        console.log(`[${entityType}] Cleared reconnect timeout`);
+      }
+      if (statusInterval) {
+        clearInterval(statusInterval);
+        console.log(`[${entityType}] Cleared status interval`);
       }
       if (eventSource) {
-        console.log(`[${entity.type}] Closing Mercure connection for topic: ${topic}`);
+        console.log(`[${entityType}] Closing EventSource, readyState was:`, eventSource.readyState);
         eventSource.close();
       }
     };
-  // Simplified dependencies - only reconnect when token or entity fundamentally changes
-  }, [token, entity?.type, entity?.userId, entity?.restaurantId]); 
+  };
+
+  useEffect(() => {
+    const MERCURE_PUBLIC_URL = getMercurePublicUrl();
+    
+    console.log('=== Mercure useEffect triggered ===');
+    console.log('Current dependencies:');
+    console.log('- Token exists:', !!token);
+    console.log('- Token value:', token ? `${token.substring(0, 20)}...` : 'null');
+    console.log('- Stable entity values:', stableEntityValues);
+    console.log('- Mercure URL:', MERCURE_PUBLIC_URL);
+
+    // Create stable identifiers
+    const stableKey = `${token ? 'has_token' : 'no_token'}-${stableEntityValues?.type || 'no_type'}-${stableEntityValues?.id || 'no_id'}`;
+    console.log('- Stable connection key:', stableKey);
+    console.log('- Previous connection key:', currentConnectionRef.current);
+
+    if (!token || !stableEntityValues?.type || !stableEntityValues?.id || !MERCURE_PUBLIC_URL) {
+      console.log('=== Mercure conditions not met, clearing notifications ===');
+      setNotifications([]);
+      setNotificationError(null);
+      
+      // Cleanup existing connection
+      if (connectionCleanupRef.current) {
+        console.log('=== Cleaning up existing connection due to unmet conditions ===');
+        connectionCleanupRef.current();
+        connectionCleanupRef.current = null;
+        currentConnectionRef.current = null;
+      }
+      return;
+    }
+
+    // Check if we need to reconnect
+    if (currentConnectionRef.current === stableKey) {
+      console.log('=== Connection key unchanged, skipping reconnection ===');
+      return;
+    }
+
+    // Cleanup previous connection if exists
+    if (connectionCleanupRef.current) {
+      console.log('=== Cleaning up previous connection for new key ===');
+      connectionCleanupRef.current();
+    }
+
+    console.log('=== Mercure conditions met, setting up NEW connection ===');
+    currentConnectionRef.current = stableKey;
+    
+    fetchInitialNotifications();
+
+    const topic = createMercureTopic(stableEntityValues.type, stableEntityValues.id);
+    
+    console.log('=== Creating Mercure connection ===');
+    console.log('Entity ID:', stableEntityValues.id);
+    console.log('Topic:', topic);
+    
+    // Check if mercure_authorization cookie exists
+    const cookies = document.cookie;
+    const mercureCookie = cookies.split('; ').find(row => row.startsWith('mercure_authorization='));
+    console.log('Mercure cookie exists:', !!mercureCookie);
+    
+    if (mercureCookie) {
+      try {
+        const cookieValue = mercureCookie.split('=')[1];
+        const decodedToken = jwtDecode(cookieValue);
+        console.log('JWT Token decoded:', decodedToken);
+        console.log('JWT Mercure claims:', decodedToken.mercure);
+        console.log('JWT Subscribe topics:', decodedToken.mercure?.subscribe);
+      } catch (e) {
+        console.error('Failed to decode JWT token:', e);
+      }
+    }
+    
+    const cleanup = createMercureConnection(topic, stableEntityValues.type);
+    connectionCleanupRef.current = cleanup;
+    
+    return () => {
+      // This cleanup only runs on component unmount
+      console.log('=== Component unmounting, cleaning up connection ===');
+      if (connectionCleanupRef.current) {
+        connectionCleanupRef.current();
+        connectionCleanupRef.current = null;
+        currentConnectionRef.current = null;
+      }
+    };
+  }, [token, stableEntityValues]);
 
   const markNotificationAsRead = useCallback(async (notificationId) => {
     try {
-      await fetchDataFromEndpoint(`/notifications/${notificationId}/read`, 'PUT', null, true);
+      const endpoint = NOTIFICATION_API_ENDPOINTS.MARK_READ.replace('{id}', notificationId);
+      await fetchDataFromEndpoint(endpoint, 'PUT', null, true);
       setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
-      setNotificationError('Failed to update notification');
+      setNotificationError(ERROR_MESSAGES.NOTIFICATION_UPDATE);
     }
-  }, [setNotifications]);
+  }, []);
 
   const clearAllNotifications = useCallback(async () => {
     try {
-      await fetchDataFromEndpoint('/notifications/clear', 'DELETE', null, true);
+      await fetchDataFromEndpoint(NOTIFICATION_API_ENDPOINTS.CLEAR_ALL, 'DELETE', null, true);
       setNotifications([]);
     } catch (error) {
       console.error('Failed to clear notifications:', error);
-      setNotificationError('Failed to clear notifications');
+      setNotificationError(ERROR_MESSAGES.NOTIFICATION_CLEAR);
     }
-  }, [setNotifications]);
-  // ---------------------------------
+  }, []);
 
   const isRestaurant = isAuthenticated() && entity?.roles?.includes('ROLE_RESTAURANT');
   const isUser = isAuthenticated() && entity?.roles?.includes('ROLE_USER') && !isRestaurant;
@@ -293,15 +493,14 @@ export const AuthProvider = ({ children }) => {
     logOut,
     error,
     loading,
-    setEntity, // Exposing setEntity might be for specific use cases, generally manage through login/logout
+    setEntity,
     isRestaurant,
     isUser,
-    // Mercure related values
     notifications,
     notificationError,
     markNotificationAsRead,
     clearAllNotifications,
-    setNotifications // Exposing setNotifications for direct manipulation (e.g. from a dedicated notifications page)
+    setNotifications
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

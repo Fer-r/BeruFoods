@@ -48,12 +48,21 @@ class OrderCreationListener
         $topic = sprintf('/restaurants/%d/notifications', $restaurant->getId());
         $jsonData = $this->serializer->serialize($notification, 'json', ['groups' => 'notification:read']);
 
+        error_log(sprintf('[MERCURE] Publishing to topic: %s', $topic));
+        error_log(sprintf('[MERCURE] Notification data: %s', $jsonData));
+        error_log(sprintf('[MERCURE] Restaurant ID: %d', $restaurant->getId()));
+
         $update = new Update(
             $topic,
             $jsonData,
-            true // private update
+            false // CHANGED TO PUBLIC UPDATE FOR TESTING
         );
 
-        $this->mercureHub->publish($update);
+        try {
+            $this->mercureHub->publish($update);
+            error_log(sprintf('[MERCURE] Successfully published to topic: %s', $topic));
+        } catch (\Exception $e) {
+            error_log(sprintf('[MERCURE] Failed to publish: %s', $e->getMessage()));
+        }
     }
 } 

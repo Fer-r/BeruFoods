@@ -8,13 +8,17 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Auto-generated Migration: Please modify to your needs!
+ * Migration: Add notifications system and update address schema
+ * 
+ * - Creates notifications table with foreign keys to users, restaurants, and orders
+ * - Removes unused delivered_at column from orders table  
+ * - Renames city column to province in address tables for consistency
  */
 final class Version20250527183538 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Add notifications system and standardize address schema';
     }
 
     public function up(Schema $schema): void

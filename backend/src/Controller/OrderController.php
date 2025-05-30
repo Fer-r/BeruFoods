@@ -7,6 +7,8 @@ use App\Controller\Trait\PaginationTrait;
 use App\Entity\Order;
 use App\Entity\Restaurant;
 use App\Entity\User;
+use App\Event\OrderCreatedEvent;
+use App\Event\OrderStatusUpdatedEvent;
 use App\Repository\OrderRepository;
 use App\Repository\RestaurantRepository;
 use App\Repository\ArticleRepository;
@@ -18,6 +20,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use JsonException;
 
 #[Route('/api/orders')] // Base route for orders
@@ -25,6 +28,10 @@ final class OrderController extends AbstractController
 {
     use PaginationTrait;
     use ApiResponseTrait;
+
+    public function __construct(private readonly EventDispatcherInterface $eventDispatcher)
+    {
+    }
 
     #[Route('', name: 'api_order_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')] // Requires authentication (specific role filtering below)
@@ -140,7 +147,6 @@ final class OrderController extends AbstractController
 
         $order->setTotalPrice(sprintf('%.2f', $calculatedTotalPrice));
 
-
         $errors = $validator->validate($order);
         if (count($errors) > 0) {
             return $this->apiValidationErrorResponse($errors);
@@ -149,6 +155,9 @@ final class OrderController extends AbstractController
         $entityManager->persist($order);
         $entityManager->flush();
 
+        // Dispatch OrderCreatedEvent
+        $this->eventDispatcher->dispatch(new OrderCreatedEvent($order));
+
         return $this->apiSuccessResponse($order, Response::HTTP_CREATED, ['order:read']);
     }
 
@@ -156,8 +165,10 @@ final class OrderController extends AbstractController
     #[IsGranted('update_status', 'order')] // Custom voter attribute
     public function updateStatus(
         Request $request,
-        Order $order, // The order to update
-        EntityManagerInterface $entityManager,
+        Order $order,
+        Entity
+
+ManagerInterface $entityManager,
         ValidatorInterface $validator
     ): JsonResponse {
         $this->denyAccessUnlessGranted('update_status', $order);
@@ -184,6 +195,8 @@ final class OrderController extends AbstractController
              return $this->apiErrorResponse(sprintf('Cannot change order status from "%s" to "%s"', $currentState, $newState), Response::HTTP_BAD_REQUEST);
         }
 
+        // Store old status before updating
+        $oldStatus = $order->getStatus();
         $order->setStatus($newState);
 
         $errors = $validator->validate($order);
@@ -192,6 +205,9 @@ final class OrderController extends AbstractController
         }
 
         $entityManager->flush();
+
+        // Dispatch OrderStatusUpdatedEvent
+        $this->eventDispatcher->dispatch(new OrderStatusUpdatedEvent($order, $oldStatus));
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }

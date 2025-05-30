@@ -1,3 +1,4 @@
+# docker-compose.yml
 services:
   frontend:
     build:
@@ -30,6 +31,9 @@ services:
       DB_SERVER_VERSION: '8.0'
       APP_ENV: ${APP_ENV:-dev}
       APP_SECRET: ${APP_SECRET:-change_me_in_dotenv}
+      MERCURE_URL: http://mercure/.well-known/mercure
+      MERCURE_PUBLIC_URL: https://localhost/.well-known/mercure
+      MERCURE_JWT_SECRET: file://%kernel.project_dir%/config/jwt/private.pem
       TZ: Europe/Madrid
     ports:
       - 9000:9000
@@ -69,6 +73,22 @@ services:
         condition: service_healthy
     networks:
       - beru-network
+  mercure:
+    image: dunglas/mercure
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ':80'
+      MERCURE_PUBLISHER_JWT_KEY: file:///app/jwt/public.pem
+      MERCURE_SUBSCRIBER_JWT_KEY: file:///app/jwt/public.pem
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins *
+        anonymous
+    volumes:
+      - ./backend/config/jwt:/app/jwt:ro
+    ports:
+      - "3000:80"
+    networks:
+      - beru-network
   nginx:
     build:
       context: docker/nginx
@@ -84,8 +104,10 @@ services:
     depends_on:
       - backend
       - frontend
+      - mercure
     networks:
       - beru-network
+
 networks:
   beru-network:
     driver: bridge

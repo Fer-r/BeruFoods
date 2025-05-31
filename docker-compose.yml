@@ -29,6 +29,13 @@ services:
       DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       DB_SERVER_VERSION: '8.0'
+      APP_ENV: ${APP_ENV:-dev}
+      APP_SECRET: ${APP_SECRET:-change_me_in_dotenv}
+      MERCURE_URL: http://mercure/.well-known/mercure
+      MERCURE_PUBLIC_URL: https://localhost/.well-known/mercure
+      JWT_SECRET_KEY: '%kernel.project_dir%/config/jwt/private.pem'
+      JWT_PUBLIC_KEY: '%kernel.project_dir%/config/jwt/public.pem'
+      JWT_PASSPHRASE: '%env(JWT_PASSPHRASE)%'
       TZ: Europe/Madrid
     ports:
       - 9000:9000
@@ -73,7 +80,7 @@ services:
     restart: unless-stopped
     environment:
       SERVER_NAME: ':80'
-      MERCURE_PUBLISHER_JWT_KEY: file:///app/jwt/public.pem
+      MERCURE_PUBLISHER_JWT_KEY: file:///app/jwt/private.pem
       MERCURE_SUBSCRIBER_JWT_KEY: file:///app/jwt/public.pem
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins *

@@ -4,10 +4,10 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use App\Entity\Restaurant; // For restaurant registration
-use App\Repository\RestaurantRepository; // For restaurant registration
-use App\Entity\UserAddress; // Corrected: Ensure this is UserAddress, not RestaurantAddress for user registration context
-use App\Entity\RestaurantAddress; // This is for restaurant registration, keep it if used elsewhere
+use App\Entity\Restaurant;
+use App\Repository\RestaurantRepository;
+use App\Entity\UserAddress;
+use App\Entity\RestaurantAddress;
 use App\Repository\FoodTypeRepository;
 use App\Service\ImageUploader;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,10 +21,16 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 
-#[Route('/api/auth')] // Base route for auth actions
+#[Route('/api/auth')]
 final class AuthController extends AbstractController
 {
+    public function __construct(
+        private HubInterface $hub
+    ) {}
+
     #[Route('/register/user', name: 'api_auth_register_user', methods: ['POST'])]
     public function registerUser(
         Request $request,
@@ -304,8 +310,6 @@ final class AuthController extends AbstractController
         return $this->json($responseData, Response::HTTP_CREATED);
     }
 
-    // Login check endpoint (/api/login_check) is handled by LexikJWTAuthenticationBundle
-    // We might add an endpoint like /api/auth/me to get current user info after login
     #[Route('/me', name: 'api_auth_me', methods: ['GET'])]
     public function getCurrentUser(SerializerInterface $serializer): JsonResponse
     {
@@ -332,4 +336,28 @@ final class AuthController extends AbstractController
 
         return new JsonResponse($json, Response::HTTP_OK, [], true);
     }
-} 
+
+    #[Route('/mercure-token', name: 'api_auth_mercure_token', methods: ['GET'])]
+    public function getMercureToken(): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['message' => 'Not authenticated'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $topics = [];
+        if ($user instanceof Restaurant) {
+            $topics[] = "restaurant/{$user->getId()}/orders";
+        } elseif ($user instanceof User) {
+            $topics[] = "user/{$user->getId()}/orders";
+        }
+
+        if (empty($topics)) {
+            return $this->json(['message' => 'No topics available'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $token = $this->hub->createToken($topics);
+
+        return $this->json(['mercureToken' => $token]);
+    }
+}

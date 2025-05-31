@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Repository\OrderRepository;
 use App\Repository\RestaurantRepository;
 use App\Repository\ArticleRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,6 +26,10 @@ final class OrderController extends AbstractController
 {
     use PaginationTrait;
     use ApiResponseTrait;
+
+    public function __construct(
+        private NotificationService $notificationService
+    ) {}
 
     #[Route('', name: 'api_order_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')] // Requires authentication (specific role filtering below)
@@ -140,7 +145,6 @@ final class OrderController extends AbstractController
 
         $order->setTotalPrice(sprintf('%.2f', $calculatedTotalPrice));
 
-
         $errors = $validator->validate($order);
         if (count($errors) > 0) {
             return $this->apiValidationErrorResponse($errors);
@@ -149,6 +153,9 @@ final class OrderController extends AbstractController
         $entityManager->persist($order);
         $entityManager->flush();
 
+        // Send notification to restaurant
+        $this->notificationService->notifyNewOrder($order->getId(), $restaurant->getId());
+
         return $this->apiSuccessResponse($order, Response::HTTP_CREATED, ['order:read']);
     }
 
@@ -156,7 +163,7 @@ final class OrderController extends AbstractController
     #[IsGranted('update_status', 'order')] // Custom voter attribute
     public function updateStatus(
         Request $request,
-        Order $order, // The order to update
+        Order $order,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator
     ): JsonResponse {
@@ -192,6 +199,13 @@ final class OrderController extends AbstractController
         }
 
         $entityManager->flush();
+
+        // Send notification to user
+        $this->notificationService->notifyOrderStatusChange(
+            $order->getId(),
+            $order->getUser()->getId(),
+            $newState
+        );
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }

@@ -30,6 +30,9 @@ services:
       DB_SERVER_VERSION: '8.0'
       APP_ENV: ${APP_ENV:-dev}
       APP_SECRET: ${APP_SECRET:-change_me_in_dotenv}
+      MERCURE_URL: ${MERCURE_URL:-http://mercure/.well-known/mercure}
+      MERCURE_PUBLIC_URL: ${MERCURE_PUBLIC_URL:-http://localhost:3000/.well-known/mercure}
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       TZ: Europe/Madrid
     ports:
       - "9000:9000"
@@ -69,6 +72,20 @@ services:
         condition: service_healthy
     networks:
       - beru-network
+  mercure:
+    image: dunglas/mercure
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ':3000'
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins *
+        anonymous
+    ports:
+      - "3000:3000"
+    networks:
+      - beru-network
   nginx:
     build:
       context: docker/nginx
@@ -84,6 +101,7 @@ services:
     depends_on:
       - backend
       - frontend
+      - mercure
     networks:
       - beru-network
 networks:

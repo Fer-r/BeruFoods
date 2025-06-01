@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchFromAPI } from '../../../services/useApiService';
+import { fetchDataFromEndpoint } from '../../../services/useApiService';
 
 /**
  * Custom hook to fetch available food types from the API.
@@ -17,7 +17,7 @@ const useFoodTypes = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await fetchFromAPI('/food-types');
+        const data = await fetchDataFromEndpoint('/food-types');
         // Handle potential API structures (e.g., Hydra)
         const types = data['hydra:member'] || data || [];
         setFoodTypes(types);

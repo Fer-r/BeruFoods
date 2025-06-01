@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { fetchDataFromEndpoint } from '../services/useApiService'; // Kilo Code: Import useApiService
+import { toast } from 'sonner';
 
 const NotificationContext = createContext();
 const MERCURE_PUBLIC_URL = 'https://localhost/.well-known/mercure'; // Kilo Code: Use configured public URL
@@ -8,7 +9,7 @@ const MERCURE_PUBLIC_URL = 'https://localhost/.well-known/mercure'; // Kilo Code
 export const NotificationProvider = ({ children }) => {
   const { entity, isAuthenticated, token: apiToken } = useAuth(); // Kilo Code: Get apiToken for Mercure token fetch
   
-  // Real-time notification states
+  // Real-time notification states (kept for backward compatibility, but not used for toasts)
   const [notifications, setNotifications] = useState([]);
   const [eventSource, setEventSource] = useState(null);
   const [mercureToken, setMercureToken] = useState(null); // Kilo Code: State for Mercure token
@@ -20,8 +21,51 @@ export const NotificationProvider = ({ children }) => {
   const [pagination, setPagination] = useState({ page: 1, limit: 15, total: 0, pages: 0 });
   const [loading, setLoading] = useState(false);
 
-  // Kilo Code: Function to add a formatted notification
-  const addNotification = useCallback((data) => {
+  // Fetch persisted notifications from API
+  const fetchNotifications = useCallback(async (page = 1, readStatus = null) => {
+    if (!isAuthenticated() || !entity) return;
+    
+    setLoading(true);
+    try {
+      let url = `/notifications?page=${page}&limit=15`;
+      if (readStatus !== null) {
+        url += `&read=${readStatus}`;
+      }
+      
+      const result = await fetchDataFromEndpoint(url, 'GET', null, true);
+      setPersistentNotifications(result.items || []);
+      setPagination(result.pagination || { page: 1, limit: 15, total: 0, pages: 0 });
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+      setError(err.message || "Error fetching notifications");
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated, entity]);
+  
+  // Fetch unread count
+  const fetchUnreadCount = useCallback(async () => {
+    if (!isAuthenticated() || !entity) return;
+    
+    try {
+      const result = await fetchDataFromEndpoint('/notifications/unread-count', 'GET', null, true);
+      setUnreadCount(result.count || 0);
+    } catch (err) {
+      console.error("Error fetching unread count:", err);
+    }
+  }, [isAuthenticated, entity]);
+
+  // Function to handle real-time notifications by refreshing bell data and showing toast
+  const handleRealTimeNotification = useCallback(async (data) => {
+    console.log("Processing real-time notification:", data);
+    
+    // Immediately refresh the notification bell data
+    await Promise.all([
+      fetchUnreadCount(),
+      fetchNotifications(1, false) // Fetch unread notifications for the dropdown
+    ]);
+
+    // Create user-friendly message
     let message = "Notification received.";
     if (data.message) {
       message = data.message;
@@ -32,17 +76,34 @@ export const NotificationProvider = ({ children }) => {
     } else if (data.orderId) {
       message = `Update for order #${data.orderId}.`;
     }
-    
-    // Create a unique ID for the notification for key prop and clearing
-    const newNotification = { id: Date.now(), ...data, displayMessage: message };
-    setNotifications(prev => [newNotification, ...prev]);
 
-    // Optional: Show browser notification
-    if (Notification.permission === 'granted') {
-      new Notification(message);
+    // Show Sonner toast notification based on type
+    switch (data.type) {
+      case 'new_order':
+        toast.success(message, {
+          description: 'Check your notifications for details',
+          duration: 5000,
+        });
+        break;
+      case 'status_update':
+        toast.info(message, {
+          description: 'Order status has been updated',
+          duration: 4000,
+        });
+        break;
+      case 'order_update':
+        toast.info(message, {
+          description: 'Order information updated',
+          duration: 4000,
+        });
+        break;
+      default:
+        toast(message, {
+          description: 'New notification received',
+          duration: 4000,
+        });
     }
-  }, []);
-
+  }, [fetchUnreadCount, fetchNotifications]);
 
   useEffect(() => {
     // Kilo Code: Fetch Mercure token first
@@ -66,7 +127,6 @@ export const NotificationProvider = ({ children }) => {
 
     fetchMercureToken();
   }, [isAuthenticated, entity, apiToken, mercureToken]);
-
 
   useEffect(() => {
     if (!isAuthenticated() || !entity || !mercureToken) { // Kilo Code: Depend on mercureToken
@@ -113,11 +173,16 @@ export const NotificationProvider = ({ children }) => {
       try {
         const data = JSON.parse(event.data);
         console.log("Mercure message received:", data);
-        addNotification(data); // Kilo Code: Use addNotification function
+        handleRealTimeNotification(data); // Updated to use new handler
       } catch (e) {
         console.error("Failed to parse Mercure message data:", event.data, e);
-        // Optionally, add a generic error notification
-        addNotification({ message: "Received an invalid update." });
+        // Still refresh bell data even on parse error
+        fetchUnreadCount();
+        // Show error toast
+        toast.error('Failed to process notification', {
+          description: 'Received an invalid notification format',
+          duration: 3000,
+        });
       }
     };
 
@@ -139,11 +204,6 @@ export const NotificationProvider = ({ children }) => {
 
     setEventSource(es);
 
-    // Request notification permission
-    if (Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-
     return () => {
       if (es) {
         es.close();
@@ -151,42 +211,8 @@ export const NotificationProvider = ({ children }) => {
         console.log("Mercure EventSource closed on component unmount or dependency change.");
       }
     };
-    // Kilo Code: Add mercureToken to dependency array
-  }, [entity, isAuthenticated, mercureToken, addNotification, apiToken]);
-  
-  // Fetch persisted notifications from API
-  const fetchNotifications = useCallback(async (page = 1, readStatus = null) => {
-    if (!isAuthenticated() || !entity) return;
-    
-    setLoading(true);
-    try {
-      let url = `/notifications?page=${page}&limit=15`;
-      if (readStatus !== null) {
-        url += `&read=${readStatus}`;
-      }
-      
-      const result = await fetchDataFromEndpoint(url, 'GET', null, true);
-      setPersistentNotifications(result.items || []);
-      setPagination(result.pagination || { page: 1, limit: 15, total: 0, pages: 0 });
-    } catch (err) {
-      console.error("Error fetching notifications:", err);
-      setError(err.message || "Error fetching notifications");
-    } finally {
-      setLoading(false);
-    }
-  }, [isAuthenticated, entity]);
-  
-  // Fetch unread count
-  const fetchUnreadCount = useCallback(async () => {
-    if (!isAuthenticated() || !entity) return;
-    
-    try {
-      const result = await fetchDataFromEndpoint('/notifications/unread-count', 'GET', null, true);
-      setUnreadCount(result.count || 0);
-    } catch (err) {
-      console.error("Error fetching unread count:", err);
-    }
-  }, [isAuthenticated, entity]);
+    // Kilo Code: Add mercureToken and handleRealTimeNotification to dependency array
+  }, [entity, isAuthenticated, mercureToken, handleRealTimeNotification, apiToken, fetchUnreadCount]);
   
   // Mark notification as read
   const markAsRead = useCallback(async (notificationId) => {
@@ -236,8 +262,13 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [isAuthenticated, entity, fetchNotifications, fetchUnreadCount]);
   
-  // Real-time notification clear functions
-  const clearNotification = (idToClear) => { // Kilo Code: Clear by ID
+  // Legacy toast notification functions (kept for backward compatibility)
+  const addNotification = useCallback((data) => {
+    // This function is kept for backward compatibility but now delegates to handleRealTimeNotification
+    handleRealTimeNotification(data);
+  }, [handleRealTimeNotification]);
+
+  const clearNotification = (idToClear) => {
     setNotifications(prev => prev.filter(n => n.id !== idToClear));
   };
   
@@ -246,7 +277,7 @@ export const NotificationProvider = ({ children }) => {
   };
 
   const value = {
-    // Real-time toast notifications
+    // Real-time toast notifications (kept for backward compatibility, but empty)
     notifications,
     addNotification,
     clearNotification,

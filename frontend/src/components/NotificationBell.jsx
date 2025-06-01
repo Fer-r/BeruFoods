@@ -31,17 +31,9 @@ const NotificationBell = () => {
     }
   };
 
-  // Periodically update unread count
+  // Initial fetch of unread count (removed periodic interval)
   useEffect(() => {
-    // Initial fetch of unread count
     fetchUnreadCount();
-    
-    // Set up interval to periodically refresh unread count
-    const intervalId = setInterval(() => {
-      fetchUnreadCount();
-    }, 30000); // Check every 30 seconds
-    
-    return () => clearInterval(intervalId);
   }, [fetchUnreadCount]);
   
   // Close dropdown when clicking outside

@@ -12,6 +12,8 @@ use App\Repository\RestaurantRepository;
 use App\Repository\ArticleRepository;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +30,8 @@ final class OrderController extends AbstractController
     use ApiResponseTrait;
 
     public function __construct(
-        private NotificationService $notificationService
+        private NotificationService $notificationService,
+        private HubInterface $mercureHub
     ) {}
 
     #[Route('', name: 'api_order_index', methods: ['GET'])]
@@ -153,8 +156,37 @@ final class OrderController extends AbstractController
         $entityManager->persist($order);
         $entityManager->flush();
 
-        // Send notification to restaurant
-        $this->notificationService->notifyNewOrder($order->getId(), $restaurant->getId());
+        // Send notification to restaurant through the notification service
+        $notificationSent = $this->notificationService->notifyNewOrder($order->getId(), $restaurant->getId());
+        
+        if (!$notificationSent) {
+            // Log the error but continue with order creation
+            // The notification failed but we don't want to fail the entire order
+            // We'll still try the direct Mercure approach as a fallback
+        }
+
+        try {
+            // Publish to Mercure for the restaurant as a fallback
+            $restaurantTopic = sprintf('/orders/restaurant/%s', $restaurant->getId());
+            $orderData = [
+                'orderId' => $order->getId(),
+                'userId' => $currentUser->getId(),
+                'restaurantId' => $restaurant->getId(),
+                'items' => $order->getItems(),
+                'totalPrice' => $order->getTotalPrice(),
+                'status' => $order->getStatus(),
+                'createdAt' => $order->getCreatedAt() ? $order->getCreatedAt()->format(\DateTimeInterface::ATOM) : null,
+            ];
+            $update = new Update(
+                $restaurantTopic,
+                json_encode($orderData),
+                true // Private update
+            );
+            $this->mercureHub->publish($update);
+        } catch (\Exception $e) {
+            // Log the error but continue with order creation
+            // We don't want to fail the entire order if notifications fail
+        }
 
         return $this->apiSuccessResponse($order, Response::HTTP_CREATED, ['order:read']);
     }
@@ -201,11 +233,39 @@ final class OrderController extends AbstractController
         $entityManager->flush();
 
         // Send notification to user
-        $this->notificationService->notifyOrderStatusChange(
+        $notificationSent = $this->notificationService->notifyOrderStatusChange(
             $order->getId(),
             $order->getUser()->getId(),
             $newState
         );
+        
+        if (!$notificationSent) {
+            // Log the error but continue with status update
+            // The notification failed but we don't want to fail the entire status update
+            // We'll still try the direct Mercure approach as a fallback
+        }
+
+        // Publish to Mercure for the user as a fallback
+        $user = $order->getUser();
+        if ($user) {
+            try {
+                $userTopic = sprintf('/orders/user/%s', $user->getId());
+                $statusUpdateData = [
+                    'orderId' => $order->getId(),
+                    'newStatus' => $newState,
+                    'updatedAt' => $order->getUpdatedAt() ? $order->getUpdatedAt()->format(\DateTimeInterface::ATOM) : (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+                ];
+                $update = new Update(
+                    $userTopic,
+                    json_encode($statusUpdateData),
+                    true // Private update
+                );
+                $this->mercureHub->publish($update);
+            } catch (\Exception $e) {
+                // Log the error but continue with status update
+                // We don't want to fail the entire operation if notifications fail
+            }
+        }
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }

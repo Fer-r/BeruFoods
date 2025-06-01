@@ -5,6 +5,7 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { ModalProvider } from "./context/ModalContext.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
+import { Toaster } from "sonner";
 
 const App = () => {
   useThemeManager();
@@ -15,6 +16,12 @@ const App = () => {
         <CartProvider>
           <NotificationProvider>
             <RouterProvider router={router} />
+            <Toaster 
+              position="top-right"
+              expand={true}
+              richColors={true}
+              closeButton={true}
+            />
           </NotificationProvider>
         </CartProvider>
       </ModalProvider>

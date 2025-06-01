@@ -7,10 +7,18 @@ const MERCURE_PUBLIC_URL = 'https://localhost/.well-known/mercure'; // Kilo Code
 
 export const NotificationProvider = ({ children }) => {
   const { entity, isAuthenticated, token: apiToken } = useAuth(); // Kilo Code: Get apiToken for Mercure token fetch
+  
+  // Real-time notification states
   const [notifications, setNotifications] = useState([]);
   const [eventSource, setEventSource] = useState(null);
   const [mercureToken, setMercureToken] = useState(null); // Kilo Code: State for Mercure token
   const [error, setError] = useState(null); // Kilo Code: State for errors
+  
+  // Persistent notification states
+  const [persistentNotifications, setPersistentNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [pagination, setPagination] = useState({ page: 1, limit: 15, total: 0, pages: 0 });
+  const [loading, setLoading] = useState(false);
 
   // Kilo Code: Function to add a formatted notification
   const addNotification = useCallback((data) => {
@@ -145,7 +153,90 @@ export const NotificationProvider = ({ children }) => {
     };
     // Kilo Code: Add mercureToken to dependency array
   }, [entity, isAuthenticated, mercureToken, addNotification, apiToken]);
-
+  
+  // Fetch persisted notifications from API
+  const fetchNotifications = useCallback(async (page = 1, readStatus = null) => {
+    if (!isAuthenticated() || !entity) return;
+    
+    setLoading(true);
+    try {
+      let url = `/notifications?page=${page}&limit=15`;
+      if (readStatus !== null) {
+        url += `&read=${readStatus}`;
+      }
+      
+      const result = await fetchDataFromEndpoint(url, 'GET', null, true);
+      setPersistentNotifications(result.items || []);
+      setPagination(result.pagination || { page: 1, limit: 15, total: 0, pages: 0 });
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+      setError(err.message || "Error fetching notifications");
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated, entity]);
+  
+  // Fetch unread count
+  const fetchUnreadCount = useCallback(async () => {
+    if (!isAuthenticated() || !entity) return;
+    
+    try {
+      const result = await fetchDataFromEndpoint('/notifications/unread-count', 'GET', null, true);
+      setUnreadCount(result.count || 0);
+    } catch (err) {
+      console.error("Error fetching unread count:", err);
+    }
+  }, [isAuthenticated, entity]);
+  
+  // Mark notification as read
+  const markAsRead = useCallback(async (notificationId) => {
+    try {
+      await fetchDataFromEndpoint(`/notifications/${notificationId}/read`, 'PUT', null, true);
+      
+      // Update local state
+      setPersistentNotifications(prev =>
+        prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+      );
+      
+      // Refresh unread count
+      fetchUnreadCount();
+      
+      return true;
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+      return false;
+    }
+  }, [fetchUnreadCount]);
+  
+  // Mark all notifications as read
+  const markAllAsRead = useCallback(async () => {
+    try {
+      await fetchDataFromEndpoint('/notifications/read-all', 'PUT', null, true);
+      
+      // Update local state
+      setPersistentNotifications(prev =>
+        prev.map(n => ({ ...n, isRead: true }))
+      );
+      
+      // Reset unread count
+      setUnreadCount(0);
+      
+      return true;
+    } catch (err) {
+      console.error("Error marking all notifications as read:", err);
+      return false;
+    }
+  }, []);
+  
+  // Initial fetch of notifications and unread count
+  useEffect(() => {
+    if (isAuthenticated() && entity) {
+      fetchNotifications(1, false); // Initially load unread notifications
+      fetchUnreadCount();
+    }
+  }, [isAuthenticated, entity, fetchNotifications, fetchUnreadCount]);
+  
+  // Real-time notification clear functions
   const clearNotification = (idToClear) => { // Kilo Code: Clear by ID
     setNotifications(prev => prev.filter(n => n.id !== idToClear));
   };
@@ -155,11 +246,24 @@ export const NotificationProvider = ({ children }) => {
   };
 
   const value = {
+    // Real-time toast notifications
     notifications,
-    addNotification, // Kilo Code: Expose addNotification
+    addNotification,
     clearNotification,
-    clearAllNotifications, // Kilo Code: Expose clearAllNotifications
-    mercureError: error // Kilo Code: Expose error state
+    clearAllNotifications,
+    
+    // Persistent notifications
+    persistentNotifications,
+    fetchNotifications,
+    fetchUnreadCount,
+    markAsRead,
+    markAllAsRead,
+    unreadCount,
+    pagination,
+    loading,
+    
+    // Errors
+    mercureError: error
   };
 
   return (

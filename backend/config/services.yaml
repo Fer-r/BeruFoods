@@ -16,6 +16,9 @@ parameters:
 
     # Define the directory where images will be uploaded
     uploads_directory: '%kernel.project_dir%/public/uploads/images' # Or your desired path
+    
+    # Mercure configuration
+    mercure_jwt_secret: '%env(MERCURE_JWT_SECRET)%'
 
 services:
     # default configuration for services in *this* file

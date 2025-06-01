@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNotifications } from '../context/NotificationContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { IoMdClose } from 'react-icons/io';
 import { FaBell, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 

@@ -9,7 +9,7 @@ import { useAuth } from '../../../context/AuthContext.jsx';
 import { useCart } from '../../../context/CartContext.jsx';
 import { FaUserCircle, FaShoppingCart } from 'react-icons/fa';
 import { GrRestaurant } from "react-icons/gr";
-import NotificationBell from '../../components/NotificationBell';
+import NotificationBell from '../../common/NotificationBell';
 
 const Header = () => {
   const { isLoginModalOpen, openLoginModal, closeLoginModal } = useModal();

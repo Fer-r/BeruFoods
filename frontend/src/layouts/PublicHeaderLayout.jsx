@@ -1,6 +1,6 @@
 import Header from '../components/layout/Header/Header.jsx'; // Adjust path as necessary
 import { Outlet } from 'react-router';
-import NotificationToast from '../components/NotificationToast';
+import NotificationToast from '../components/common/NotificationToast';
 
 const PublicHeaderLayout = () => {
   return (

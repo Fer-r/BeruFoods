@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { FaBell } from 'react-icons/fa';
-import { useNotifications } from '../context/NotificationContext';
+import { useNotifications } from '../../context/NotificationContext';
 
 const NotificationBell = () => {
   const { 

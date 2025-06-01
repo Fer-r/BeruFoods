@@ -1,5 +1,3 @@
-import React from 'react';
-
 const RestaurantBookingsPage = () => {
   return (
     <div className="container mx-auto p-4">

@@ -13,7 +13,7 @@ COMPOSE := docker compose
 .DEFAULT_GOAL := help
 
 # Phony targets prevent conflicts with files of the same name
-.PHONY: help init up down restart build logs-backend logs-frontend bash-backend bash-frontend install db cache cache-clear migration test-backend frontend backend fix-linux-permissions start-frontend-dev-blocking
+.PHONY: help init up down restart build logs-backend logs-frontend bash-backend bash-frontend install db cache cache-clear migration test-backend frontend backend fix-linux-permissions start-frontend-dev-blocking generate-keys
 
 help: ## Display this help message
 	@echo "Usage: make [target]"
@@ -39,9 +39,10 @@ help: ## Display this help message
 	@echo "  test-backend    Run backend PHPUnit tests"
 	@echo "  frontend        Build frontend assets for production"
 	@echo "  backend         Validate backend composer setup"
-	@echo "  start-frontend-dev Start frontend dev server in foreground"
+	@echo "  start-frontend-dev Show frontend dev server logs (starts automatically)"
+	@echo "  generate-keys   Generate LexikJWTBundle RSA keys and Mercure HMAC secret"
 
-init: stop up install db cache start-frontend-dev ## Initialize the project: stop, build, start, install deps, setup DB, warm cache, then starts frontend dev server blocking
+init: stop up install db cache ## Initialize the project: stop, build, start, install deps, setup DB, warm cache (frontend dev server starts automatically)
 	@echo "Project initialization complete. Frontend dev server is starting..."
 
 up: ## Build images (if needed) and start services in detached mode
@@ -83,9 +84,9 @@ install-backend: ## Install backend Composer dependencies
 install-frontend: ## Install frontend yarn dependencies
 	$(COMPOSE) exec --user=${FRONTEND_USER} ${FRONTEND_SERVICE} yarn install
 
-start-frontend-dev: ## Starts the frontend development server, blocking the terminal.
-	@echo "Starting frontend development server (yarn dev)..."
-	$(COMPOSE) exec --user=${FRONTEND_USER} ${FRONTEND_SERVICE} yarn dev
+start-frontend-dev: ## Show frontend development server logs (dev server starts automatically)
+	@echo "Showing frontend development server logs (dev server starts automatically with 'make up')..."
+	$(COMPOSE) logs -f ${FRONTEND_SERVICE}
 
 db: ## Run database migrations
 	# Wait logic removed - handled by Docker Compose healthcheck now
@@ -117,6 +118,23 @@ backend: ## Validate backend composer setup
 
 delete: ## Delete all containers, networks, and volumes
 	$(COMPOSE) down -v
+
+generate-keys: ## Generate LexikJWTBundle RSA keys and Mercure HMAC secret, then restart services
+	@echo "Generating LexikJWTBundle RSA keys..."
+	$(COMPOSE) exec --user=${BACKEND_USER} ${BACKEND_SERVICE} bin/console lexik:jwt:generate-keypair --overwrite
+	@echo "Generating Mercure HMAC secret..."
+	@MERCURE_SECRET=$$(openssl rand -base64 32); \
+	echo "Generated MERCURE_SECRET: $$MERCURE_SECRET"; \
+	if grep -q "^MERCURE_SECRET=" .env 2>/dev/null; then \
+		sed -i "s/^MERCURE_SECRET=.*/MERCURE_SECRET=$$MERCURE_SECRET/" .env; \
+		echo "Updated MERCURE_SECRET in .env file"; \
+	else \
+		echo "MERCURE_SECRET=$$MERCURE_SECRET" >> .env; \
+		echo "Added MERCURE_SECRET to .env file"; \
+	fi
+	@echo "Restarting services to apply new keys..."
+	$(COMPOSE) restart
+	@echo "Keys generation and service restart complete!"
 
 fix-linux-permissions: ## Ensures necessary backend directories are writable on Linux hosts (used by 'init')
 	@if [ "$(shell uname)" = "Linux" ]; then \

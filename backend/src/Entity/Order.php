@@ -12,6 +12,7 @@ use function Symfony\Component\Clock\now;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: 'orders')]
+#[ORM\HasLifecycleCallbacks]
 class Order
 {
     #[ORM\Id]
@@ -42,6 +43,9 @@ class Order
 
     #[ORM\Column(type: 'json', nullable: false)]
     private ?array $items = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)] // Keep DATETIME_IMMUTABLE for storage
+    private ?\DateTimeInterface $updatedAt = null; // Use DateTimeInterface for type hinting
 
     // --- Getters and Setters ---
 
@@ -130,10 +134,35 @@ class Order
         return $this;
     }
 
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
     public function __construct()
     { // Set defaults
-        $this->created_at = new \DateTimeImmutable();
+        // $this->created_at is set by PrePersist
         $this->status = 'pending';
         $this->items = [];
     }
-} 
+
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
+    {
+        $this->created_at = new \DateTimeImmutable();
+        // Optionally set updatedAt on creation as well, or leave it null until first update
+        // $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+}

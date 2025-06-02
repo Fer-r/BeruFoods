@@ -5,13 +5,15 @@ import LoadingFallback from '../../components/common/LoadingFallback.jsx';
 
 import useRestaurantOrderDetails from '../../features/restaurant/hooks/useRestaurantOrderDetails';
 import OrderStatusSelector from '../../features/restaurant/components/OrderStatusSelector';
-import { IoRefresh } from 'react-icons/io5';
+import { downloadOrderBill } from '../../utils/pdfGenerator';
+import { IoRefresh, IoDownload } from 'react-icons/io5';
 import { MdPerson, MdEmail, MdPhone } from 'react-icons/md';
 
 const RestaurantOrderDetailsPage = () => {
   const { orderId } = useParams();
   const [wasUpdated, setWasUpdated] = useState(false);
   const [updateError, setUpdateError] = useState(null);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
   
   // Use our custom hook for restaurant order details with real-time update support
   const {
@@ -52,6 +54,27 @@ const RestaurantOrderDetailsPage = () => {
     }
   };
 
+  const handleDownloadBill = async () => {
+    if (!displayOrder) return;
+    
+    setPdfGenerating(true);
+    try {
+      const result = downloadOrderBill(displayOrder, true);
+      if (result.success) {
+        setWasUpdated(true);
+        setTimeout(() => setWasUpdated(false), 2000);
+      } else {
+        setUpdateError(`Failed to generate PDF: ${result.error}`);
+        setTimeout(() => setUpdateError(null), 5000);
+      }
+    } catch (error) {
+      setUpdateError(`Error creating PDF: ${error.message}`);
+      setTimeout(() => setUpdateError(null), 5000);
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
+
   if (orderLoading) return <LoadingFallback />;
   if (orderError && !displayOrder) return <AlertMessage type="error" message={orderError} />;
   if (!displayOrder) return <AlertMessage type="info" message="Order not found." />;
@@ -60,13 +83,24 @@ const RestaurantOrderDetailsPage = () => {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Order Management</h1>
-        <button
-          onClick={handleRefresh}
-          className="btn btn-outline btn-sm gap-2"
-          aria-label="Refresh order details"
-        >
-          <IoRefresh className="h-4 w-4" /> Refresh
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleDownloadBill}
+            disabled={pdfGenerating}
+            className="btn btn-primary btn-sm gap-2"
+            aria-label="Download order bill as PDF"
+          >
+            <IoDownload className="h-4 w-4" /> 
+            {pdfGenerating ? 'Generating...' : 'Download Bill'}
+          </button>
+          <button
+            onClick={handleRefresh}
+            className="btn btn-outline btn-sm gap-2"
+            aria-label="Refresh order details"
+          >
+            <IoRefresh className="h-4 w-4" /> Refresh
+          </button>
+        </div>
       </div>
       
       {wasUpdated && (

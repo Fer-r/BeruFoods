@@ -129,6 +129,7 @@ generate-keys: ## Generate LexikJWTBundle RSA keys and Mercure HMAC secret, then
 		sed -i "s/^MERCURE_SECRET=.*/MERCURE_SECRET=$$MERCURE_SECRET/" .env; \
 		echo "Updated MERCURE_SECRET in .env file"; \
 	else \
+		echo "" >> .env; \
 		echo "MERCURE_SECRET=$$MERCURE_SECRET" >> .env; \
 		echo "Added MERCURE_SECRET to .env file"; \
 	fi

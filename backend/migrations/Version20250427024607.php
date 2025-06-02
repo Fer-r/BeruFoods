@@ -14,7 +14,7 @@ final class Version20250427024607 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Major schema updates: add image handling, restaurant hours, reservation codes, and improve address structure';
     }
 
     public function up(Schema $schema): void

@@ -14,7 +14,7 @@ final class Version20250601003100 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Fix notification table structure: rename read column to is_read and adjust indexes';
     }
 
     public function up(Schema $schema): void

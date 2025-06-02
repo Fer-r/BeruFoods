@@ -14,7 +14,7 @@ final class Version20250510105237 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Convert user_addresses address_line field to simple_array type for structured address components';
     }
 
     public function up(Schema $schema): void

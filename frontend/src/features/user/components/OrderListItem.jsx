@@ -1,7 +1,8 @@
 import { Link } from 'react-router';
+import { useState, useEffect } from 'react';
 
 const OrderStatusBadge = ({ status }) => {
-  let badgeClass = 'badge-ghost'; // Default badge class
+  let badgeClass = 'badge-ghost';
   let text = status ? status.charAt(0).toUpperCase() + status.slice(1) : 'N/A';
 
   switch (status?.toLowerCase()) {
@@ -32,16 +33,36 @@ const OrderStatusBadge = ({ status }) => {
 };
 
 const OrderListItem = ({ order }) => {
+  const [highlight, setHighlight] = useState(false);
+  const [previousStatus, setPreviousStatus] = useState(order?.status);
+  
+  useEffect(() => {
+    if (!order) return;
+    
+    if (previousStatus && previousStatus !== order.status) {
+      setHighlight(true);
+      const timer = setTimeout(() => setHighlight(false), 3000);
+      return () => clearTimeout(timer);
+    }
+    
+    setPreviousStatus(order.status);
+  }, [order?.status, previousStatus, order?.id]);
+  
   if (!order) {
     return null;
   }
 
   return (
-    <div className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out mb-4 w-full">
+    <div
+      className={`card ${highlight ? 'bg-primary bg-opacity-20 border-2 border-primary' : 'bg-base-100'} shadow-md hover:shadow-lg transition-all duration-500 ease-in-out mb-4 w-full`}
+    >
       <div className="card-body p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
           <h2 className="card-title text-lg md:text-xl mb-2 sm:mb-0">
             Order #{order.id}
+            {highlight && (
+              <span className="badge badge-accent badge-sm ml-2 animate-pulse">Updated!</span>
+            )}
           </h2>
           <OrderStatusBadge status={order.status} />
         </div>

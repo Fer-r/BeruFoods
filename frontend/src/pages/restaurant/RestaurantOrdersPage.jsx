@@ -38,7 +38,6 @@ const RestaurantOrdersPage = () => {
     
     if (!result.success) {
       setUpdateError(`Failed to update order #${orderId}: ${result.error}`);
-      // Auto-clear error after 5 seconds
       setTimeout(() => setUpdateError(null), 5000);
     }
   };

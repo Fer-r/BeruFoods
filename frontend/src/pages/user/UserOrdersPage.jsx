@@ -3,20 +3,29 @@ import useUserOrders from '../../features/user/hooks/useUserOrders';
 import OrderListItem from '../../features/user/components/OrderListItem';
 import LoadingFallback from '../../components/common/LoadingFallback';
 import AlertMessage from '../../components/common/AlertMessage';
+import { IoRefresh } from 'react-icons/io5';
+import { useAuth } from '../../context/AuthContext';
+import { useNotifications } from '../../context/NotificationContext';
+
 
 const UserOrdersPage = () => {
-  const { 
-    orders, 
-    loading, 
-    initialLoading, 
-    error, 
-    hasMore, 
+  const { entity } = useAuth();
+  const { mercureError } = useNotifications();
+  const {
+    orders,
+    loading,
+    initialLoading,
+    error,
+    hasMore,
     fetchMoreOrders,
-    // refreshOrders // Available if you want to add a manual refresh button
+    refreshOrders
   } = useUserOrders();
 
   const renderOrderItem = (order) => (
-    <OrderListItem key={order.id} order={order} />
+    <OrderListItem
+      key={order.id}
+      order={order}
+    />
   );
 
   if (initialLoading && orders.length === 0) {
@@ -32,6 +41,9 @@ const UserOrdersPage = () => {
       <div className="container mx-auto p-4">
          <h1 className="text-3xl font-bold mb-6 text-center">My Orders</h1>
         <AlertMessage type="error" message={`${error}`} />
+        {mercureError && (
+          <AlertMessage type="warning" message={`Real-time updates unavailable: ${mercureError}`} className="mt-2" />
+        )}
       </div>
     );
   }
@@ -42,8 +54,6 @@ const UserOrdersPage = () => {
         <h1 className="text-3xl font-bold mb-6">My Orders</h1>
         <div className="bg-base-100 p-8 rounded-lg shadow">
           <p className="text-xl text-gray-500">You haven&apos;t placed any orders yet.</p>
-          {/* Optional: Link to browse restaurants */}
-          {/* <Link to="/" className="btn btn-primary mt-4">Browse Restaurants</Link> */}
         </div>
       </div>
     );
@@ -51,7 +61,21 @@ const UserOrdersPage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-8 text-center">My Orders</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">My Orders</h1>
+        <button
+          onClick={refreshOrders}
+          className="btn btn-outline btn-sm gap-2"
+          aria-label="Refresh orders"
+          data-testid="refresh-orders-button"
+        >
+          <IoRefresh className="h-4 w-4" /> Refresh
+        </button>
+      </div>
+      
+      {mercureError && (
+        <AlertMessage type="warning" message={`Real-time updates unavailable: ${mercureError}`} className="mb-4" />
+      )}
       
       {error && orders.length > 0 && (
         <AlertMessage type="warning" message={`Error loading more orders: ${error}`} className="mb-4" />
@@ -70,7 +94,7 @@ const UserOrdersPage = () => {
             </p>
           ) : null
         }
-        isLoadingMore={loading} // Pass the subsequent loading state
+        isLoadingMore={loading}
       />
     </div>
   );

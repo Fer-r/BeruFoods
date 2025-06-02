@@ -1,15 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchDataFromEndpoint } from '../../../services/useApiService';
 import { useAuth } from '../../../context/AuthContext';
+import { useNotifications } from '../../../context/NotificationContext';
 
+/**
+ * Hook for managing user orders with real-time updates.
+ * Simple approach: refresh orders whenever we get a relevant notification.
+ */
 const useUserOrders = (initialPageSize = 10) => {
-  const { token } = useAuth();
+  const { token, entity } = useAuth();
+  const { persistentNotifications } = useNotifications();
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false); // For subsequent page loads
-  const [initialLoading, setInitialLoading] = useState(true); // For the very first load
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [processedNotifications, setProcessedNotifications] = useState(new Set());
 
   const fetchOrders = useCallback(async (currentPage) => {
     if (!token) {
@@ -21,19 +28,18 @@ const useUserOrders = (initialPageSize = 10) => {
     }
 
     if (currentPage === 1) {
-        setInitialLoading(true);
+      setInitialLoading(true);
     } else {
-        setLoading(true); // loading is for subsequent fetches
+      setLoading(true);
     }
     setError(null);
 
     try {
-      // The backend OrderController's index action handles pagination and user-specific filtering
       const data = await fetchDataFromEndpoint(
         `/orders?page=${currentPage}&limit=${initialPageSize}`,
         'GET',
         null,
-        true // isProtected
+        true
       );
 
       if (data && data.items) {
@@ -45,7 +51,6 @@ const useUserOrders = (initialPageSize = 10) => {
         if (currentPage === 1) setOrders([]); 
       }
     } catch (err) {
-      console.error("Failed to fetch user orders:", err);
       const errorMessage = err.details?.message || err.message || 'Could not load your orders. Please try again later.';
       setError(errorMessage);
       if (currentPage === 1) setOrders([]);
@@ -57,12 +62,10 @@ const useUserOrders = (initialPageSize = 10) => {
   }, [token, initialPageSize]);
 
   useEffect(() => {
-    // Fetch initial orders when the component mounts or token changes
     fetchOrders(1);
-  }, [fetchOrders]); // fetchOrders is memoized and includes token in its deps
+  }, [fetchOrders]);
 
   const fetchMoreOrders = () => {
-    // Only fetch more if there are more orders and not currently loading (either initial or subsequent)
     if (hasMore && !loading && !initialLoading) {
       fetchOrders(page);
     }
@@ -70,13 +73,55 @@ const useUserOrders = (initialPageSize = 10) => {
 
   const refreshOrders = useCallback(() => {
     setPage(1);
-    setOrders([]); // Clear existing orders
-    setHasMore(true); // Reset hasMore
-    fetchOrders(1); // Fetch from the first page
+    setOrders([]);
+    setHasMore(true);
+    fetchOrders(1);
   }, [fetchOrders]);
 
+  /**
+   * SIMPLIFIED: Just refresh orders when we get any relevant notification
+   * No complex logic - just do what the refresh button does!
+   */
+  useEffect(() => {
+    if (!entity?.userId || initialLoading || persistentNotifications.length === 0) {
+      return;
+    }
+
+    const newOrderNotifications = persistentNotifications
+      .filter(notification =>
+        ['new_order', 'order_status_change', 'order_update'].includes(notification.type) &&
+        !processedNotifications.has(notification.id)
+      );
+
+    if (newOrderNotifications.length === 0) {
+      return;
+    }
+
+    setProcessedNotifications(prev => {
+      const updated = new Set(prev);
+      newOrderNotifications.forEach(notification => {
+        updated.add(notification.id);
+      });
+      return updated;
+    });
+
+    refreshOrders();
+
+  }, [persistentNotifications, entity, refreshOrders, initialLoading]);
+
+  // Add cleanup mechanism to prevent memory leaks from accumulating notifications
+  useEffect(() => {
+    if (processedNotifications.size > 100) {
+      setProcessedNotifications(prev => {
+        const newSet = new Set();
+        const recentNotifications = Array.from(prev).slice(-50);
+        recentNotifications.forEach(id => newSet.add(id));
+        return newSet;
+      });
+    }
+  }, [processedNotifications.size]);
 
   return { orders, loading, initialLoading, error, hasMore, fetchMoreOrders, refreshOrders };
 };
 
-export default useUserOrders; 
+export default useUserOrders;

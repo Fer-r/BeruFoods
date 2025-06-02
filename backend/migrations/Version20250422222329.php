@@ -14,7 +14,7 @@ final class Version20250422222329 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Create initial user table with authentication fields and messenger_messages table for async processing';
     }
 
     public function up(Schema $schema): void

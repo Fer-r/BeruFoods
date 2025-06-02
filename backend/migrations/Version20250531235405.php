@@ -14,7 +14,7 @@ final class Version20250531235405 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Add updated_at column to orders table for tracking order modifications';
     }
 
     public function up(Schema $schema): void

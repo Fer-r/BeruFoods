@@ -14,7 +14,7 @@ final class Version20250505024607 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Populate food_types table with initial cuisine categories for restaurant classification';
     }
 
     public function up(Schema $schema): void

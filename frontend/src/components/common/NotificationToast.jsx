@@ -8,10 +8,10 @@ const NotificationToast = () => {
 
   useEffect(() => {
     // Auto-dismiss notifications after 5 seconds
-    const timers = notifications.map((notification) => { // Kilo Code: Use notification object
+    const timers = notifications.map((notification) => {
       return setTimeout(() => {
-        clearNotification(notification.id); // Kilo Code: Clear by ID
-      }, 5000);
+        clearNotification(notification.id);
+      }, 2000);
     });
 
     return () => {
@@ -24,9 +24,9 @@ const NotificationToast = () => {
   const getIcon = (type) => {
     switch (type) {
       case 'new_order':
-      case 'order_update': // Kilo Code: Added generic order update
+      case 'order_update':
         return <FaBell className="text-primary" />;
-      case 'status_update': // Kilo Code: Changed from order_status_change to match context
+      case 'status_update':
         return <FaCheck className="text-success" />;
       default:
         return <FaExclamationTriangle className="text-warning" />;
@@ -35,18 +35,18 @@ const NotificationToast = () => {
 
   return (
     <div className="toast toast-end z-50">
-      {notifications.map((notification) => ( // Kilo Code: Removed index
+      {notifications.map((notification) => (
         <div
-          key={notification.id} // Kilo Code: Use notification.id as key
+          key={notification.id}
           className="alert shadow-lg bg-base-100 mb-2"
           role="alert"
         >
           <div className="flex items-center gap-2">
             {getIcon(notification.type)}
-            <span>{notification.displayMessage}</span> {/* Kilo Code: Use displayMessage */}
+            <span>{notification.displayMessage}</span>
           </div>
           <button
-            onClick={() => clearNotification(notification.id)} // Kilo Code: Clear by ID
+            onClick={() => clearNotification(notification.id)}
             className="btn btn-ghost btn-xs"
             aria-label="Close notification"
           >

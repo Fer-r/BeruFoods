@@ -1,43 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router';
-import { fetchDataFromEndpoint } from '../../services/useApiService';
-import { useAuth } from '../../context/AuthContext.jsx';
 import AlertMessage from '../../components/common/AlertMessage.jsx';
 import LoadingFallback from '../../components/common/LoadingFallback.jsx';
 import useRestaurantArticles from '../../features/restaurant/hooks/useRestaurantArticles';
-
+import useOrderDetails from '../../features/user/hooks/useOrderDetails';
+import { IoRefresh } from 'react-icons/io5';
 const OrderDetailsPage = () => {
   const { orderId } = useParams();
-  const { token } = useAuth();
-  const [order, setOrder] = useState(null);
-  const [orderLoading, setOrderLoading] = useState(true);
-  const [orderError, setOrderError] = useState(null);
+  const [wasUpdated, setWasUpdated] = useState(false);
+  
+  // Use our custom hook for order details with real-time update support
+  const {
+    order,
+    loading: orderLoading,
+    error: orderError,
+    refreshOrder
+  } = useOrderDetails(orderId);
 
   const restaurantIdForHook = order?.restaurant?.id;
 
-  const { 
+  const {
     articles,
     loading: articlesLoading,
     error: articlesError
   } = useRestaurantArticles(restaurantIdForHook);
-
-  useEffect(() => {
-    const fetchOrderDetails = async () => {
-      if (!orderId || !token) return;
-      setOrderLoading(true);
-      setOrderError(null);
-      try {
-        const orderData = await fetchDataFromEndpoint(`/orders/${orderId}`, 'GET', null, true, token);
-        setOrder(orderData);
-      } catch (err) {
-        console.error("Failed to fetch order details:", err);
-        setOrderError(err.details?.message || err.message || 'Could not load order details.');
-      }
-      setOrderLoading(false);
-    };
-
-    fetchOrderDetails();
-  }, [orderId, token]);
+  
+  // When order is updated via real-time notification, show visual feedback
+  const handleRefresh = () => {
+    refreshOrder();
+    setWasUpdated(true);
+    
+    // Clear the "updated" visual feedback after 2 seconds
+    setTimeout(() => {
+      setWasUpdated(false);
+    }, 2000);
+  };
 
   const getArticleDetails = (articleIdToFind) => {
     return articles.find(article => article.id === articleIdToFind);
@@ -49,11 +46,29 @@ const OrderDetailsPage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Order Details</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Order Details</h1>
+        <button
+          onClick={handleRefresh}
+          className="btn btn-outline btn-sm gap-2"
+          aria-label="Refresh order details"
+        >
+          <IoRefresh className="h-4 w-4" /> Refresh
+        </button>
+      </div>
+      
+      {wasUpdated && (
+        <AlertMessage
+          type="success"
+          message="Order information updated!"
+          className="mb-4 transition-opacity duration-500"
+        />
+      )}
+      
       {orderError && order && <AlertMessage type="warning" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
       {articlesError && <AlertMessage type="warning" message={`Could not load full article information: ${articlesError}`} className="mb-4" />}
 
-      <div className="bg-base-100 shadow-xl rounded-lg p-6 mb-6">
+      <div className={`bg-base-100 shadow-xl rounded-lg p-6 mb-6 ${wasUpdated ? 'border-2 border-success transition-all duration-700' : ''}`}>
         <h2 className="text-xl font-semibold mb-3">Order #{order.id}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>

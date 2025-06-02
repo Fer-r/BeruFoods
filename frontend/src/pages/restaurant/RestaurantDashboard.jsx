@@ -93,8 +93,8 @@ const RestaurantDashboard = () => {
           <Link to="/restaurant/articles/new" className="btn btn-primary">
             <FaPlusSquare className="mr-2" /> Add New Article
           </Link>
-          <Link to="/restaurant/orders/today" className="btn btn-secondary">
-            <FaEye className="mr-2" /> View Today&apos;s Orders
+          <Link to="/restaurant/orders" className="btn btn-secondary">
+            <FaEye className="mr-2" /> View Orders
           </Link>
            {/* Add more relevant quick actions as needed */}
         </div>

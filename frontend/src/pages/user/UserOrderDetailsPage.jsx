@@ -5,7 +5,7 @@ import LoadingFallback from '../../components/common/LoadingFallback.jsx';
 import useRestaurantArticles from '../../features/restaurant/hooks/useRestaurantArticles';
 import useOrderDetails from '../../features/user/hooks/useOrderDetails';
 import { IoRefresh } from 'react-icons/io5';
-const OrderDetailsPage = () => {
+const UserOrderDetailsPage = () => {
   const { orderId } = useParams();
   const [wasUpdated, setWasUpdated] = useState(false);
   
@@ -139,5 +139,5 @@ const OrderDetailsPage = () => {
   );
 };
 
-export default OrderDetailsPage;
+export default UserOrderDetailsPage;
 

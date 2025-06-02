@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import OrderStatusSelector from './OrderStatusSelector';
 
 const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
@@ -98,13 +99,19 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
           </div>
         )}
 
-        {/* Status Management */}
-        <div className="border-t pt-4">
+        {/* Actions */}
+        <div className="border-t pt-4 flex justify-between items-start">
           <OrderStatusSelector
             currentStatus={order.status}
             onStatusChange={handleStatusUpdate}
             isUpdating={isUpdating}
           />
+          <Link 
+            to={`/restaurant/orders/${order.id}`}
+            className="btn btn-outline btn-primary btn-sm"
+          >
+            View Details
+          </Link>
         </div>
       </div>
     </div>

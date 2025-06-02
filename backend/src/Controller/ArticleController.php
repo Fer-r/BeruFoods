@@ -165,6 +165,14 @@ final class ArticleController extends AbstractController
             $data['available'] = filter_var($data['available'], FILTER_VALIDATE_BOOLEAN);
         }
 
+        if (!isset($data['allergies']) || (is_string($data['allergies']) && $data['allergies'] === '[]')) {
+            $data['allergies'] = null; // Set to null for empty allergies
+        } elseif (is_string($data['allergies'])) {
+            // If it's a JSON string, decode it
+            $decoded = json_decode($data['allergies'], true);
+            $data['allergies'] = is_array($decoded) ? $decoded : null;
+        }
+
         $article = $serializer->deserialize(json_encode($data), Article::class, 'json', [
             AbstractNormalizer::IGNORED_ATTRIBUTES => ['imageFilename']
         ]);
@@ -233,6 +241,14 @@ final class ArticleController extends AbstractController
         }
         if (isset($data['available'])) {
             $data['available'] = filter_var($data['available'], FILTER_VALIDATE_BOOLEAN);
+        }
+        
+        if (!isset($data['allergies']) || (is_string($data['allergies']) && $data['allergies'] === '[]')) {
+            $data['allergies'] = null; // Set to null for empty allergies
+        } elseif (is_string($data['allergies'])) {
+            // If it's a JSON string, decode it
+            $decoded = json_decode($data['allergies'], true);
+            $data['allergies'] = is_array($decoded) ? $decoded : null;
         }
 
         $serializer->deserialize(json_encode($data), Article::class, 'json', [

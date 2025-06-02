@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import InfiniteScrollContainer from '../../components/common/InfiniteScrollContainer';
 import RestaurantArticleCard from '../../features/restaurant/components/RestaurantArticleCard';
+import ArticleCsvImportModal from '../../features/restaurant/components/ArticleCsvImportModal';
 import useRestaurantOwnedArticles from '../../features/restaurant/hooks/useRestaurantOwnedArticles';
 import LoadingFallback from '../../components/common/LoadingFallback';
 import articleService from '../../features/restaurant/services/articleService';
@@ -14,16 +15,16 @@ const PATHS = {
 const RestaurantArticlesManagementPage = () => {
   const location = useLocation();
   const [message, setMessage] = useState(location.state?.message || null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const {
     articles,
-    loading, // True for initial load AND subsequent loads
-    initialLoading, // True only for the very first article load
+    loading,
+    initialLoading,
     error,
     fetchMoreArticles,
     hasMoreArticles,
-    refreshArticles, // To refresh the list after delete/edit
-    // setArticles // If optimistic updates are needed for delete
+    refreshArticles,
   } = useRestaurantOwnedArticles();
 
   // Clear message after a delay
@@ -52,6 +53,14 @@ const RestaurantArticlesManagementPage = () => {
     }
   };
 
+  const handleImportSuccess = (message, isError) => {
+    setMessage(message);
+    if (!isError) {
+      refreshArticles();
+      setShowImportModal(false);
+    }
+  };
+
   const renderArticleItem = (article) => (
     <RestaurantArticleCard 
         key={article.id} 
@@ -64,9 +73,17 @@ const RestaurantArticlesManagementPage = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold text-base-content">Manage Your Articles</h1>
-        <Link to={PATHS.RESTAURANT_ARTICLES_NEW} className="btn btn-primary w-full sm:w-auto">
-          Add New Article
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <button 
+            onClick={() => setShowImportModal(true)}
+            className="btn btn-outline btn-primary w-full sm:w-auto"
+          >
+            Import from CSV
+          </button>
+          <Link to={PATHS.RESTAURANT_ARTICLES_NEW} className="btn btn-primary w-full sm:w-auto">
+            Add New Article
+          </Link>
+        </div>
       </div>
 
       {message && (
@@ -86,9 +103,17 @@ const RestaurantArticlesManagementPage = () => {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-base-content opacity-30 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           <p className="text-xl text-base-content mb-4">You haven&apos;t added any articles yet.</p>
           <p className="text-sm text-base-content opacity-70 mb-6">Start by adding your delicious offerings to the menu.</p>
-          <Link to={PATHS.RESTAURANT_ARTICLES_NEW} className="btn btn-accent">
-            Add Your First Article
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <button 
+              onClick={() => setShowImportModal(true)}
+              className="btn btn-outline btn-accent"
+            >
+              Import from CSV
+            </button>
+            <Link to={PATHS.RESTAURANT_ARTICLES_NEW} className="btn btn-accent">
+              Add Your First Article
+            </Link>
+          </div>
         </div>
       )}
 
@@ -111,6 +136,12 @@ const RestaurantArticlesManagementPage = () => {
           className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
         />
       )}
+
+      <ArticleCsvImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={handleImportSuccess}
+      />
     </div>
   );
 };

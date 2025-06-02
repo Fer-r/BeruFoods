@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchDataFromEndpoint } from '../../../services/useApiService';
 import { useAuth } from '../../../context/AuthContext';
+import { useNotifications } from '../../../context/NotificationContext';
 
 // Helper function to convert date filter to date parameters
 const getDateFilterParams = (dateFilter) => {
@@ -43,7 +44,8 @@ const getDateFilterParams = (dateFilter) => {
 };
 
 const useRestaurantOrders = (initialPageSize = 10) => {
-  const { token } = useAuth();
+  const { token, entity } = useAuth();
+  const { persistentNotifications } = useNotifications();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false); // For subsequent page loads
   const [initialLoading, setInitialLoading] = useState(true); // For the very first load
@@ -52,6 +54,7 @@ const useRestaurantOrders = (initialPageSize = 10) => {
   const [hasMore, setHasMore] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
+  const [processedNotifications, setProcessedNotifications] = useState(new Set());
 
   const fetchOrders = useCallback(async (currentPage, statusFilter = 'all', dateFilter = 'all') => {
     if (!token) {
@@ -104,7 +107,6 @@ const useRestaurantOrders = (initialPageSize = 10) => {
         if (currentPage === 1) setOrders([]); 
       }
     } catch (err) {
-      console.error("Failed to fetch restaurant orders:", err);
       const errorMessage = err.details?.message || err.message || 'Could not load orders. Please try again later.';
       setError(errorMessage);
       if (currentPage === 1) setOrders([]);
@@ -154,7 +156,6 @@ const useRestaurantOrders = (initialPageSize = 10) => {
 
       return { success: true };
     } catch (err) {
-      console.error("Failed to update order status:", err);
       const errorMessage = err.details?.message || err.message || 'Failed to update order status.';
       return { success: false, error: errorMessage };
     }
@@ -176,13 +177,112 @@ const useRestaurantOrders = (initialPageSize = 10) => {
     // fetchOrders will be called by the useEffect when dateFilter changes
   }, []);
 
-  return { 
-    orders, 
-    loading, 
-    initialLoading, 
-    error, 
-    hasMore, 
-    fetchMoreOrders, 
+  /**
+   * Listen for real-time notifications about orders
+   * See full documentation in: frontend/src/docs/REALTIME_UPDATES.md
+   *
+   * This effect processes Mercure notifications from NotificationContext
+   * to update the orders list when changes occur, either by refreshing
+   * the entire list or updating specific orders in-place.
+   */
+  useEffect(() => {
+    // Only process notifications if we have loaded orders and have restaurant ID
+    if (!entity?.restaurantId || initialLoading || persistentNotifications.length === 0) {
+      return;
+    }
+
+    // Find notifications about orders that we haven't processed yet
+    const newOrderNotifications = persistentNotifications
+      .filter(notification =>
+        ['new_order', 'status_update', 'order_update'].includes(notification.type) &&
+        !processedNotifications.has(notification.id)
+      );
+
+    if (newOrderNotifications.length === 0) {
+      return;
+    }
+
+    // Track which notifications we've processed to avoid infinite loops
+    // Update our processed notifications set
+    setProcessedNotifications(prev => {
+      const updated = new Set(prev);
+      newOrderNotifications.forEach(notification => {
+        updated.add(notification.id);
+      });
+      return updated;
+    });
+
+    // Handle new order notifications (only need to refresh once even if multiple)
+    const hasNewOrders = newOrderNotifications.some(
+      notification => notification.type === 'new_order'
+    );
+    
+    if (hasNewOrders) {
+      refreshOrders();
+      return; // Skip further processing as refreshOrders will get everything
+    }
+    
+    // Handle status updates without refreshing the whole list
+    const statusUpdates = newOrderNotifications.filter(
+      notification => notification.type === 'status_update' && notification.orderId
+    );
+    
+    if (statusUpdates.length > 0) {
+      const latestStatusByOrderId = {};
+      statusUpdates.forEach(notification => {
+        if (notification.status) {
+          latestStatusByOrderId[notification.orderId] = notification.status;
+        }
+      });
+      
+      // Check which orders we need to update and which we need to fetch
+      const orderIdsToUpdate = Object.keys(latestStatusByOrderId);
+      const existingOrderIds = new Set(orders.map(order => order.id));
+      const needsRefresh = orderIdsToUpdate.some(orderId => {
+        const orderStatus = latestStatusByOrderId[orderId];
+        // Need refresh if: order isn't in our list AND (we're showing all statuses OR order's new status matches our filter)
+        return !existingOrderIds.has(orderId) &&
+               (statusFilter === 'all' || statusFilter === orderStatus);
+      });
+      
+      if (needsRefresh) {
+        refreshOrders();
+      } else {
+        // Just update the statuses of orders we already have
+        setOrders(prevOrders =>
+          prevOrders.map(order => {
+            if (orderIdsToUpdate.includes(order.id) && latestStatusByOrderId[order.id]) {
+              return { ...order, status: latestStatusByOrderId[order.id] };
+            }
+            return order;
+          })
+        );
+      }
+    }
+  }, [persistentNotifications, entity, orders, statusFilter, refreshOrders, initialLoading]);
+
+  // Add cleanup mechanism to prevent memory leaks from accumulating notifications
+  useEffect(() => {
+    // Clean up processed notifications when they exceed a certain threshold
+    // Only keep the most recent 100 notification IDs to prevent unbounded growth
+    if (processedNotifications.size > 100) {
+      setProcessedNotifications(prev => {
+        const newSet = new Set();
+        // Convert to array, get the most recent 50 notifications
+        const recentNotifications = Array.from(prev).slice(-50);
+        recentNotifications.forEach(id => newSet.add(id));
+        return newSet;
+      });
+    }
+  }, [processedNotifications.size]);
+
+  return {
+    orders,
+    loading,
+    initialLoading,
+    error,
+    hasMore,
+    fetchMoreOrders,
     refreshOrders,
     updateOrderStatus,
     filterOrdersByStatus,
@@ -192,4 +292,4 @@ const useRestaurantOrders = (initialPageSize = 10) => {
   };
 };
 
-export default useRestaurantOrders; 
+export default useRestaurantOrders;

@@ -4,10 +4,13 @@ import AlertMessage from '../../components/common/AlertMessage.jsx';
 import LoadingFallback from '../../components/common/LoadingFallback.jsx';
 import useRestaurantArticles from '../../features/restaurant/hooks/useRestaurantArticles';
 import useOrderDetails from '../../features/user/hooks/useOrderDetails';
-import { IoRefresh } from 'react-icons/io5';
+import { downloadOrderBill } from '../../utils/pdfGenerator';
+import { IoRefresh, IoDownload } from 'react-icons/io5';
 const UserOrderDetailsPage = () => {
   const { orderId } = useParams();
   const [wasUpdated, setWasUpdated] = useState(false);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [pdfError, setPdfError] = useState(null);
   
   // Use our custom hook for order details with real-time update support
   const {
@@ -36,6 +39,43 @@ const UserOrderDetailsPage = () => {
     }, 2000);
   };
 
+  const handleDownloadBill = async () => {
+    if (!order) return;
+    
+    setPdfGenerating(true);
+    setPdfError(null);
+    try {
+      // Create a modified order object with article details for better PDF generation
+      const orderWithDetails = {
+        ...order,
+        items: order.items?.map(item => {
+          const articleDetail = getArticleDetails(item.articleId);
+          return {
+            ...item,
+            articleName: articleDetail?.name || `Article ID: ${item.articleId}`,
+            articlePrice: articleDetail?.price || 0,
+            articleDescription: articleDetail?.description,
+            lineTotal: articleDetail ? parseFloat(articleDetail.price) * item.quantity : 0
+          };
+        }) || []
+      };
+      
+      const result = downloadOrderBill(orderWithDetails, false);
+      if (result.success) {
+        setWasUpdated(true);
+        setTimeout(() => setWasUpdated(false), 2000);
+      } else {
+        setPdfError(`Failed to generate PDF: ${result.error}`);
+        setTimeout(() => setPdfError(null), 5000);
+      }
+    } catch (error) {
+      setPdfError(`Error creating PDF: ${error.message}`);
+      setTimeout(() => setPdfError(null), 5000);
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
+
   const getArticleDetails = (articleIdToFind) => {
     return articles.find(article => article.id === articleIdToFind);
   };
@@ -48,13 +88,24 @@ const UserOrderDetailsPage = () => {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Order Details</h1>
-        <button
-          onClick={handleRefresh}
-          className="btn btn-outline btn-sm gap-2"
-          aria-label="Refresh order details"
-        >
-          <IoRefresh className="h-4 w-4" /> Refresh
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleDownloadBill}
+            disabled={pdfGenerating}
+            className="btn btn-primary btn-sm gap-2"
+            aria-label="Download order receipt as PDF"
+          >
+            <IoDownload className="h-4 w-4" /> 
+            {pdfGenerating ? 'Generating...' : 'Download Receipt'}
+          </button>
+          <button
+            onClick={handleRefresh}
+            className="btn btn-outline btn-sm gap-2"
+            aria-label="Refresh order details"
+          >
+            <IoRefresh className="h-4 w-4" /> Refresh
+          </button>
+        </div>
       </div>
       
       {wasUpdated && (
@@ -65,6 +116,10 @@ const UserOrderDetailsPage = () => {
         />
       )}
       
+      {pdfError && (
+        <AlertMessage type="error" message={pdfError} className="mb-4" />
+      )}
+      
       {orderError && order && <AlertMessage type="warning" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
       {articlesError && <AlertMessage type="warning" message={`Could not load full article information: ${articlesError}`} className="mb-4" />}
 
@@ -73,12 +128,12 @@ const UserOrderDetailsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-sm text-gray-600">Status:</p>
-            <p className="text-lg font-medium badge badge-lg 
-              {order.status === 'pending' ? 'badge-warning' : 
-               order.status === 'preparing' ? 'badge-info' : 
-               order.status === 'delivered' ? 'badge-success' : 
-               order.status === 'cancelled' ? 'badge-error' : 'badge-ghost'}
-            ">
+            <p className={`text-lg font-medium badge badge-lg ${
+              order.status === 'pending' ? 'badge-warning' : 
+              order.status === 'preparing' ? 'badge-info' : 
+              order.status === 'delivered' ? 'badge-success' : 
+              order.status === 'cancelled' ? 'badge-error' : 'badge-ghost'
+            }`}>
               {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'N/A'}
             </p>
           </div>

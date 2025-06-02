@@ -112,8 +112,6 @@ const ArticleFormPage = () => {
     
     if (formData.allergies && formData.allergies.length > 0) {
         formData.allergies.forEach(allergy => payload.append('allergies[]', allergy));
-    } else {
-        payload.append('allergies', JSON.stringify([])); // Send empty array if no allergies
     }
 
     if (imageFile) {

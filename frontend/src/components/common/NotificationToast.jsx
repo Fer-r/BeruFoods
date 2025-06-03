@@ -3,6 +3,14 @@ import { useNotifications } from '../../context/NotificationContext';
 import { IoMdClose } from 'react-icons/io';
 import { FaBell, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 
+/**
+ * NotificationToast displays temporary toast notifications to the user,
+ * typically for events like new orders or status updates.
+ * Notifications are sourced from the `useNotifications` hook (NotificationContext).
+ * They are automatically dismissed after a short period (2 seconds) and can also be manually closed by the user.
+ * The component renders different icons based on the notification type (e.g., 'new_order', 'status_update').
+ * This component does not accept direct props as it relies on the NotificationContext.
+ */
 const NotificationToast = () => {
   const { notifications, clearNotification } = useNotifications();
 

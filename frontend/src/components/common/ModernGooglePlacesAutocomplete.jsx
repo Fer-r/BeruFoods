@@ -8,6 +8,16 @@ import {
   handleGoogleMapsError 
 } from '../../utils/googleMapsHelpers';
 
+/**
+ * PlaceAutocomplete handles the core logic for fetching and displaying Google Places Autocomplete suggestions,
+ * managing user input, keyboard navigation, and selection. This is an internal component used by
+ * ModernGooglePlacesAutocomplete.
+ *
+ * @param {object} props - The component's props.
+ * @param {function} props.onPlaceSelect - Callback function triggered when a place is selected from the suggestions. It receives an object containing the address details.
+ * @param {string} [props.placeholder='Start typing restaurant address...'] - Placeholder text for the input field.
+ * @param {string} [props.defaultValue=''] - The default value for the input field.
+ */
 const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Start typing restaurant address...", defaultValue = '' }) => {
   const [inputValue, setInputValue] = useState(defaultValue);
   const [suggestions, setSuggestions] = useState([]);
@@ -233,6 +243,16 @@ const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Start typing restaura
   );
 };
 
+/**
+ * ModernGooglePlacesAutocomplete is a wrapper component that provides a styled address input field
+ * with Google Places Autocomplete functionality. It uses the `PlaceAutocomplete` component internally
+ * to handle the search and selection logic.
+ *
+ * @param {object} props - The component's props.
+ * @param {function} props.onAddressSelect - Callback function triggered when an address is selected. It receives an object containing the detailed address information.
+ * @param {string} [props.placeholder='Start typing restaurant address...'] - Placeholder text for the address input field.
+ * @param {string} [props.defaultValue] - The default value for the address input field.
+ */
 const ModernGooglePlacesAutocomplete = ({ onAddressSelect, placeholder = "Start typing restaurant address...", defaultValue }) => {
   return (
     <div className="form-control w-full">

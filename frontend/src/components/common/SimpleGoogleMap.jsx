@@ -2,6 +2,25 @@ import { useEffect, useRef, useState } from 'react';
 import { GOOGLE_MAPS_CONFIG, ERROR_MESSAGES } from '../../utils/googleMapsConstants';
 import { isGoogleMapsLoaded } from '../../utils/googleMapsHelpers';
 
+/**
+ * SimpleGoogleMap renders a Google Map focused on a given latitude and longitude.
+ * It can display a single marker at the map center (derived from latitude/longitude props),
+ * multiple custom markers passed via the `markers` prop, and an optional info window
+ * when a marker is clicked (if `showInfoWindow` is true).
+ * The component handles map initialization, loading states, error states (e.g., if the Google Maps API fails to load),
+ * and marker management.
+ *
+ * @param {object} props - The component's props.
+ * @param {number} props.latitude - The latitude for the map center and the primary marker.
+ * @param {number} props.longitude - The longitude for the map center and the primary marker.
+ * @param {string} [props.title='Selected Location'] - Title for the primary marker and its info window.
+ * @param {number} [props.zoom=GOOGLE_MAPS_CONFIG.DEFAULT_ZOOM] - The initial zoom level of the map.
+ * @param {string | number} [props.height=GOOGLE_MAPS_CONFIG.DEFAULT_HEIGHT] - The height of the map container (e.g., '400px' or 400).
+ * @param {string} [props.className=''] - Additional CSS classes for the main container div.
+ * @param {boolean} [props.showInfoWindow=false] - Whether to show an info window when the primary marker (or any marker if not customized) is clicked.
+ * @param {function} [props.onMarkerClick] - Optional callback function triggered when any marker is clicked. It receives the marker data (position, title).
+ * @param {Array<{position: {lat: number, lng: number}, title?: string}>} [props.markers=[]] - An array of additional marker objects to display on the map. Each object should have a `position` {lat, lng} and can optionally include a `title`.
+ */
 const SimpleGoogleMap = ({ 
   latitude, 
   longitude, 

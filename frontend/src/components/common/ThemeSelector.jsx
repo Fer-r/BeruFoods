@@ -1,5 +1,14 @@
 import { useThemeManager } from '../../hooks/useThemeManager';
 
+/**
+ * ThemeSelector renders a dropdown select input that allows users to choose
+ * from a list of available themes. It uses the `useThemeManager` hook to get the
+ * current theme and to update the theme when a new option is selected.
+ *
+ * @param {object} props - The component's props.
+ * @param {string} [props.className="select select-bordered w-full max-w-xs"] - CSS classes for the select element.
+ * @param {Array<{value: string, label: string}>} [props.themes=[{ value: 'light', label: '☀️ Light' }, { value: 'dark', label: '🌙 Dark' }]] - An array of theme objects for the select options. Each object should have `value` (theme identifier, e.g., 'light') and `label` (display text in the dropdown, e.g., '☀️ Light').
+ */
 const ThemeSelector = ({ 
   className = "select select-bordered w-full max-w-xs",
   themes = [

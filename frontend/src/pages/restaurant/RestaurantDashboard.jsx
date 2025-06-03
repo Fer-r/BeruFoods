@@ -7,6 +7,31 @@ import useRestaurantOrders from '../../features/restaurant/hooks/useRestaurantOr
 
 import useRestaurantOwnedArticles from '../../features/restaurant/hooks/useRestaurantOwnedArticles';
 
+/**
+ * @component RestaurantDashboard
+ * Provides an overview and control panel for restaurant users.
+ * It displays recent notifications, quick action buttons (e.g., add menu item, view orders),
+ * a summary of recent orders, and statistics about their menu items (e.g., available/unavailable).
+ *
+ * This component utilizes several hooks:
+ * - `useNotifications` context hook to get notification data.
+ * - `useRestaurantOrders` custom hook to fetch and manage restaurant orders.
+ * - `useRestaurantOwnedArticles` custom hook to fetch and manage restaurant's menu articles.
+ *
+ * It uses `useMemo` to derive and memoize:
+ * - `recentOrders`: A list of the 5 most recent orders.
+ * - `recentNotifications`: A list of the 5 most recent persistent notifications.
+ * - `articleStats`: Statistics about menu articles, including total, available, and unavailable counts.
+ *
+ * Key functionalities include:
+ * - Displaying alerts for unavailable menu items.
+ * - Listing recent notifications with unread count.
+ * - Providing quick links to common restaurant management pages.
+ * - Showing a list of recent orders with options to view details or update status.
+ * - Displaying menu item statistics.
+ *
+ * @returns {JSX.Element} The rendered restaurant dashboard page.
+ */
 const RestaurantDashboard = () => {
   const { persistentNotifications, unreadCount } = useNotifications();
   
@@ -39,6 +64,16 @@ const RestaurantDashboard = () => {
     };
   }, [articles]);
 
+  /**
+   * Handles the update of an order's status.
+   * This function is called when a restaurant user attempts to change the status of an order
+   * (e.g., from 'pending' to 'confirmed').
+   * It uses the `updateOrderStatus` function from the `useRestaurantOrders` hook to make the API call.
+   *
+   * @async
+   * @param {string|number} orderId - The ID of the order to be updated.
+   * @param {string} newStatus - The new status to set for the order (e.g., "confirmed", "preparing").
+   */
   const handleOrderStatusUpdate = async (orderId, newStatus) => {
     const result = await updateOrderStatus(orderId, newStatus);
     if (!result.success) {
@@ -47,6 +82,14 @@ const RestaurantDashboard = () => {
     }
   };
 
+  /**
+   * Determines the appropriate CSS badge class based on the order status string.
+   * This is used to visually differentiate order statuses in the UI.
+   *
+   * @param {string} status - The order status string (e.g., "pending", "confirmed").
+   * @returns {string} The corresponding DaisyUI badge CSS class (e.g., "badge-warning", "badge-info").
+   *                   Returns "badge-neutral" for unknown statuses.
+   */
   const getStatusBadgeClass = (status) => {
     const statusLower = status?.toLowerCase();
     switch (statusLower) {

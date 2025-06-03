@@ -1,6 +1,14 @@
 import { FaSun, FaMoon } from 'react-icons/fa6';
 import { useThemeManager } from '../../../../hooks/useThemeManager';
 
+/**
+ * ThemeToggleButton renders a button that displays the current theme (e.g., 'Light', 'Dark')
+ * along with an associated icon. When clicked, it opens a dropdown menu allowing the user
+ * to select a different theme from a predefined list (currently Light and Dark).
+ * This component is typically used in user profile menus or settings sections.
+ * It utilizes the `useThemeManager` hook to get the current theme and to dispatch theme changes.
+ * This component does not accept any direct props.
+ */
 const ThemeToggleButton = () => {
   const { theme, changeTheme} = useThemeManager();
 

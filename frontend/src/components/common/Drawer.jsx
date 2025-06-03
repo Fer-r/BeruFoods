@@ -2,7 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { IoClose } from 'react-icons/io5';
 
-// Hook to handle mount transitions for smooth animations
+/**
+ * @name useMountTransition
+ * @description Custom React hook to manage the transition states for components that animate on mount and unmount.
+ * It helps delay the unmounting of a component until its exit animation completes.
+ * @param {boolean} isMounted - Whether the component is currently mounted or intended to be mounted.
+ * @param {number} unmountDelay - The duration in milliseconds to delay unmounting, allowing for an exit animation.
+ * @returns {boolean} isTransitioning - True if the component is currently in a transition phase (either mounting or unmounting animation is active).
+ */
 const useMountTransition = (isMounted, unmountDelay) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -22,13 +29,32 @@ const useMountTransition = (isMounted, unmountDelay) => {
   return isTransitioning;
 };
 
-// Portal root creation function
+/**
+ * @name createPortalRoot
+ * @description Creates and returns a new DIV element to serve as the root for a React portal.
+ * This element is intended to be appended to the document body and used as a target for `createPortal`.
+ * It is assigned the ID 'drawer-root'.
+ * @returns {HTMLElement} The newly created portal root element.
+ */
 function createPortalRoot() {
   const drawerRoot = document.createElement('div');
   drawerRoot.setAttribute('id', 'drawer-root');
   return drawerRoot;
 }
 
+/**
+ * @component Drawer
+ * @description A slide-in panel component that can be positioned on any side of the screen.
+ * It is rendered using a React portal and includes features like smooth transitions,
+ * backdrop, and closing via Escape key or backdrop click.
+ *
+ * @param {object} props - The component's props.
+ * @param {boolean} props.isOpen - Controls the visibility of the drawer. True to show, false to hide.
+ * @param {React.ReactNode} props.children - The content to be displayed inside the drawer.
+ * @param {function} props.onClose - Callback function invoked when the drawer requests to close (e.g., user clicks close button, backdrop, or presses Escape).
+ * @param {string} [props.position='left'] - The position from which the drawer slides in. Valid options are 'left', 'right', 'top', 'bottom'.
+ * @param {boolean} [props.removeWhenClosed=true] - If true, the drawer is removed from the DOM when closed and its exit animation completes. If false, it's hidden with CSS.
+ */
 const Drawer = ({
   isOpen,
   children,
@@ -93,6 +119,12 @@ const Drawer = ({
     return null;
   }
 
+  /**
+   * @function getDrawerClasses
+   * @description Constructs the CSS class string for the drawer element based on its current state and position.
+   * This includes base styling, positional classes, and transform classes for animations.
+   * @returns {string} A string of CSS classes to be applied to the drawer's main div.
+   */
   const getDrawerClasses = () => {
     const baseClasses = "fixed bg-base-200 shadow-xl transition-transform duration-300 ease-in-out z-50";
     const positionClasses = {

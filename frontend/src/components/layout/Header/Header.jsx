@@ -37,7 +37,6 @@ const Header = () => {
     <ul className={`menu ${mobile ? 'menu-vertical' : 'menu-horizontal'} px-1`}>
       <li><NavLink to="/restaurant/dashboard" onClick={onLinkClick}>Dashboard</NavLink></li>
       <li><NavLink to="/restaurant/orders" onClick={onLinkClick}>Order History</NavLink></li>
-      <li><NavLink to="/restaurant/bookings" onClick={onLinkClick}>Booking History</NavLink></li>
       <li><NavLink to="/restaurant/articles" onClick={onLinkClick}>Articles</NavLink></li>
     </ul>
   );
@@ -45,7 +44,6 @@ const Header = () => {
   const UserNavLinks = ({ mobile = false, onLinkClick = () => {} }) => (
     <ul className={`menu ${mobile ? 'menu-vertical' : 'menu-horizontal'} px-1`}>
       <li><NavLink to="/user/orders" onClick={onLinkClick}>Order History</NavLink></li>
-      <li><NavLink to="/user/reservations" onClick={onLinkClick}>Reservations</NavLink></li>
     </ul>
   );
 

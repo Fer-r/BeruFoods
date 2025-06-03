@@ -62,7 +62,6 @@ const Home = () => {
           setFinalLocationText(userAddress.city || 'Your Location');
           setIsLocationReady(true);
           
-          console.log('Using logged-in user address:', userLocation);
           return;
         }
       }
@@ -73,7 +72,6 @@ const Home = () => {
         setFinalLocationText(currentLocation.name || locationInputText || 'Madrid');
         setIsLocationReady(true);
         
-        console.log('Using geolocation for non-logged-in user:', currentLocation);
       }
     };
 
@@ -149,7 +147,6 @@ const Home = () => {
     setFinalLocationText(newLocation.name);
     setIsLocationReady(true);
     
-    console.log('Location updated from address selection:', newLocation);
   };
   
   const showDeterminingLocation = !isLocationReady && (isLocationLoading || !finalLocation);

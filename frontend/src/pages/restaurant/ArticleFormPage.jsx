@@ -31,12 +31,10 @@ const ArticleFormPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log('[ArticleFormPage] Received articleId:', articleId); // Log received ID
     if (isEditMode && articleId) {
       setPageLoading(true);
       articleService.getArticleById(articleId)
         .then(response => {
-          console.log('[ArticleFormPage] API response.data:', response.data); // Log API response
           const article = response;
           if (article && Object.keys(article).length > 0) { // Modified check
             setFormData({

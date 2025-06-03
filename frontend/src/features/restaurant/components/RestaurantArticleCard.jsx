@@ -14,7 +14,6 @@ const RestaurantArticleCard = ({ article, onDelete }) => {
   }).format(article.price);
 
   const editUrl = PATHS.RESTAURANT_ARTICLES_EDIT.replace(':articleId', article.id);
-  console.log('[RestaurantArticleCard] article.id for edit link:', article.id);
 
   const [isAvailable, setIsAvailable] = useState(article.available);
   const [isUpdating, setIsUpdating] = useState(false);

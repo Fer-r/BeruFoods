@@ -142,17 +142,13 @@ const useRestaurantRegistration = () => {
     });
     submitFormData.append('address', addressPayload);
 
-    // Append food type IDs as JSON string array
     submitFormData.append('food_type_ids', JSON.stringify(formData.selectedFoodTypeIds));
 
     try {
       // Use the new service function
       // Assuming endpoint is /auth/register/restaurant based on original component
       const responseData = await postFormDataToAPI('/auth/register/restaurant', submitFormData);
-      
-      // Handle potential success response data if needed
-      console.log("Registration successful:", responseData); 
-      
+            
       setSuccess('Restaurant registration successful! You will be redirected shortly.');
       setFormData(initialFormData); // Reset form
       setImageFile(null); // Reset file input

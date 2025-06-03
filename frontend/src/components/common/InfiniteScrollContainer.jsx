@@ -56,7 +56,6 @@ const InfiniteScrollContainer = ({
     }
 
     if (isContentShort) {
-      // console.log("Content is short post-initial load, hasMore is true, not loading. Fetching more.");
       fetchMoreData();
     }
   }, [data.length, hasMore, fetchMoreData, isLoadingMore, height, scrollableTarget, initialLoadAttempted]);
@@ -64,12 +63,12 @@ const InfiniteScrollContainer = ({
   return (
     <>
       <InfiniteScroll
-        ref={scrollableNodeRef} // Assign ref to the InfiniteScroll component
+        ref={scrollableNodeRef} 
         dataLength={data.length}
         next={fetchMoreData}
         hasMore={hasMore}
         loader={loader}
-        endMessage={null} // Pass null to prevent InfiniteScroll from rendering its own endMessage
+        endMessage={null} 
         className={containerClasses}
         scrollableTarget={scrollableTarget}
         height={height}
@@ -78,15 +77,13 @@ const InfiniteScrollContainer = ({
         {data.map((item, index) => {
           const itemContent = renderItem(item, index);
           if (layout === 'grid') {
-            // Wrap each grid item for consistent styling if gridItemClassName is provided
             return (
               <div key={index} className={gridItemClassName}>
                 {itemContent}
               </div>
             );
           }
-          // For list layout, renderItem is expected to return a full-width block element
-          return itemContent; // Ensure renderItem provides a key if it's a list of components
+          return itemContent; 
         })}
       </InfiniteScroll>
       {!hasMore && endMessage}

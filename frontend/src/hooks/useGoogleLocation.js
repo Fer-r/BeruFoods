@@ -65,7 +65,6 @@ const useGoogleLocation = (initialRadius = GOOGLE_MAPS_CONFIG.DEFAULT_RADIUS) =>
     }
   }, [initialLocationDetermined, handleGeolocationSuccess, handleGeolocationError]);
 
-  // Simple manual location search (just updates the text, actual geocoding happens in components with @vis.gl/react-google-maps)
   const handleManualLocationSearch = useCallback(() => {
     if (!locationInputText.trim()) {
       setCurrentLocation(prev => ({...DEFAULT_LOCATION, radius: prev?.radius || selectedRadius }));
@@ -73,9 +72,6 @@ const useGoogleLocation = (initialRadius = GOOGLE_MAPS_CONFIG.DEFAULT_RADIUS) =>
       return;
     }
     
-    // For manual search, we'll let the GoogleMapDisplay component handle the actual geocoding
-    // This hook just manages the basic location state
-    console.log('Manual location search triggered for:', locationInputText);
   }, [locationInputText, selectedRadius]);
   
   const updateRadius = useCallback((newRadius) => {

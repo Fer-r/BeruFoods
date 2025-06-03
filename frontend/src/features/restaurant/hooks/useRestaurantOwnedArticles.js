@@ -74,7 +74,6 @@ const useRestaurantOwnedArticles = () => {
     fetchArticles(1);
   }, [fetchArticles]);
 
-  console.log("Hook returning:", { articles, loading, initialLoading, error, hasMoreArticles });
 
   return {
     articles,

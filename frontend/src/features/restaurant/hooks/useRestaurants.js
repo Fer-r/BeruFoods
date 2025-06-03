@@ -77,12 +77,10 @@ const useRestaurants = (filters = {}, initialLimit = 10, enabled = true) => {
       setError(null);
       setCurrentPage(1);
       setHasMore(false); 
-      console.log("useRestaurants: Hook disabled, clearing state.");
       return;
     }
 
     const currentFilters = JSON.parse(filtersString);
-    console.log("useRestaurants: Enabled and filters changed (or initial load), fetching page 1.", currentFilters);
     setRestaurants([]); 
     setCurrentPage(1);
     setHasMore(true); 
@@ -91,11 +89,9 @@ const useRestaurants = (filters = {}, initialLimit = 10, enabled = true) => {
 
   const loadMoreRestaurants = useCallback(() => {
     if (!enabled || !hasMore || isLoading) {
-      if(!enabled) console.log("useRestaurants: loadMoreRestaurants - Hook disabled.");
       return;
     }
     const currentFilters = JSON.parse(filtersString);
-    console.log("useRestaurants: loadMoreRestaurants - Fetching page", currentPage + 1);
     loadRestaurants(currentPage + 1, currentFilters);
   }, [enabled, hasMore, isLoading, currentPage, filtersString, loadRestaurants]);
 

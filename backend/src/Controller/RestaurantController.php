@@ -291,6 +291,8 @@ final class RestaurantController extends AbstractController
             }
         }
 
+
+
         $openingTimeStr = $getRequestParam('openingTime');
         if ($openingTimeStr !== null) {
             $newOpeningTime = null;

@@ -101,6 +101,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     localStorage.removeItem("token");
     localStorage.removeItem("authenticatedEntity");
+    localStorage.removeItem("cart");
   }, [setEntity, setToken, setError]);
 
   const isRestaurant = isAuthenticated() && entity?.roles?.includes('ROLE_RESTAURANT');

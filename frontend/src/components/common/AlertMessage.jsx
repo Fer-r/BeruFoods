@@ -5,6 +5,12 @@ import {
   HiXCircle
 } from 'react-icons/hi2';
 
+/**
+ * @constant alertTypeConfig
+ * @description Configuration object for different alert types.
+ * It maps alert types (e.g., 'error', 'success') to their corresponding
+ * CSS class names and icons.
+ */
 const alertTypeConfig = {
   error: {
     className: 'alert-error',
@@ -24,6 +30,15 @@ const alertTypeConfig = {
   },
 };
 
+/**
+ * AlertMessage component displays a styled message to the user.
+ *
+ * @param {object} props - The component's props.
+ * @param {string} props.message - The message to display. This is required.
+ * @param {string} [props.type='info'] - The type of alert, which determines its styling and icon.
+ *                                       Valid types are 'error', 'success', 'warning', 'info'.
+ *                                       Defaults to 'info'.
+ */
 const AlertMessage = ({ message, type = 'info' }) => {
   if (!message) return null;
 

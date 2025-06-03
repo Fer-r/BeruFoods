@@ -1,59 +1,33 @@
-import { FaSun, FaMoon, FaGear } from 'react-icons/fa6';
+import { FaSun, FaMoon } from 'react-icons/fa6';
 import { useThemeManager } from '../../../../hooks/useThemeManager';
 
 const ThemeToggleButton = () => {
-  const [themePreference, setThemePreference] = useThemeManager();
+  const { theme, changeTheme} = useThemeManager();
 
   const handleThemeSelection = (newTheme) => {
-    setThemePreference(newTheme);
+    changeTheme(newTheme);
   };
 
   const getIcon = () => {
-    let currentDisplayTheme = themePreference;
-    if (themePreference === 'system') {
-      const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      currentDisplayTheme = isSystemDark ? 'dark' : 'light';
-    }
-
-    // Icon for the button itself based on current actual theme or system icon
-    if (themePreference === 'system') return <FaGear className="h-5 w-5" />;
-    if (currentDisplayTheme === 'light') return <FaSun className="h-5 w-5" />;
+    if (theme === 'light') return <FaSun className="h-5 w-5" />;
     return <FaMoon className="h-5 w-5" />;
   };
 
   const getTooltipContent = () => {
-    switch (themePreference) {
-      case 'light':
-        return 'Theme: Light (Click to change)';
-      case 'dark':
-        return 'Theme: Dark (Click to change)';
-      case 'system':
-      default:
-        return 'Theme: System (Click to change)';
-    }
+    return `Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)} (Click to change)`;
   };
 
   const getCurrentThemeLabel = () => {
-    // Label always reflects the preference (Light, Dark, or System)
-    switch (themePreference) {
-      case 'light':
-        return 'Light';
-      case 'dark':
-        return 'Dark';
-      case 'system':
-      default:
-        return 'System';
-    }
+    return theme.charAt(0).toUpperCase() + theme.slice(1);
   };
 
   const themeOptions = [
     { name: 'light', icon: FaSun, label: 'Light' },
     { name: 'dark', icon: FaMoon, label: 'Dark' },
-    { name: 'system', icon: FaGear, label: 'System' },
   ];
 
   return (
-    <>
+    <div className="dropdown dropdown-top dropdown-end">
       <button
         tabIndex={0}
         type="button"
@@ -65,7 +39,7 @@ const ThemeToggleButton = () => {
       </button>
       <ul
         tabIndex={0}
-        className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-52"
+        className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
       >
         {themeOptions.map((option) => {
           const IconComponent = option.icon;
@@ -73,7 +47,7 @@ const ThemeToggleButton = () => {
             <li key={option.name}>
               <button
                 onClick={() => handleThemeSelection(option.name)}
-                className={`btn btn-sm btn-block btn-ghost justify-start ${themePreference === option.name ? 'btn-active' : ''}`}
+                className={`btn btn-sm btn-block btn-ghost justify-start ${theme === option.name ? 'btn-active' : ''}`}
               >
                 <IconComponent className="inline-block w-4 h-4 mr-2 stroke-current" /> {option.label}
               </button>
@@ -81,7 +55,7 @@ const ThemeToggleButton = () => {
           );
         })}
       </ul>
-    </>
+    </div>
   );
 };
 

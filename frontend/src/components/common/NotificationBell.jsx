@@ -71,7 +71,7 @@ const NotificationBell = () => {
   };
   
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative px-2" ref={dropdownRef}>
       <button
         className="btn btn-ghost btn-circle"
         onClick={toggleDropdown}

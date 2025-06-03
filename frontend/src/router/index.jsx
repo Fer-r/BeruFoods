@@ -18,12 +18,10 @@ const RestaurantMenuPage = lazy(() => import("../pages/restaurant/RestaurantMenu
 const RestaurantProfilePage = lazy(() => import("../pages/restaurant/RestaurantProfilePage.jsx"));
 const RestaurantOrdersPage = lazy(() => import("../pages/restaurant/RestaurantOrdersPage.jsx"));
 const RestaurantOrderDetailsPage = lazy(() => import("../pages/restaurant/RestaurantOrderDetailsPage.jsx"));
-const RestaurantBookingsPage = lazy(() => import("../pages/restaurant/RestaurantBookingsPage.jsx"));
 const RestaurantArticlesManagementPage = lazy(() => import("../pages/restaurant/RestaurantArticlesManagementPage.jsx"));
 const ArticleFormPage = lazy(() => import("../pages/restaurant/ArticleFormPage.jsx"));
 const UserProfilePage = lazy(() => import("../pages/user/UserProfilePage.jsx"));
 const UserOrdersPage = lazy(() => import("../pages/user/UserOrdersPage.jsx"));
-const UserReservationsPage = lazy(() => import("../pages/user/UserReservationsPage.jsx"));
 const UserCartPage = lazy(() => import("../pages/cart/UserCartPage.jsx"));
 const OrderDetailsPage = lazy(() => import("../pages/user/./UserOrderDetailsPage"));
 
@@ -34,7 +32,6 @@ const PATHS = {
   RESTAURANT_PROFILE: "/restaurant/profile",
   RESTAURANT_ORDERS: "/restaurant/orders",
   RESTAURANT_ORDER_DETAILS: "/restaurant/orders/:orderId",
-  RESTAURANT_BOOKINGS: "/restaurant/bookings",
   RESTAURANT_ARTICLES: "/restaurant/articles",
   RESTAURANT_ARTICLES_NEW: "/restaurant/articles/new",
   RESTAURANT_ARTICLES_EDIT: "/restaurant/articles/:articleId/edit",
@@ -44,7 +41,6 @@ const PATHS = {
   USER_PROFILE: "/user/profile",
   USER_ORDERS: "/user/orders",
   USER_ORDER_DETAILS: "/user/orders/:orderId",
-  USER_RESERVATIONS: "/user/reservations",
   USER_CART: "/cart",
   REGISTER: "/register",
 };
@@ -91,10 +87,6 @@ export const router = createBrowserRouter([
         element: renderProtectedPage(UserRoute, OrderDetailsPage),
       },
       {
-        path: PATHS.USER_RESERVATIONS,
-        element: renderProtectedPage(UserRoute, UserReservationsPage),
-      },
-      {
         path: PATHS.USER_CART,
         element: renderProtectedPage(UserRoute, UserCartPage),
       },
@@ -114,10 +106,6 @@ export const router = createBrowserRouter([
       {
         path: PATHS.RESTAURANT_ORDER_DETAILS,
         element: renderProtectedPage(RestaurantRoute, RestaurantOrderDetailsPage),
-      },
-      {
-        path: PATHS.RESTAURANT_BOOKINGS,
-        element: renderProtectedPage(RestaurantRoute, RestaurantBookingsPage),
       },
       {
         path: PATHS.RESTAURANT_ARTICLES,

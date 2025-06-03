@@ -1,6 +1,29 @@
 import { useState } from 'react';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 
+/**
+ * StyledInput is a customizable input component.
+ * It supports various input types, including password visibility toggling,
+ * and allows for extensive styling through props.
+ *
+ * @param {object} props - The component's props.
+ * @param {string} [props.type='text'] - The type of the input (e.g., 'text', 'password', 'email', 'file').
+ * @param {string} props.id - The ID of the input element.
+ * @param {string} props.name - The name of the input element.
+ * @param {string | number} props.value - The current value of the input.
+ * @param {function} props.onChange - Callback function triggered when the input value changes.
+ * @param {string} [props.label] - The label text for the input.
+ * @param {string} [props.placeholder] - The placeholder text for the input.
+ * @param {boolean} [props.required=false] - Whether the input is required.
+ * @param {number} [props.minLength] - The minimum length required for the input value.
+ * @param {string} [props.autoComplete] - The autoComplete attribute for the input.
+ * @param {string} [props.className='input input-bordered w-full'] - CSS classes for the input element itself.
+ * @param {string} [props.labelClassName='label'] - CSS classes for the label element.
+ * @param {string} [props.labelTextClassName='label-text'] - CSS classes for the span inside the label.
+ * @param {string} [props.containerClassName='form-control w-full'] - CSS classes for the main container div.
+ * @param {string} [props.accept] - The accept attribute, typically used for file inputs.
+ * @param {boolean} [props.disabled=false] - Whether the input is disabled.
+ */
 const StyledInput = ({
   type = 'text',
   id,

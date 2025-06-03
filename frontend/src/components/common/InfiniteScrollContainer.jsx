@@ -1,6 +1,26 @@
 import { useRef, useEffect, useState } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
+/**
+ * InfiniteScrollContainer is a component that provides infinite scrolling capabilities.
+ * It wraps the 'react-infinite-scroll-component' to offer a flexible way to load and display data
+ * as the user scrolls, with support for list and grid layouts.
+ *
+ * @param {object} props - The component's props.
+ * @param {Array<any>} props.data - The array of items to be rendered.
+ * @param {function} props.fetchMoreData - Callback function to fetch more data when the scroll threshold is reached.
+ * @param {boolean} props.hasMore - Boolean indicating if there is more data to be fetched.
+ * @param {function} props.renderItem - Function that takes an item and its index and returns a React element to render.
+ * @param {React.ReactNode} [props.loader=<p className="text-center py-4">Loading...</p>] - The loader component to display while fetching more data.
+ * @param {React.ReactNode} [props.endMessage=<p className="text-center py-4"><b>You have seen it all!</b></p>] - Message to display when all data has been loaded.
+ * @param {string} [props.layout='list'] - The layout of the items ('list' or 'grid').
+ * @param {string} [props.className=''] - Custom CSS classes for the main scrollable div.
+ * @param {string} [props.gridItemClassName=''] - CSS classes applied to each item's wrapper when layout is 'grid'.
+ * @param {string} [props.scrollableTarget] - Optional: ID of an element to attach the scroll listener to. If not provided, the window is used.
+ * @param {number | string} [props.height] - Optional: The height of the scrollable component. Can be a number (pixels) or a string (e.g., '500px', '100vh').
+ * @param {number | string} [props.scrollThreshold='0.8'] - Optional: A number between 0 and 1 (e.g., 0.9 meaning 90%) or a pixel value (e.g., "200px") that defines how close the user must be to the bottom of the content for the `fetchMoreData` function to be triggered.
+ * @param {boolean} [props.isLoadingMore] - Optional: Boolean indicating if the parent component is currently in the process of loading more data. This helps prevent multiple fetch calls.
+ */
 const InfiniteScrollContainer = ({
   data,
   fetchMoreData,

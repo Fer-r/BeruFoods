@@ -1,6 +1,20 @@
 import { Outlet, Link } from 'react-router';
 import logo from '../assets/images/logoWithName.svg';
 
+/**
+ * @component AuthLayout
+ * Provides a consistent layout structure for authentication-related pages,
+ * such as login, registration, and password reset forms.
+ * This layout centers the content on the page within a card container
+ * and displays the application logo above the specific authentication form.
+ *
+ * The actual form content for each authentication page (e.g., login form, registration form)
+ * is rendered via the `<Outlet />` component from `react-router-dom`.
+ *
+ * This component does not take direct props that need documenting beyond standard component behavior.
+ *
+ * @returns {JSX.Element} The rendered authentication layout.
+ */
 const AuthLayout = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200 p-4">

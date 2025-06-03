@@ -6,12 +6,40 @@ import { isValidApiKey } from '../../utils/googleMapsHelpers';
 import ModernGooglePlacesAutocomplete from './ModernGooglePlacesAutocomplete';
 import SimpleGoogleMap from './SimpleGoogleMap';
 
+/**
+ * @constant GOOGLE_MAPS_API_KEY
+ * @description The API key for Google Maps services, loaded from environment variables.
+ * This key is essential for enabling Google Maps and Places API functionalities.
+ */
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
+/**
+ * @component GoogleMapDisplay
+ * @description Provides an address autocomplete input field powered by Google Places API.
+ * Optionally, it can display a map of the selected address and allow toggling its visibility.
+ * It requires a valid Google Maps API key to be configured.
+ *
+ * @param {object} props - The component's props.
+ * @param {function} props.onAddressSelect - Callback function invoked when an address is selected
+ *                                           from the autocomplete dropdown. It receives an object
+ *                                           containing details of the selected address (e.g., lat, lng, formatted address).
+ * @param {boolean} [props.showMap=false] - If true, a button to toggle map visibility and the map
+ *                                          itself will be rendered. Defaults to false.
+ * @param {string} [props.placeholder] - Placeholder text for the address autocomplete input field.
+ * @param {string} [props.defaultValue] - Default value to pre-fill the address autocomplete input field.
+ */
 const GoogleMapDisplay = ({ onAddressSelect, showMap = false, placeholder, defaultValue }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [isMapVisible, setIsMapVisible] = useState(false);
 
+  /**
+   * @function handleAddressSelect
+   * @description Internal handler called when an address is selected from the ModernGooglePlacesAutocomplete component.
+   * It updates the `selectedLocation` state with the coordinates and title of the selected address,
+   * and then calls the `onAddressSelect` prop function with the full address details.
+   * @param {object} addressDetails - An object containing the details of the selected address,
+   *                                  including latitude, longitude, and formatted address string.
+   */
   const handleAddressSelect = (addressDetails) => {
     setSelectedLocation({
       lat: addressDetails.lat,
@@ -24,6 +52,11 @@ const GoogleMapDisplay = ({ onAddressSelect, showMap = false, placeholder, defau
     }
   };
 
+  /**
+   * @function toggleMapVisibility
+   * @description Internal handler for toggling the visibility state of the map display.
+   * It updates the `isMapVisible` state, causing the map to be shown or hidden.
+   */
   const toggleMapVisibility = () => {
     setIsMapVisible(!isMapVisible);
   };

@@ -16,7 +16,8 @@ const StyledInput = ({
   labelClassName = 'label',
   labelTextClassName = 'label-text',
   containerClassName = 'form-control w-full',
-  accept 
+  accept,
+  disabled = false
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -51,6 +52,7 @@ const StyledInput = ({
           autoComplete={autoComplete}
           className={inputFinalClassName}
           accept={accept}
+          disabled={disabled}
         />
         {type === 'password' && (
           <button

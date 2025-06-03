@@ -84,7 +84,12 @@ final class AuthController extends AbstractController
 
         if (is_array($addressData)) {
             $userAddress = new UserAddress();
-            $userAddress->setAddressLine($addressData['address_line'] ?? null);
+            // Handle address_line as array for UserAddress
+            $addressLine = $addressData['address_line'] ?? [];
+            if (is_string($addressLine)) {
+                $addressLine = [$addressLine];
+            }
+            $userAddress->setAddressLine($addressLine);
             $userAddress->setLat($addressData['lat'] ?? null);
             $userAddress->setLng($addressData['lng'] ?? null);
             $userAddress->setCity($addressData['city'] ?? null);

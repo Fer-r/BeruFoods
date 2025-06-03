@@ -61,20 +61,32 @@ final class UserController extends AbstractController
             return $this->apiErrorResponse('Invalid JSON payload.', Response::HTTP_BAD_REQUEST, ['json_error' => json_last_error_msg()]);
         }
 
+        $_entityWasModified_ = false;
+
+        // Handle basic fields
         $allowedFieldsToUpdate = [
-            'email' => 'setEmail',
             'name' => 'setName',
             'phone' => 'setPhone',
         ];
 
         foreach ($allowedFieldsToUpdate as $field => $setterMethod) {
             if (array_key_exists($field, $jsonData)) {
-                if (method_exists($user, $setterMethod)) {
-                    $user->$setterMethod($jsonData[$field]);
+                $newValue = $jsonData[$field];
+                $getterMethod = 'get' . substr($setterMethod, 3); // Convert setName to getName
+                
+                if (method_exists($user, $getterMethod) && method_exists($user, $setterMethod)) {
+                    $currentValue = $user->$getterMethod();
+                    if ($currentValue !== $newValue) {
+                        $user->$setterMethod($newValue);
+                        $_entityWasModified_ = true;
                 }
             }
         }
+        }
 
+        // Note: Email is deliberately not included in updatable fields for security reasons
+
+        // Handle address updates
         if (isset($jsonData['address']) && is_array($jsonData['address'])) {
             $addressData = $jsonData['address'];
             $userAddress = $user->getAddress();
@@ -84,6 +96,7 @@ final class UserController extends AbstractController
                 if (class_exists($userAddressClassName)) {
                     $userAddress = new $userAddressClassName();
                     $userAddress->setUser($user); 
+                    $_entityWasModified_ = true;
                 } else {
                     return $this->apiErrorResponse('UserAddress entity not configured correctly.', Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
@@ -99,34 +112,55 @@ final class UserController extends AbstractController
 
                 foreach ($allowedAddressFieldsToUpdate as $field => $setterMethod) {
                     if (array_key_exists($field, $addressData)) {
-                        if (method_exists($userAddress, $setterMethod)) {
-                            $userAddress->$setterMethod($addressData[$field]);
+                        $getterMethod = 'get' . ucfirst(str_replace('_', '', ucwords($field, '_')));
+                        if (method_exists($userAddress, $getterMethod) && method_exists($userAddress, $setterMethod)) {
+                            $currentValue = $userAddress->$getterMethod();
+                            $newValue = $addressData[$field];
+                            if ($currentValue !== $newValue) {
+                                $userAddress->$setterMethod($newValue);
+                                $_entityWasModified_ = true;
+                            }
                         }
                     }
                 }
                 $user->setAddress($userAddress);
             }
         } elseif (array_key_exists('address', $jsonData) && $jsonData['address'] === null) {
+            if ($user->getAddress() !== null) {
             $user->setAddress(null);
+                $_entityWasModified_ = true;
+            }
         }
 
+        // Handle password changes
         if (isset($jsonData['password'])) {
              if (strlen($jsonData['password']) >= 6) {
                   $hashedPassword = $passwordHasher->hashPassword($user, $jsonData['password']);
                   $user->setPassword($hashedPassword);
+                $_entityWasModified_ = true;
              } else {
                  return $this->apiErrorResponse('Password validation failed', Response::HTTP_BAD_REQUEST, ['password' => ['Password must be at least 6 characters long']]);
              }
         }
 
+        // Validate the user entity
         $errors = $validator->validate($user);
         if (count($errors) > 0) {
             return $this->apiValidationErrorResponse($errors);
         }
 
-        $entityManager->flush();
+        // Return appropriate response based on whether changes were made
+        if (!$_entityWasModified_) {
+            return $this->apiSuccessResponse($user, Response::HTTP_OK, ['user:read']);
+        }
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        try {
+        $entityManager->flush();
+        } catch (\Exception $e) {
+            return $this->apiErrorResponse('An error occurred while saving changes.', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->apiSuccessResponse($user, Response::HTTP_OK, ['user:read']);
     }
 
     #[Route('/users/{id}', name: 'api_user_delete', methods: ['DELETE'])]

@@ -237,7 +237,7 @@ const ModernGooglePlacesAutocomplete = ({ onAddressSelect, placeholder = "Start 
   return (
     <div className="form-control w-full">
       <label className="label">
-        <span className="label-text">Near</span>
+        <span className="label-text">Address</span>
       </label>
       <PlaceAutocomplete 
         onPlaceSelect={onAddressSelect} 

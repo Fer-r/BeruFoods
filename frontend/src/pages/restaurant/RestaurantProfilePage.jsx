@@ -6,7 +6,7 @@ import { fetchDataFromEndpoint } from '../../services/useApiService';
 import FoodTypeModal from '../../features/auth/components/FoodTypeModal'; 
 import StyledInput from '../../components/common/StyledInput';
 import AlertMessage from '../../components/common/AlertMessage';
-// import GoogleMapDisplay from '../../components/GoogleMapDisplay'; // Address update deferred
+import GoogleMapDisplay from '../../components/common/GoogleMapDisplay';
 
 const RestaurantProfilePage = () => {
   const { entity, token, logOut } = useAuth();
@@ -19,11 +19,16 @@ const RestaurantProfilePage = () => {
     openingTime: '',
     closingTime: '',
     selectedFoodTypeIds: [],
-    // address fields can be added here if GoogleMapDisplay is used
-    // fullAddress: '',
-    // lat: null,
-    // lng: null,
-    // Restaurant addresses don't use city
+    address: {
+      address_line: '',
+      city: '',
+      lat: '',
+      lng: ''
+    }
+  });
+  const [passwordData, setPasswordData] = useState({
+    newPassword: '',
+    confirmPassword: ''
   });
   const [imageFile, setImageFile] = useState(null);
   const [currentImageUrl, setCurrentImageUrl] = useState('');
@@ -31,6 +36,7 @@ const RestaurantProfilePage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isFoodTypeModalOpen, setIsFoodTypeModalOpen] = useState(false);
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
 
   const {
     foodTypes: availableFoodTypes,
@@ -58,15 +64,17 @@ const RestaurantProfilePage = () => {
         );
         setFormData({
           name: data.name || '',
-          email: data.email || '', // Email might not be editable, depends on backend logic/constraints
+          email: data.email || '',
           phone: data.phone || '',
-          openingTime: data.openingTime || '', // Ensure format matches input type='time' (HH:mm)
-          closingTime: data.closingTime || '', // Ensure format matches input type='time' (HH:mm)
+          openingTime: data.openingTime || '',
+          closingTime: data.closingTime || '',
           selectedFoodTypeIds: data.foodTypes?.map(ft => ft.id) || [],
-          // fullAddress: data.address?.address_line || '',
-          // lat: data.address?.lat || null,
-          // lng: data.address?.lng || null,
-          // Restaurant addresses don't use city
+          address: {
+            address_line: data.address?.address_line || '',
+            city: data.address?.city || '',
+            lat: data.address?.lat || '',
+            lng: data.address?.lng || ''
+          }
         });
         setCurrentImageUrl(data.imageUrl || '');
       } catch (err) {
@@ -85,7 +93,23 @@ const RestaurantProfilePage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name.startsWith('address.')) {
+      const addressField = name.split('.')[1];
+      setFormData((prev) => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [addressField]: value
+        }
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e) => {
@@ -105,24 +129,54 @@ const RestaurantProfilePage = () => {
     });
   };
 
-  // const handleAddressSelected = useCallback((addressDetails) => {
-  //   setFormData(prev => ({
-  //       ...prev,
-  //       fullAddress: addressDetails.fullAddress,
-  //       lat: addressDetails.lat,
-  //       lng: addressDetails.lng,
-        //       Restaurant addresses don't use city
-  //   }));
-  //   if (error === 'Please select a valid address using the autocomplete search.') {
-  //       setError('');
-  //   }
-  // }, [error, setError]);
+  const handleAddressSelected = (addressDetails) => {
+    setFormData(prev => ({
+      ...prev,
+      address: {
+        ...prev.address,
+        address_line: addressDetails.addressLine || '',
+        city: addressDetails.city || '',
+        lat: addressDetails.lat || '',
+        lng: addressDetails.lng || ''
+      }
+    }));
+    if (error === 'Please select a valid address using the autocomplete search.') {
+      setError('');
+    }
+  };
+
+  const validatePasswordForm = () => {
+    if (!passwordData.newPassword && !passwordData.confirmPassword) {
+      return null; // No password change requested
+    }
+
+    if (!passwordData.newPassword) {
+      return 'New password is required.';
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      return 'New password must be at least 6 characters long.';
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return 'New password and confirmation do not match.';
+    }
+
+    return null;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.selectedFoodTypeIds.length === 0 && availableFoodTypes.length > 0 && !foodTypesError) {
         setError("Please select at least one food type.");
         return;
+    }
+
+    // Validate password if changing
+    const passwordError = validatePasswordForm();
+    if (passwordError) {
+      setError(passwordError);
+      return;
     }
 
     setIsLoading(true);
@@ -138,6 +192,19 @@ const RestaurantProfilePage = () => {
     formData.selectedFoodTypeIds.forEach(id => {
       payload.append('food_type_ids[]', id);
     });
+
+    // Add address data if provided
+    if (formData.address.address_line) {
+      payload.append('address[address_line]', formData.address.address_line);
+      payload.append('address[city]', formData.address.city);
+      payload.append('address[lat]', formData.address.lat);
+      payload.append('address[lng]', formData.address.lng);
+    }
+
+    // Add password if changing
+    if (passwordData.newPassword) {
+      payload.append('password', passwordData.newPassword);
+    }
 
     if (imageFile) {
       payload.append('imageFile', imageFile);
@@ -162,11 +229,17 @@ const RestaurantProfilePage = () => {
                 openingTime: responseData.data.openingTime || '',
                 closingTime: responseData.data.closingTime || '',
                 selectedFoodTypeIds: responseData.data.foodTypes?.map(ft => ft.id) || [],
+                address: {
+                  address_line: responseData.data.address?.address_line || '',
+                  city: responseData.data.address?.city || '',
+                  lat: responseData.data.address?.lat || '',
+                  lng: responseData.data.address?.lng || ''
+                }
             });
             setCurrentImageUrl(responseData.data.imageUrl || '');
         }
       } else if (responseData) { // Assumes successful update if data is present
-        setSuccess('Profile updated successfully!');
+        setSuccess('Profile updated successfully! You will be logged out for security reasons.');
         // Update formData and currentImageUrl with the new data from responseData
         setFormData({
           name: responseData.name || '',
@@ -175,11 +248,30 @@ const RestaurantProfilePage = () => {
           openingTime: responseData.openingTime || '', 
           closingTime: responseData.closingTime || '', 
           selectedFoodTypeIds: responseData.foodTypes?.map(ft => ft.id) || [],
+          address: {
+            address_line: responseData.address?.address_line || '',
+            city: responseData.address?.city || '',
+            lat: responseData.address?.lat || '',
+            lng: responseData.address?.lng || ''
+          }
         });
         setCurrentImageUrl(responseData.imageUrl || '');
         if (imageFile) {
              setImageFile(null); // Clear pending file if it was part of this successful update
         }
+
+        // Clear password fields after successful update
+        setPasswordData({
+          newPassword: '',
+          confirmPassword: ''
+        });
+        setShowPasswordSection(false);
+
+        // Logout after successful update for security
+        setTimeout(() => {
+          logOut();
+          navigate('/restaurant/login');
+        }, 2000); // Give user time to read the success message
       } else {
         // This case might occur if the server returns 200 OK but an empty body, which shouldn't happen with current backend logic
         setError('Profile update processed, but response data was unexpected.');
@@ -307,46 +399,94 @@ const RestaurantProfilePage = () => {
             error={foodTypesError}
         />
 
+        {/* Address Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Restaurant Address</h3>
+          <GoogleMapDisplay
+            onAddressSelect={handleAddressSelected}
+            showMap={false}
+            placeholder="Start typing your restaurant address..."
+            defaultValue={formData.address.address_line}
+          />
+
+          {formData.address.address_line && (
+            <div className="text-xs text-gray-600 mt-2 p-2 bg-base-200 rounded">
+              Selected: {formData.address.address_line}
+              {formData.address.city && `, ${formData.address.city}`}
+              <br/>
+              (Lat: {formData.address.lat}, Lng: {formData.address.lng})
+            </div>
+          )}
+        </div>
+
+        {/* Password Change Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Password</h3>
+            <button
+              type="button"
+              onClick={() => setShowPasswordSection(!showPasswordSection)}
+              className="btn btn-sm btn-outline"
+              disabled={isLoading}
+            >
+              {showPasswordSection ? 'Cancel Password Change' : 'Change Password'}
+            </button>
+          </div>
+
+          {showPasswordSection && (
+            <div className="space-y-4 border border-base-300 p-4 rounded-lg bg-base-50">
+              <StyledInput
+                type="password"
+                id="newPassword"
+                name="newPassword"
+                label="New Password"
+                value={passwordData.newPassword}
+                onChange={handlePasswordChange}
+                placeholder="Enter new password"
+                minLength="6"
+                autoComplete="new-password"
+                disabled={isLoading}
+              />
+
+              <StyledInput
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                label="Confirm New Password"
+                value={passwordData.confirmPassword}
+                onChange={handlePasswordChange}
+                placeholder="Confirm new password"
+                minLength="6"
+                autoComplete="new-password"
+                disabled={isLoading}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Image Section */}
         <StyledInput
-          type="file"
-          id="imageFile"
-          name="imageFile"
-          label="Update Restaurant Image (Optional)"
-          onChange={handleFileChange}
-          accept="image/png, image/jpeg, image/webp"
-          className="file-input file-input-bordered file-input-primary w-full"
-          disabled={isLoading}
+            type="file"
+            id="imageFile"
+            name="imageFile"
+            label="Update Restaurant Image (Optional)"
+            onChange={handleFileChange}
+            accept="image/png, image/jpeg, image/webp"
+            className="file-input file-input-bordered file-input-primary w-full"
+            disabled={isLoading}
         />
         {currentImageUrl && !imageFile && (
             <div className="mt-2">
-                <p className="text-sm text-gray-500 mb-1">Current Image:</p>
-                <img src={currentImageUrl} alt="Current restaurant" className="max-h-48 rounded-md border border-base-300"/>
+              <p className="text-sm text-gray-500 mb-1">Current Image:</p>
+              <img src={currentImageUrl} alt="Current restaurant" className="max-h-48 rounded-md border border-base-300"/>
             </div>
         )}
         {imageFile && (
             <div className="mt-2">
-                <p className="text-sm text-gray-500 mb-1">New Image Preview:</p>
-                <img src={URL.createObjectURL(imageFile)} alt="New preview" className="max-h-48 rounded-md border border-base-300"/>
+              <p className="text-sm text-gray-500 mb-1">New Image Preview:</p>
+              <img src={URL.createObjectURL(imageFile)} alt="New preview" className="max-h-48 rounded-md border border-base-300"/>
             </div>
         )}
-        
-        {/* GoogleMapDisplay for address update - Deferred
-        <div className="w-full mt-4">
-            <label className="label"><span className="label-text">Update Address (Optional)</span></label>
-            <GoogleMapDisplay
-                onAddressSelect={handleAddressSelected}
-                initialLat={formData.lat}
-                initialLng={formData.lng}
-                initialAddress={formData.fullAddress}
-            />
-            {formData.fullAddress && (
-            <div className="text-xs text-gray-600 mt-2 p-2 bg-base-200 rounded">
-                Selected: {formData.fullAddress}<br/>
-                (Lat: {formData.lat}, Lng: {formData.lng})
-            </div>
-            )}
-        </div>
-        */}
 
         <button type="submit" className="btn btn-primary w-full mt-8" disabled={isLoading || isLoadingFoodTypes}>
          {isLoading ? <span className="loading loading-spinner"></span> : 'Update Profile'}

@@ -9,4 +9,4 @@ const LoadingFallback = () => (
   </div>
 );
 
-export default LoadingFallback; 
+export default LoadingFallback;

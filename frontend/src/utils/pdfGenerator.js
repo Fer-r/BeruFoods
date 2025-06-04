@@ -1,12 +1,19 @@
 import jsPDF from 'jspdf';
 
+/**
+ * Generates a PDF document for an order bill/receipt.
+ * 
+ * @param {Object} order - The order object containing details to include in the PDF
+ * @param {boolean} isRestaurantView - Whether the PDF is being generated for restaurant view (true) or customer view (false)
+ * @returns {jsPDF} The generated PDF document object
+ */
 export const generateOrderBill = (order, isRestaurantView = false) => {
   const doc = new jsPDF();
   
   // Set up document properties
   doc.setProperties({
-    title: `Order Bill #${order.id}`,
-    subject: 'Order Invoice',
+    title: `Factura Pedido #${order.id}`,
+    subject: 'Factura de Pedido',
     author: 'BeruFoods',
     creator: 'BeruFoods App'
   });
@@ -18,33 +25,33 @@ export const generateOrderBill = (order, isRestaurantView = false) => {
   
   doc.setFontSize(16);
   doc.setFont('helvetica', 'normal');
-  doc.text(isRestaurantView ? 'Restaurant Order Bill' : 'Order Receipt', 20, 35);
+  doc.text(isRestaurantView ? 'Factura de Pedido para Restaurante' : 'Recibo de Pedido', 20, 35);
 
   // Order Info Box
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.text('Order Information', 20, 55);
+  doc.text('Información del Pedido', 20, 55);
   
   doc.setFont('helvetica', 'normal');
-  doc.text(`Order ID: #${order.id}`, 20, 65);
-  doc.text(`Date: ${new Date(order.created_at).toLocaleString()}`, 20, 75);
-  doc.text(`Status: ${order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'N/A'}`, 20, 85);
+  doc.text(`Pedido Nº: #${order.id}`, 20, 65);
+  doc.text(`Fecha: ${new Date(order.created_at).toLocaleString('es-ES')}`, 20, 75);
+  doc.text(`Estado: ${statusToSpanish(order.status)}`, 20, 85);
   
   // Restaurant info for user view
   if (!isRestaurantView && order.restaurant) {
-    doc.text(`Restaurant: ${order.restaurant.name || `Restaurant ID: ${order.restaurant.id}`}`, 20, 95);
+    doc.text(`Restaurante: ${order.restaurant.name || `ID Restaurante: ${order.restaurant.id}`}`, 20, 95);
   }
 
   // Customer info for restaurant view
   let yPos = isRestaurantView ? 105 : 105;
   if (isRestaurantView && order.user) {
     doc.setFont('helvetica', 'bold');
-    doc.text('Customer Information', 20, yPos);
+    doc.text('Información del Cliente', 20, yPos);
     yPos += 10;
     
     doc.setFont('helvetica', 'normal');
     if (order.user.name) {
-      doc.text(`Name: ${order.user.name}`, 20, yPos);
+      doc.text(`Nombre: ${order.user.name}`, 20, yPos);
       yPos += 10;
     }
     if (order.user.email) {
@@ -52,7 +59,7 @@ export const generateOrderBill = (order, isRestaurantView = false) => {
       yPos += 10;
     }
     if (order.user.phone) {
-      doc.text(`Phone: ${order.user.phone}`, 20, yPos);
+      doc.text(`Teléfono: ${order.user.phone}`, 20, yPos);
       yPos += 10;
     }
   }
@@ -60,14 +67,14 @@ export const generateOrderBill = (order, isRestaurantView = false) => {
   // Items section
   yPos += 10;
   doc.setFont('helvetica', 'bold');
-  doc.text('Order Items', 20, yPos);
+  doc.text('Artículos del Pedido', 20, yPos);
   yPos += 10;
 
   // Table headers
   doc.setFontSize(10);
-  doc.text('Item', 20, yPos);
-  doc.text('Qty', 120, yPos);
-  doc.text('Unit Price', 140, yPos);
+  doc.text('Artículo', 20, yPos);
+  doc.text('Cant.', 120, yPos);
+  doc.text('Precio Unit.', 140, yPos);
   doc.text('Total', 170, yPos);
   
   // Line under headers
@@ -81,7 +88,7 @@ export const generateOrderBill = (order, isRestaurantView = false) => {
   if (order.items && order.items.length > 0) {
     order.items.forEach((item) => {
       // Handle different data structures between restaurant and user views
-      const itemName = item.articleName || `Article ID: ${item.articleId}`;
+      const itemName = item.articleName || `ID Artículo: ${item.articleId}`;
       const unitPrice = item.articlePrice || (item.articleDetail ? item.articleDetail.price : 0);
       const lineTotal = item.lineTotal || (unitPrice * item.quantity);
       
@@ -91,8 +98,8 @@ export const generateOrderBill = (order, isRestaurantView = false) => {
       const truncatedName = itemName.length > 35 ? itemName.substring(0, 32) + '...' : itemName;
       doc.text(truncatedName, 20, yPos);
       doc.text(item.quantity.toString(), 125, yPos);
-      doc.text(unitPrice > 0 ? `€${parseFloat(unitPrice).toFixed(2)}` : 'N/A', 140, yPos);
-      doc.text(lineTotal > 0 ? `€${lineTotal.toFixed(2)}` : '-', 170, yPos);
+      doc.text(unitPrice > 0 ? `${parseFloat(unitPrice).toFixed(2)}€` : 'N/A', 140, yPos);
+      doc.text(lineTotal > 0 ? `${lineTotal.toFixed(2)}€` : '-', 170, yPos);
       
       yPos += 10;
       
@@ -124,34 +131,58 @@ export const generateOrderBill = (order, isRestaurantView = false) => {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.text('Total:', 140, yPos);
-  doc.text(`€${parseFloat(order.total_price).toFixed(2)}`, 170, yPos);
+  doc.text(`${parseFloat(order.total_price).toFixed(2)}€`, 170, yPos);
 
   // Show calculated vs stored total if different (for debugging)
   if (Math.abs(totalCalculated - parseFloat(order.total_price)) > 0.01) {
     yPos += 10;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text(`Calculated: €${totalCalculated.toFixed(2)}`, 140, yPos);
+    doc.text(`Calculado: ${totalCalculated.toFixed(2)}€`, 140, yPos);
   }
 
   // Footer
   yPos += 20;
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(8);
-  doc.text('Thank you for your business!', 20, yPos);
-  doc.text(`Generated on ${new Date().toLocaleString()}`, 20, yPos + 8);
+  doc.text('¡Gracias por su compra!', 20, yPos);
+  doc.text(`Generado el ${new Date().toLocaleString('es-ES')}`, 20, yPos + 8);
 
   return doc;
 };
 
+/**
+ * Generates and downloads a PDF bill for an order.
+ * 
+ * @param {Object} order - The order object containing details to include in the PDF
+ * @param {boolean} isRestaurantView - Whether the PDF is being generated for restaurant view (true) or customer view (false)
+ * @returns {Object} An object with success status and either filename or error message
+ */
 export const downloadOrderBill = (order, isRestaurantView = false) => {
   try {
     const doc = generateOrderBill(order, isRestaurantView);
-    const filename = `order-${order.id}-bill-${new Date().toISOString().split('T')[0]}.pdf`;
+    const filename = `pedido-${order.id}-factura-${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(filename);
     return { success: true, filename };
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('Error al generar PDF:', error);
     return { success: false, error: error.message };
   }
-}; 
+};
+
+/**
+ * Converts English order status to Spanish
+ * 
+ * @param {string} status - The order status in English
+ * @returns {string} The order status in Spanish
+ */
+function statusToSpanish(status) {
+  const statusMap = {
+    'pending': 'Pendiente',
+    'preparing': 'Preparando',
+    'delivered': 'Entregado',
+    'cancelled': 'Cancelado'
+  };
+  
+  return statusMap[status] || status;
+}

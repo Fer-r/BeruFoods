@@ -112,10 +112,10 @@ const RestaurantOrderDetailsPage = () => {
       )}
 
       {updateError && (
-        <AlertMessage type="error" message={updateError} className="mb-4" />
+        <AlertMessage type="error\" message={updateError} className="mb-4" />
       )}
       
-      {orderError && displayOrder && <AlertMessage type="warning" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
+      {orderError && displayOrder && <AlertMessage type="warning\" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
 
       {/* Order Information Card */}
       <div className={`bg-base-100 shadow-xl rounded-lg p-6 mb-6 ${wasUpdated ? 'border-2 border-success transition-all duration-700' : ''}`}>
@@ -126,10 +126,15 @@ const RestaurantOrderDetailsPage = () => {
             <div className={`badge badge-lg text-white font-medium ${
               displayOrder.status === 'pending' ? 'badge-warning' : 
               displayOrder.status === 'preparing' ? 'badge-info' : 
-              displayOrder.status === 'delivered' ? 'badge-success' : 
+              displayOrder.status === 'ready' ? 'badge-accent' : 
+              displayOrder.status === 'completed' ? 'badge-success' : 
               displayOrder.status === 'cancelled' ? 'badge-error' : 'badge-ghost'
             }`}>
-              {displayOrder.status ? displayOrder.status.charAt(0).toUpperCase() + displayOrder.status.slice(1) : 'N/A'}
+              {displayOrder.status === 'pending' ? 'Pendiente' :
+               displayOrder.status === 'preparing' ? 'Preparando' :
+               displayOrder.status === 'ready' ? 'Listo para recoger' :
+               displayOrder.status === 'completed' ? 'Completado' :
+               displayOrder.status === 'cancelled' ? 'Cancelado' : 'N/A'}
             </div>
           </div>
           <div>
@@ -138,7 +143,7 @@ const RestaurantOrderDetailsPage = () => {
           </div>
           <div>
             <p className="text-sm text-gray-600">Total Price:</p>
-            <p className="text-lg font-bold text-primary">€{parseFloat(displayOrder.total_price).toFixed(2)}</p>
+            <p className="text-lg font-bold text-primary">{parseFloat(displayOrder.total_price).toFixed(2)}€</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Total Items:</p>
@@ -231,14 +236,14 @@ const RestaurantOrderDetailsPage = () => {
                       </td>
                       <td>
                         {unitPrice > 0 ? (
-                          <span className="font-medium">€{parseFloat(unitPrice).toFixed(2)}</span>
+                          <span className="font-medium">{parseFloat(unitPrice).toFixed(2)}€</span>
                         ) : (
                           <span className="text-gray-500">N/A</span>
                         )}
                       </td>
                       <td>
                         {lineTotal > 0 ? (
-                          <span className="font-bold text-primary">€{lineTotal.toFixed(2)}</span>
+                          <span className="font-bold text-primary">{lineTotal.toFixed(2)}€</span>
                         ) : (
                           <span className="text-gray-500">-</span>
                         )}
@@ -250,12 +255,12 @@ const RestaurantOrderDetailsPage = () => {
               <tfoot>
                 <tr className="border-t-2">
                   <td colSpan="3" className="font-bold text-right">Order Total:</td>
-                  <td className="font-bold text-primary text-lg">€{parseFloat(displayOrder.total_price).toFixed(2)}</td>
+                  <td className="font-bold text-primary text-lg">{parseFloat(displayOrder.total_price).toFixed(2)}€</td>
                 </tr>
                 {displayOrder.calculatedTotal && Math.abs(displayOrder.calculatedTotal - parseFloat(displayOrder.total_price)) > 0.01 && (
                   <tr className="border-t">
                     <td colSpan="3" className="text-sm text-gray-500 text-right">Calculated Total:</td>
-                    <td className="text-sm text-gray-500">€{displayOrder.calculatedTotal.toFixed(2)}</td>
+                    <td className="text-sm text-gray-500">{displayOrder.calculatedTotal.toFixed(2)}€</td>
                   </tr>
                 )}
               </tfoot>
@@ -273,4 +278,4 @@ const RestaurantOrderDetailsPage = () => {
   );
 };
 
-export default RestaurantOrderDetailsPage; 
+export default RestaurantOrderDetailsPage;

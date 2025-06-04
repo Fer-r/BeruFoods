@@ -237,4 +237,4 @@ const SimpleGoogleMap = ({
   );
 };
 
-export default SimpleGoogleMap; 
+export default SimpleGoogleMap;

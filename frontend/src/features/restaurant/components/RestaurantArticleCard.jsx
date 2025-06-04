@@ -7,10 +7,28 @@ const PATHS = {
     RESTAURANT_ARTICLES_EDIT: '/restaurant/articles/:articleId/edit',
 };
 
+/**
+ * RestaurantArticleCard displays a menu item (article) in the restaurant management interface.
+ * It shows the article's image, name, description, price, availability status, and allergies.
+ * The component provides controls to toggle availability status and buttons to edit or delete the article.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.article - The article data to display
+ * @param {number} props.article.id - Unique identifier for the article
+ * @param {string} props.article.name - Name of the article
+ * @param {string} [props.article.description] - Optional description of the article
+ * @param {string|number} props.article.price - Price of the article
+ * @param {boolean} props.article.listed - Whether the article is listed on the menu
+ * @param {boolean} props.article.available - Whether the article is currently available
+ * @param {string} [props.article.imageUrl] - Optional URL to the article's image
+ * @param {Array<string>} [props.article.allergies] - Optional array of allergy information
+ * @param {Function} props.onDelete - Callback function when the delete button is clicked
+ * @returns {JSX.Element} The rendered article card
+ */
 const RestaurantArticleCard = ({ article, onDelete }) => {
-  const formattedPrice = new Intl.NumberFormat('en-US', {
+  const formattedPrice = new Intl.NumberFormat('en-GB', {
     style: 'currency',
-    currency: 'EUR', // Or use a dynamic currency from restaurant settings
+    currency: 'EUR',
   }).format(article.price);
 
   const editUrl = PATHS.RESTAURANT_ARTICLES_EDIT.replace(':articleId', article.id);
@@ -52,10 +70,13 @@ const RestaurantArticleCard = ({ article, onDelete }) => {
   };
 
   return (
-    <div className="card bg-base-100 shadow-xl mb-6 overflow-hidden">
-      <figure className="h-48 w-full overflow-hidden">
+    <div className="card bg-base-100 shadow-xl mb-6 overflow-hidden article-card">
+      <figure className="h-48 w-full overflow-hidden relative">
         {article.imageUrl ? (
-          <img src={article.imageUrl} alt={article.name} className="object-cover h-full w-full" />
+          <>
+            <img src={article.imageUrl} alt={article.name} className="object-cover h-full w-full transition-transform duration-300 hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </>
         ) : (
           <div className="h-full w-full bg-base-300 flex items-center justify-center">
             <span className="text-base-content opacity-50">No Image</span>
@@ -120,4 +141,4 @@ const RestaurantArticleCard = ({ article, onDelete }) => {
   );
 };
 
-export default RestaurantArticleCard; 
+export default RestaurantArticleCard;

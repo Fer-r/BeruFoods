@@ -2,6 +2,22 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import OrderStatusSelector from './OrderStatusSelector';
 
+/**
+ * RestaurantOrderItem displays an order in the restaurant's order management interface.
+ * It shows order details including ID, date, status, total price, customer information, and items.
+ * The component provides controls to update the order status and a link to view detailed information.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.order - The order data to display
+ * @param {number} props.order.id - Unique identifier for the order
+ * @param {string} props.order.created_at - Creation date/time of the order
+ * @param {string} props.order.status - Current status of the order
+ * @param {string|number} props.order.total_price - Total price of the order
+ * @param {Array} [props.order.items] - Optional array of order items
+ * @param {Object} [props.order.user] - Optional customer information
+ * @param {Function} props.onStatusUpdate - Callback function when order status is updated
+ * @returns {JSX.Element} The rendered order item component
+ */
 const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -21,7 +37,9 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
         return 'badge-warning';
       case 'preparing':
         return 'badge-info';
-      case 'delivered':
+      case 'ready':
+        return 'badge-accent';
+      case 'completed':
         return 'badge-success';
       case 'cancelled':
         return 'badge-error';
@@ -31,7 +49,14 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
   };
 
   const formatStatus = (status) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    const statusMap = {
+      'pending': 'Pendiente',
+      'preparing': 'Preparando',
+      'ready': 'Listo para recoger',
+      'completed': 'Completado',
+      'cancelled': 'Cancelado'
+    };
+    return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   const handleStatusUpdate = async (newStatus) => {
@@ -61,7 +86,7 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
             <div className={`badge ${getStatusBadgeClass(order.status)} text-white font-medium`}>
               {formatStatus(order.status)}
             </div>
-            <p className="text-lg font-bold mt-1">${order.total_price}</p>
+            <p className="text-lg font-bold mt-1">{parseFloat(order.total_price).toFixed(2)}€</p>
           </div>
         </div>
 
@@ -90,7 +115,7 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
                   </span>
                   {item.price && (
                     <span className="text-gray-600">
-                      ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+                      {(parseFloat(item.price) * item.quantity).toFixed(2)}€
                     </span>
                   )}
                 </div>
@@ -118,4 +143,4 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
   );
 };
 
-export default RestaurantOrderItem; 
+export default RestaurantOrderItem;

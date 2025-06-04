@@ -4,6 +4,15 @@ import StyledInput from '../../../common/StyledInput';
 import AlertMessage from '../../../common/AlertMessage';
 import { useAuth } from '../../../../context/AuthContext.jsx';
 
+/**
+ * UserLoginModal provides a modal dialog for user authentication.
+ * It includes form fields for email and password, validation, and error handling.
+ * The component uses the AuthContext to handle the login process and track authentication state.
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.open - Controls whether the modal is open or closed
+ * @param {Function} props.handleClose - Callback function to close the modal
+ */
 const UserLoginModal = ({ open, handleClose }) => {
   const modalRef = useRef(null);
   const [email, setEmail] = useState('');
@@ -69,21 +78,21 @@ const UserLoginModal = ({ open, handleClose }) => {
     <dialog ref={modalRef} className={`modal ${open ? 'modal-open' : ''}`} onClose={handleDialogNativeClose}>
       <div className="modal-box" onClick={stopPropagation}>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">Sign in</h3>
+          <h3 className="font-bold text-lg">Iniciar Sesión</h3>
           <form method="dialog">
             <button className="btn btn-sm btn-circle btn-ghost">✕</button>
           </form>
         </div>
 
         <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4 py-4">
-          {authError && <AlertMessage type="error" message={authError} />}
+          {authError && <AlertMessage type="error\" message={authError} />}
           
           <StyledInput
             type="email"
             id="login-email"
             name="email"
-            label="Email Address"
-            placeholder="your@email.com"
+            label="Correo Electrónico"
+            placeholder="tu@email.com"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -93,12 +102,12 @@ const UserLoginModal = ({ open, handleClose }) => {
             autoFocus
             autoComplete="email"
           />
-          {emailError && <AlertMessage type="error" message={emailError} />}
+          {emailError && <AlertMessage type="error\" message={emailError} />}
           <StyledInput
             type="password"
             id="login-password"
             name="password"
-            label="Password"
+            label="Contraseña"
             placeholder="******"
             value={password}
             onChange={(e) => {
@@ -108,13 +117,13 @@ const UserLoginModal = ({ open, handleClose }) => {
             required
             autoComplete="current-password"
           />
-          {passwordError && <AlertMessage type="error" message={passwordError} />}
+          {passwordError && <AlertMessage type="error\" message={passwordError} />}
           <div className="modal-action mt-4">
             <button type="button" className="btn btn-ghost" onClick={handleClose} disabled={authLoading}>
-              Cancel
+              Cancelar
             </button>
             <button type="submit" className="btn btn-primary" disabled={authLoading}>
-              {authLoading ? <span className="loading loading-spinner loading-xs"></span> : 'Sign In'}
+              {authLoading ? <span className="loading loading-spinner loading-xs"></span> : 'Iniciar Sesión'}
             </button>
           </div>
         </form>

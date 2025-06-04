@@ -51,4 +51,4 @@ const ThemeButtons = ({
   );
 };
 
-export default ThemeButtons; 
+export default ThemeButtons;

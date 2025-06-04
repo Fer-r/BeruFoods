@@ -28,7 +28,8 @@ const RestaurantOrdersPage = () => {
     { value: 'all', label: 'All Orders' },
     { value: 'pending', label: 'Pending' },
     { value: 'preparing', label: 'Preparing' },
-    { value: 'delivered', label: 'Delivered' },
+    { value: 'ready', label: 'Ready for Pickup' },
+    { value: 'completed', label: 'Completed' },
     { value: 'cancelled', label: 'Cancelled' }
   ];
 
@@ -55,7 +56,8 @@ const RestaurantOrdersPage = () => {
       all: orders.length,
       pending: 0,
       preparing: 0,
-      delivered: 0,
+      ready: 0,
+      completed: 0,
       cancelled: 0
     };
 
@@ -124,7 +126,7 @@ const RestaurantOrdersPage = () => {
         </div>
 
         {/* Status Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="stat bg-warning text-warning-content rounded-lg">
             <div className="stat-figure">
               <MdAccessTime className="text-warning-content text-3xl" />
@@ -141,12 +143,22 @@ const RestaurantOrdersPage = () => {
             <div className="stat-value text-info-content">{orderCounts.preparing}</div>
           </div>
           
+          <div className="stat bg-accent text-accent-content rounded-lg">
+            <div className="stat-figure">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+            </div>
+            <div className="stat-title text-accent-content">Ready</div>
+            <div className="stat-value text-accent-content">{orderCounts.ready}</div>
+          </div>
+          
           <div className="stat bg-success text-success-content rounded-lg">
             <div className="stat-figure">
               <MdCheckCircle className="text-success-content text-3xl" />
             </div>
-            <div className="stat-title text-success-content">Delivered</div>
-            <div className="stat-value text-success-content">{orderCounts.delivered}</div>
+            <div className="stat-title text-success-content">Completed</div>
+            <div className="stat-value text-success-content">{orderCounts.completed}</div>
           </div>
           
           <div className="stat bg-error text-error-content rounded-lg">
@@ -166,7 +178,7 @@ const RestaurantOrdersPage = () => {
 
       {/* General Error Alert */}
       {error && orders.length > 0 && (
-        <AlertMessage type="warning" message={`Error loading more orders: ${error}`} className="mb-4" />
+        <AlertMessage type="warning\" message={`Error loading more orders: ${error}`} className="mb-4" />
       )}
 
       {/* Orders List */}
@@ -210,4 +222,4 @@ const RestaurantOrdersPage = () => {
   );
 };
 
-export default RestaurantOrdersPage; 
+export default RestaurantOrdersPage;

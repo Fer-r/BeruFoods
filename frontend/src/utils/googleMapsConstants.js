@@ -43,4 +43,4 @@ export const PLACE_TYPES = ['establishment', 'geocode'];
 export const PLACE_FIELDS = ['location', 'formattedAddress', 'displayName', 'addressComponents'];
 
 // Legacy API fields (for backward compatibility)
-export const LEGACY_PLACE_FIELDS = ['formatted_address', 'geometry', 'address_components', 'name']; 
+export const LEGACY_PLACE_FIELDS = ['formatted_address', 'geometry', 'address_components', 'name'];

@@ -124,4 +124,4 @@ export const createTimeoutPromise = (timeout, message = ERROR_MESSAGES.INITIALIZ
   return new Promise((_, reject) => {
     setTimeout(() => reject(new Error(message)), timeout);
   });
-}; 
+};

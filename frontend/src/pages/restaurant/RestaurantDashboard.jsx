@@ -107,8 +107,8 @@ const RestaurantDashboard = () => {
     <div className="p-6 bg-base-200 min-h-screen">
       {/* Alerts and Warnings */}
       {articleStats.unavailable > 0 && (
-        <div className="alert alert-warning mb-6">
-          <FaExclamationTriangle />
+        <div className="alert alert-warning mb-6 shadow-md">
+          <FaExclamationTriangle className="flex-shrink-0" />
           <span>You have {articleStats.unavailable} unavailable menu items. Consider updating your menu.</span>
           <Link to="/restaurant/articles" className="btn btn-sm btn-outline">
             Manage Menu
@@ -130,19 +130,22 @@ const RestaurantDashboard = () => {
             View All
           </Link>
         </div>
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {recentNotifications.length > 0 ? (
             recentNotifications.map(notification => (
               <div key={notification.id} className={`card bg-base-100 shadow-md p-4 ${!notification.isRead ? 'border-l-4 border-accent' : ''}`}>
                 <p className="text-sm text-base-content">{notification.message}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-base-content/60 mt-1">
                   {new Date(notification.createdAt).toLocaleString()}
                 </p>
               </div>
             ))
           ) : (
-            <div className="card bg-base-100 shadow-md p-4">
-              <p className="text-base-content">No recent notifications.</p>
+            <div className="card bg-base-100 shadow-md p-6 md:col-span-2">
+              <div className="flex flex-col items-center justify-center text-center">
+                <FaBell className="text-3xl text-base-content/30 mb-2" />
+                <p className="text-base-content">No recent notifications.</p>
+              </div>
             </div>
           )}
         </div>
@@ -153,18 +156,22 @@ const RestaurantDashboard = () => {
       {/* Quick Actions */}
       <section className="mb-8">
         <h2 className="text-2xl font-semibold mb-4 text-base-content">Quick Actions</h2>
-        <div className="flex flex-wrap gap-4">
-          <Link to="/restaurant/articles/new" className="btn btn-primary">
-            <FaPlusSquare className="mr-2" /> Add Menu Item
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <Link to="/restaurant/articles/new" className="btn btn-primary h-auto py-4 flex flex-col items-center justify-center shadow-md">
+            <FaPlusSquare className="text-2xl mb-2" /> 
+            <span>Add Menu Item</span>
           </Link>
-          <Link to="/restaurant/orders" className="btn btn-secondary">
-            <FaEye className="mr-2" /> View All Orders
+          <Link to="/restaurant/orders" className="btn btn-secondary h-auto py-4 flex flex-col items-center justify-center shadow-md">
+            <FaEye className="text-2xl mb-2" /> 
+            <span>View All Orders</span>
           </Link>
-          <Link to="/restaurant/articles" className="btn btn-accent">
-            <FaUtensils className="mr-2" /> Manage Menu
+          <Link to="/restaurant/articles" className="btn btn-accent h-auto py-4 flex flex-col items-center justify-center shadow-md">
+            <FaUtensils className="text-2xl mb-2" /> 
+            <span>Manage Menu</span>
           </Link>
-          <Link to="/restaurant/profile" className="btn btn-info">
-            <FaEye className="mr-2" /> Restaurant Profile
+          <Link to="/restaurant/profile" className="btn btn-info h-auto py-4 flex flex-col items-center justify-center shadow-md">
+            <FaEye className="text-2xl mb-2" /> 
+            <span>Restaurant Profile</span>
           </Link>
         </div>
       </section>
@@ -183,16 +190,13 @@ const RestaurantDashboard = () => {
           </div>
           <div className="space-y-4">
             {ordersLoading ? (
-              <div className="card bg-base-100 shadow-md p-4">
-                <div className="flex items-center space-x-4">
-                  <div className="skeleton h-4 w-20"></div>
-                  <div className="skeleton h-4 w-32"></div>
-                  <div className="skeleton h-4 w-16"></div>
-                </div>
+              <div className="card bg-base-100 shadow-md p-6 flex justify-center items-center">
+                <span className="loading loading-spinner loading-md text-primary"></span>
+                <p className="ml-2">Loading orders...</p>
               </div>
             ) : recentOrders.length > 0 ? (
               recentOrders.map(order => (
-                <div key={order.id} className="card bg-base-100 shadow-md">
+                <div key={order.id} className="card bg-base-100 shadow-md hover:shadow-lg transition-all duration-300">
                   <div className="card-body p-4">
                     <div className="flex justify-between items-start">
                       <div>
@@ -200,13 +204,13 @@ const RestaurantDashboard = () => {
                           Order #{order.id}
                         </p>
                         {order.user && (
-                          <p className="text-sm text-gray-500">{order.user.username}</p>
+                          <p className="text-sm text-base-content/70">{order.user.name || order.user.email}</p>
                         )}
-                        <p className="text-sm text-gray-500">
-                          {order.orderItems?.length || 0} items - ${parseFloat(order.totalPrice || 0).toFixed(2)}
+                        <p className="text-sm text-base-content/70">
+                          {order.items?.length || 0} items - €{parseFloat(order.total_price || 0).toFixed(2)}
                         </p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(order.createdAt).toLocaleString()}
+                        <p className="text-xs text-base-content/50">
+                          {new Date(order.created_at).toLocaleString()}
                         </p>
                       </div>
                       <span className={`badge ${getStatusBadgeClass(order.status)}`}>
@@ -220,9 +224,9 @@ const RestaurantDashboard = () => {
                       {order.status?.toLowerCase() === 'pending' && (
                         <button 
                           className="btn btn-xs btn-success"
-                          onClick={() => handleOrderStatusUpdate(order.id, 'confirmed')}
+                          onClick={() => handleOrderStatusUpdate(order.id, 'preparing')}
                         >
-                          Confirm
+                          Start Preparing
                         </button>
                       )}
                     </div>
@@ -230,8 +234,10 @@ const RestaurantDashboard = () => {
                 </div>
               ))
             ) : (
-              <div className="card bg-base-100 shadow-md p-4">
+              <div className="card bg-base-100 shadow-md p-6 flex flex-col items-center justify-center text-center">
+                <FaClipboardList className="text-3xl text-base-content/30 mb-2" />
                 <p className="text-base-content">No recent orders.</p>
+                <p className="text-sm text-base-content/70 mt-1">New orders will appear here.</p>
               </div>
             )}
           </div>
@@ -249,28 +255,33 @@ const RestaurantDashboard = () => {
           </div>
           <div className="space-y-4">
             {articlesLoading ? (
-              <div className="card bg-base-100 shadow-md p-4">
-                <div className="skeleton h-4 w-full"></div>
+              <div className="card bg-base-100 shadow-md p-6 flex justify-center items-center">
+                <span className="loading loading-spinner loading-md text-primary"></span>
+                <p className="ml-2">Loading menu data...</p>
               </div>
             ) : (
               <>
-                <div className="card bg-base-100 shadow-md p-6">
+                <div className="card bg-base-100 shadow-md p-6 hover:shadow-lg transition-all duration-300">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-lg font-semibold text-base-content">Available Items</p>
                       <p className="text-3xl font-bold text-success">{articleStats.available}</p>
                     </div>
-                    <FaUtensils className="text-4xl text-success" />
+                    <div className="bg-success/10 p-4 rounded-full">
+                      <FaUtensils className="text-4xl text-success" />
+                    </div>
                   </div>
                 </div>
                 {articleStats.unavailable > 0 && (
-                  <div className="card bg-base-100 shadow-md p-6">
+                  <div className="card bg-base-100 shadow-md p-6 hover:shadow-lg transition-all duration-300">
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-lg font-semibold text-base-content">Unavailable Items</p>
                         <p className="text-3xl font-bold text-warning">{articleStats.unavailable}</p>
                       </div>
-                      <FaExclamationTriangle className="text-4xl text-warning" />
+                      <div className="bg-warning/10 p-4 rounded-full">
+                        <FaExclamationTriangle className="text-4xl text-warning" />
+                      </div>
                     </div>
                     <div className="mt-4">
                       <Link to="/restaurant/articles" className="btn btn-sm btn-warning">
@@ -279,13 +290,15 @@ const RestaurantDashboard = () => {
                     </div>
                   </div>
                 )}
-                <div className="card bg-base-100 shadow-md p-6">
+                <div className="card bg-base-100 shadow-md p-6 hover:shadow-lg transition-all duration-300">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-lg font-semibold text-base-content">Total Menu Items</p>
                       <p className="text-3xl font-bold text-primary">{articleStats.total}</p>
                     </div>
-                    <FaClipboardList className="text-4xl text-primary" />
+                    <div className="bg-primary/10 p-4 rounded-full">
+                      <FaClipboardList className="text-4xl text-primary" />
+                    </div>
                   </div>
                   <div className="mt-4">
                     <Link to="/restaurant/articles/new" className="btn btn-sm btn-primary">
@@ -302,4 +315,4 @@ const RestaurantDashboard = () => {
   );
 };
 
-export default RestaurantDashboard; 
+export default RestaurantDashboard;

@@ -142,11 +142,11 @@ const UserOrderDetailsPage = () => {
       )}
       
       {pdfError && (
-        <AlertMessage type="error" message={pdfError} className="mb-4" />
+        <AlertMessage type="error\" message={pdfError} className="mb-4" />
       )}
       
-      {orderError && order && <AlertMessage type="warning" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
-      {articlesError && <AlertMessage type="warning" message={`Could not load full article information: ${articlesError}`} className="mb-4" />}
+      {orderError && order && <AlertMessage type="warning\" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
+      {articlesError && <AlertMessage type="warning\" message={`Could not load full article information: ${articlesError}`} className="mb-4" />}
 
       <div className={`bg-base-100 shadow-xl rounded-lg p-6 mb-6 ${wasUpdated ? 'border-2 border-success transition-all duration-700' : ''}`}>
         <h2 className="text-xl font-semibold mb-3">Order #{order.id}</h2>

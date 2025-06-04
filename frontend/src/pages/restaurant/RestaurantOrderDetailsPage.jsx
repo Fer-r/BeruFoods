@@ -130,11 +130,11 @@ const RestaurantOrderDetailsPage = () => {
               displayOrder.status === 'completed' ? 'badge-success' : 
               displayOrder.status === 'cancelled' ? 'badge-error' : 'badge-ghost'
             }`}>
-              {displayOrder.status === 'pending' ? 'Pendiente' :
-               displayOrder.status === 'preparing' ? 'Preparando' :
-               displayOrder.status === 'ready' ? 'Listo para recoger' :
-               displayOrder.status === 'completed' ? 'Completado' :
-               displayOrder.status === 'cancelled' ? 'Cancelado' : 'N/A'}
+              {displayOrder.status === 'pending' ? 'Pending' :
+               displayOrder.status === 'preparing' ? 'Preparing' :
+               displayOrder.status === 'ready' ? 'Ready for Pickup' :
+               displayOrder.status === 'completed' ? 'Completed' :
+               displayOrder.status === 'cancelled' ? 'Cancelled' : 'N/A'}
             </div>
           </div>
           <div>

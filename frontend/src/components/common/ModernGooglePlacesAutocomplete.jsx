@@ -191,7 +191,7 @@ const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Comienza a escribir l
         onKeyDown={handleKeyDown}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
-        aria-label="Búsqueda de dirección"
+        aria-label="Address search"
         aria-expanded={showDropdown}
         aria-haspopup="listbox"
         role="combobox"
@@ -199,7 +199,7 @@ const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Comienza a escribir l
       
       {isLoading && (
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-          <span className="loading loading-spinner loading-sm\" aria-label="Cargando sugerencias"></span>
+          <span className="loading loading-spinner loading-sm\" aria-label="Loading suggestions"></span>
         </div>
       )}
 
@@ -211,7 +211,7 @@ const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Comienza a escribir l
           role="listbox"
         >
           {error && (
-            <div className="p-3 text-error text-sm\" role="alert">
+            <div className="p-3 text-error text-sm" role="alert">
               {error}
             </div>
           )}
@@ -257,7 +257,7 @@ const ModernGooglePlacesAutocomplete = ({ onAddressSelect, placeholder = "Comien
   return (
     <div className="form-control w-full">
       <label className="label">
-        <span className="label-text">Dirección</span>
+        <span className="label-text">Address</span>
       </label>
       <PlaceAutocomplete 
         onPlaceSelect={onAddressSelect} 

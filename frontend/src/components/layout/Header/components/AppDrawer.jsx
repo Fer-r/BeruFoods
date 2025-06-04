@@ -39,16 +39,16 @@ const AppDrawer = ({ toggleDrawer, handleOpenLoginModal }) => {
       <div className="flex-1">
         <ul className="flex flex-col gap-2">
           <li> 
-            <button onClick={() => { handleOpenLoginModal(); toggleDrawer(); }} className="btn btn-primary btn-block mb-2 text-base">Iniciar Sesión</button>
+            <button onClick={() => { handleOpenLoginModal(); toggleDrawer(); }} className="btn btn-primary btn-block mb-2 text-base">Login</button>
           </li>
           <li>
             <NavLink to="/register" onClick={toggleDrawer} className="btn btn-secondary btn-block mb-2 text-base"> 
-              Registrarse
+              Register
             </NavLink>
           </li>
           <li>
             <NavLink to="/restaurant" onClick={toggleDrawer} className="link link-hover justify-center mb-4 text-base"> 
-               Entrar como restaurante
+               Enter as a restaurant
             </NavLink>
           </li>
         </ul>
@@ -56,7 +56,7 @@ const AppDrawer = ({ toggleDrawer, handleOpenLoginModal }) => {
 
       <div className="mt-auto pt-6 border-t border-base-300">
         <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-base-100">
-          <span className="text-base font-medium">Tema</span>
+          <span className="text-base font-medium">Theme</span>
           <SimpleThemeToggle />
         </div>
       </div>

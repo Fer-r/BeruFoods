@@ -57,37 +57,37 @@ const RestaurantRegister = () => {
 
   return (
     <>
-      <h2 className="card-title text-2xl mb-6">Registro de Restaurante</h2>
+      <h2 className="card-title text-2xl mb-6">Restaurant Sign Up</h2>
       <div className="flex flex-col gap-6">
           <form onSubmit={handleFormSubmit} className="w-full space-y-4">
-            {error && <AlertMessage type="error\" message={error} />}
+            {error && <AlertMessage type="error" message={error} />}
             {success && <AlertMessage type="success" message={success} />}
 
             <StyledInput
               id="name"
               name="name"
-              label="Nombre del Restaurante"
+              label="Restaurant Name"
               value={formData.name}
               onChange={handleChange}
               required
-              placeholder="Delicias Gourmet"
+              placeholder="Delicious Bites"
             />
             <StyledInput
               type="email"
               id="email"
               name="email"
-              label="Correo Electrónico del Negocio"
+              label="Business Email Address"
               value={formData.email}
               onChange={handleChange}
               required
               autoComplete="email"
-              placeholder="contacto@restaurante.com"
+              placeholder="contact@restaurant.com"
             />
             <StyledInput
               type="password"
               id="password"
               name="password"
-              label="Contraseña"
+              label="Password"
               value={formData.password}
               onChange={handleChange}
               required
@@ -99,7 +99,7 @@ const RestaurantRegister = () => {
               type="password"
               id="confirmPassword"
               name="confirmPassword"
-              label="Confirmar Contraseña"
+              label="Confirm Password"
               value={formData.confirmPassword}
               onChange={handleChange}
               required
@@ -110,7 +110,7 @@ const RestaurantRegister = () => {
               type="tel"
               id="phone"
               name="phone"
-              label="Número de Teléfono (Opcional)"
+              label="Phone Number (Optional)"
               value={formData.phone}
               onChange={handleChange}
               placeholder="612 345 678"
@@ -121,7 +121,7 @@ const RestaurantRegister = () => {
                 type="time"
                 id="openingTime"
                 name="openingTime"
-                label="Hora de Apertura"
+                label="Opening Time"
                 value={formData.openingTime}
                 onChange={handleChange}
                 required
@@ -130,7 +130,7 @@ const RestaurantRegister = () => {
                 type="time"
                 id="closingTime"
                 name="closingTime"
-                label="Hora de Cierre"
+                label="Closing Time"
                 value={formData.closingTime}
                 onChange={handleChange}
                 required
@@ -138,8 +138,8 @@ const RestaurantRegister = () => {
             </div>
             
             <div className="form-control w-full">
-                 <label className="label"><span className="label-text">Tipos de Cocina *</span></label>
-                 {foodTypesError && <div className="text-error text-xs mb-1">Error al cargar tipos de cocina: {foodTypesError}</div>}
+                 <label className="label"><span className="label-text">Food Types *</span></label>
+                 {foodTypesError && <div className="text-error text-xs mb-1">Error loading food types: {foodTypesError}</div>}
                  <button
                      type="button"
                      className="btn btn-outline w-full justify-start font-normal"
@@ -149,11 +149,11 @@ const RestaurantRegister = () => {
                      {isLoadingFoodTypes
                          ? <span className="loading loading-spinner loading-xs"></span>
                          : formData.selectedFoodTypeIds.length > 0
-                             ? `${formData.selectedFoodTypeIds.length} seleccionados`
-                             : 'Seleccionar Tipos de Cocina...'}
+                             ? `${formData.selectedFoodTypeIds.length} selected`
+                             : 'Select Food Types...'}
                  </button>
                  {!isLoadingFoodTypes && !loading && !success && formData.selectedFoodTypeIds.length === 0 && availableFoodTypes.length > 0 &&
-                     <p className="text-error text-xs mt-1">Por favor, selecciona al menos un tipo de cocina.</p>
+                     <p className="text-error text-xs mt-1">Please select at least one food type.</p>
                  }
             </div>
 
@@ -171,28 +171,28 @@ const RestaurantRegister = () => {
               type="file"
               id="imageFile"
               name="imageFile"
-              label="Imagen del Restaurante (Opcional)"
+              label="Restaurant Image (Optional)"
               onChange={handleFileChange}
               accept="image/png, image/jpeg, image/webp"
               className="file-input file-input-bordered file-input-primary w-full"
             />
-            {imageFile && <p className="text-xs mt-1 text-gray-500">Seleccionado: {imageFile.name}</p>}
+            {imageFile && <p className="text-xs mt-1 text-gray-500">Selected: {imageFile.name}</p>}
 
             <div className="w-full mt-4">
               <GoogleMapDisplay
                   onAddressSelect={onAddressSelect}
                   showMap={false}
-                  placeholder="Comienza a escribir la dirección del restaurante..."
+                  placeholder="Start writing the address of the restaurant..."
               />
             </div>
 
             <button type="submit" className="btn btn-primary w-full mt-6" disabled={loading}>
-             {loading ? <span className="loading loading-spinner"></span> : 'Registrar Restaurante'}
+             {loading ? <span className="loading loading-spinner"></span> : 'Sign Up Restaurant'}
            </button>
 
           <div className="text-center text-sm space-y-2 mt-4">
-              <p>¿Ya tienes una cuenta de restaurante? <Link to="/restaurant/login" className="link link-secondary">Iniciar Sesión</Link></p>
-              <p>¿No eres un restaurante? <Link to="/register" className="link link-accent">Registro de Usuario</Link></p>
+              <p>Already have a restaurant account? <Link to="/restaurant/login" className="link link-secondary">Sign In</Link></p>
+              <p>Not a restaurant? <Link to="/register" className="link link-accent">User Sign Up</Link></p>
             </div>
           </form>
       </div>

@@ -64,7 +64,7 @@ const GoogleMapDisplay = ({ onAddressSelect, showMap = false, placeholder, defau
   if (!isValidApiKey(GOOGLE_MAPS_API_KEY)) {
     return (
       <div className="p-4 border rounded-lg bg-error/10 text-error">
-        <p className="font-semibold">Error de configuración de mapa y autocompletado</p>
+        <p className="font-semibold">Map and Autocomplete Configuration Error</p>
         <p>{ERROR_MESSAGES.API_KEY_MISSING}</p>
       </div>
     );
@@ -75,7 +75,7 @@ const GoogleMapDisplay = ({ onAddressSelect, showMap = false, placeholder, defau
       <div>
         <ModernGooglePlacesAutocomplete 
           onAddressSelect={handleAddressSelect} 
-          placeholder={placeholder || "Comienza a escribir una dirección..."} 
+          placeholder={placeholder || "Start writing an Address..."} 
           defaultValue={defaultValue} 
         />
         
@@ -86,17 +86,17 @@ const GoogleMapDisplay = ({ onAddressSelect, showMap = false, placeholder, defau
                 type="button"
                 onClick={toggleMapVisibility}
                 className="btn btn-sm btn-outline"
-                aria-label={isMapVisible ? 'Ocultar mapa' : 'Mostrar mapa'}
+                aria-label={isMapVisible ? 'Hide map' : 'Show map'}
               >
                 {isMapVisible ? (
                   <>
                     <MdVisibilityOff className="mr-1" />
-                    Ocultar Mapa
+                    Hide Map
                   </>
                 ) : (
                   <>
                     <MdVisibility className="mr-1" />
-                    Mostrar Mapa
+                    Show Map
                   </>
                 )}
               </button>
@@ -106,7 +106,7 @@ const GoogleMapDisplay = ({ onAddressSelect, showMap = false, placeholder, defau
               <SimpleGoogleMap
                 latitude={selectedLocation?.lat}
                 longitude={selectedLocation?.lng}
-                title={selectedLocation?.title || 'Ubicación Seleccionada'}
+                title={selectedLocation?.title || 'Selected Location'}
                 showInfoWindow={true}
               />
             )}

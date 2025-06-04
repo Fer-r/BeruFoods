@@ -49,14 +49,7 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
   };
 
   const formatStatus = (status) => {
-    const statusMap = {
-      'pending': 'Pendiente',
-      'preparing': 'Preparando',
-      'ready': 'Listo para recoger',
-      'completed': 'Completado',
-      'cancelled': 'Cancelado'
-    };
-    return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   const handleStatusUpdate = async (newStatus) => {

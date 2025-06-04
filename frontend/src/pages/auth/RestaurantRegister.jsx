@@ -60,7 +60,7 @@ const RestaurantRegister = () => {
       <h2 className="card-title text-2xl mb-6">Registro de Restaurante</h2>
       <div className="flex flex-col gap-6">
           <form onSubmit={handleFormSubmit} className="w-full space-y-4">
-            {error && <AlertMessage type="error" message={error} />}
+            {error && <AlertMessage type="error\" message={error} />}
             {success && <AlertMessage type="success" message={success} />}
 
             <StyledInput

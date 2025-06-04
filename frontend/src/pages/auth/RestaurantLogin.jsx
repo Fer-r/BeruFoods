@@ -46,7 +46,7 @@ const RestaurantLogin = () => {
       <p className="mb-6 text-center">Inicia sesión para gestionar tu restaurante.</p>
       <form onSubmit={handleLogin} className="w-full max-w-xs space-y-4">
         {(formError || authError) && (
-          <AlertMessage type="error" message={formError || authError} />
+          <AlertMessage type="error\" message={formError || authError} />
         )}
 
         <StyledInput

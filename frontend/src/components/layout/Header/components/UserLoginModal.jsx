@@ -85,7 +85,7 @@ const UserLoginModal = ({ open, handleClose }) => {
         </div>
 
         <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4 py-4">
-          {authError && <AlertMessage type="error" message={authError} />}
+          {authError && <AlertMessage type="error\" message={authError} />}
           
           <StyledInput
             type="email"
@@ -102,7 +102,7 @@ const UserLoginModal = ({ open, handleClose }) => {
             autoFocus
             autoComplete="email"
           />
-          {emailError && <AlertMessage type="error" message={emailError} />}
+          {emailError && <AlertMessage type="error\" message={emailError} />}
           <StyledInput
             type="password"
             id="login-password"
@@ -117,7 +117,7 @@ const UserLoginModal = ({ open, handleClose }) => {
             required
             autoComplete="current-password"
           />
-          {passwordError && <AlertMessage type="error" message={passwordError} />}
+          {passwordError && <AlertMessage type="error\" message={passwordError} />}
           <div className="modal-action mt-4">
             <button type="button" className="btn btn-ghost" onClick={handleClose} disabled={authLoading}>
               Cancelar

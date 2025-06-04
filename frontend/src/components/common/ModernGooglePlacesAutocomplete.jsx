@@ -199,7 +199,7 @@ const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Comienza a escribir l
       
       {isLoading && (
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-          <span className="loading loading-spinner loading-sm" aria-label="Cargando sugerencias"></span>
+          <span className="loading loading-spinner loading-sm\" aria-label="Cargando sugerencias"></span>
         </div>
       )}
 
@@ -211,7 +211,7 @@ const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Comienza a escribir l
           role="listbox"
         >
           {error && (
-            <div className="p-3 text-error text-sm" role="alert">
+            <div className="p-3 text-error text-sm\" role="alert">
               {error}
             </div>
           )}

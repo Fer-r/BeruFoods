@@ -36,7 +36,7 @@ const UserRegister = () => {
     <>
       <h2 className="card-title text-2xl mb-6 text-base-content">Registro de Usuario</h2>
       <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-4">
-        {error && <AlertMessage type="error" message={error} />}
+        {error && <AlertMessage type="error\" message={error} />}
         {success && <AlertMessage type="success" message={success} />}
 
         <StyledInput

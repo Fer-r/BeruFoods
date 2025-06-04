@@ -5,6 +5,7 @@ import LoadingFallback from '../../components/common/LoadingFallback.jsx';
 import useRestaurantArticles from '../../features/restaurant/hooks/useRestaurantArticles';
 import useOrderDetails from '../../features/user/hooks/useOrderDetails';
 import { downloadOrderBill } from '../../utils/pdfGenerator';
+import { ROUTES } from '../../utils/constants';
 import { IoRefresh, IoDownload } from 'react-icons/io5';
 
 const UserOrderDetailsPage = () => {
@@ -170,7 +171,7 @@ const UserOrderDetailsPage = () => {
             <div>
               <p className="text-sm text-gray-600">Restaurant:</p>
               <p className="text-lg font-medium">
-                <Link to={`/restaurants/${order.restaurant.id}/articles`} className="link link-hover text-secondary">
+                <Link to={ROUTES.RESTAURANT_MENU.ARTICLES_DYNAMIC(order.restaurant.id)} className="link link-hover text-secondary">
                     {order.restaurant.name || `Restaurant ID: ${order.restaurant.id}`}
                 </Link>
               </p>
@@ -213,7 +214,7 @@ const UserOrderDetailsPage = () => {
       </div>
 
       <div className="mt-8 text-center">
-        <Link to="/user/orders" className="btn btn-outline btn-primary">Back to My Orders</Link>
+                    <Link to={ROUTES.USER.ORDERS} className="btn btn-outline btn-primary">Back to My Orders</Link>
       </div>
     </div>
   );

@@ -1,31 +1,26 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { STORAGE_KEYS } from '../utils/constants';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
-    const localData = localStorage.getItem('cartItems');
+    const localData = localStorage.getItem(STORAGE_KEYS.CART_ITEMS);
     return localData ? JSON.parse(localData) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    localStorage.setItem(STORAGE_KEYS.CART_ITEMS, JSON.stringify(cartItems));
   }, [cartItems]);
 
   const addToCart = useCallback((article, quantity = 1) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === article.id && item.restaurantId === article.restaurantId);
       if (existingItem) {
-        // Cannot add items from different restaurants to the same cart.
-        // For now, we assume an article implicitly carries its restaurantId or it's passed along.
-        // If the new article is from a different restaurant, we could clear the cart or show an error.
-        // For simplicity, let's assume the article object has a restaurantId.
-        // This logic needs to be robust: what if article.restaurantId is not present?
-        // For now, if cart is not empty and new item's restaurantId is different, clear cart.
+
 
         if (prevItems.length > 0 && prevItems[0].restaurantId !== article.restaurantId) {
-          // alert("You can only order from one restaurant at a time. Clearing cart.");
-          // For a better UX, this should be a more prominent notification/modal.
+
           return [{ ...article, quantity }]; 
         }
         return prevItems.map(item =>

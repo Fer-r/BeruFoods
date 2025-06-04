@@ -5,6 +5,7 @@ import LoadingFallback from '../../components/common/LoadingFallback.jsx';
 
 import useRestaurantOrderDetails from '../../features/restaurant/hooks/useRestaurantOrderDetails';
 import OrderStatusSelector from '../../features/restaurant/components/OrderStatusSelector';
+import { ROUTES } from '../../utils/constants';
 import { downloadOrderBill } from '../../utils/pdfGenerator';
 import { IoRefresh, IoDownload } from 'react-icons/io5';
 import { MdPerson, MdEmail, MdPhone } from 'react-icons/md';
@@ -272,7 +273,7 @@ const RestaurantOrderDetailsPage = () => {
       </div>
 
       <div className="mt-8 text-center">
-        <Link to="/restaurant/orders" className="btn btn-outline btn-primary">Back to Orders</Link>
+                    <Link to={ROUTES.RESTAURANT.ORDERS} className="btn btn-outline btn-primary">Back to Orders</Link>
       </div>
     </div>
   );

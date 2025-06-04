@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchDataFromEndpoint } from '../../../services/useApiService';
+import { API_ENDPOINTS } from '../../../utils/constants';
 import { useAuth } from '../../../context/AuthContext';
 import { useNotifications } from '../../../context/NotificationContext';
 
@@ -23,9 +24,8 @@ const useRestaurantOrderDetails = (orderId) => {
     setError(null);
     
     try {
-      // Fetch the order details
       const orderData = await fetchDataFromEndpoint(
-        `/orders/${orderId}`, 
+        API_ENDPOINTS.ORDERS.BY_ID(orderId), 
         'GET', 
         null, 
         true, 
@@ -34,22 +34,16 @@ const useRestaurantOrderDetails = (orderId) => {
       
       setOrder(orderData);
       
-      // If the order has items, fetch article details for those items
       if (orderData?.items && Array.isArray(orderData.items) && orderData.items.length > 0) {
         try {
-          // Get all article IDs from the order items
-          const articleIds = orderData.items.map(item => item.articleId);
-          
-          // Fetch restaurant's articles to get full details
           const articlesData = await fetchDataFromEndpoint(
-            '/articles/restaurant-owner',
+            API_ENDPOINTS.ARTICLES.RESTAURANT_OWNER,
             'GET',
             null,
             true,
             token
           );
           
-          // Create a map of articles by ID for quick lookup
           const articlesMap = {};
           if (articlesData?.items) {
             articlesData.items.forEach(article => {
@@ -57,27 +51,22 @@ const useRestaurantOrderDetails = (orderId) => {
             });
           }
           
-          // Enhance order items with full article details
           const enhancedItems = orderData.items.map(item => {
             const articleDetail = articlesMap[item.articleId];
             return {
               ...item,
               articleDetail: articleDetail || null,
-              // Include commonly needed article properties directly in the item
               articleName: articleDetail?.name || `Article ID: ${item.articleId}`,
               articlePrice: articleDetail?.price || 0,
               articleDescription: articleDetail?.description || '',
               articleImageUrl: articleDetail?.imageUrl || '',
-              // Calculate line total
               lineTotal: articleDetail?.price ? (parseFloat(articleDetail.price) * item.quantity) : 0
             };
           });
           
-          // Create enhanced order object with enriched items
           const enhancedOrder = {
             ...orderData,
             items: enhancedItems,
-            // Add summary information
             totalItems: enhancedItems.reduce((total, item) => total + item.quantity, 0),
             calculatedTotal: enhancedItems.reduce((total, item) => total + item.lineTotal, 0)
           };
@@ -86,7 +75,6 @@ const useRestaurantOrderDetails = (orderId) => {
           
         } catch (articleError) {
           console.warn('Failed to fetch article details for order items:', articleError);
-          // Still set the basic order even if article details fail
           setOrderWithArticleDetails(orderData);
         }
       } else {
@@ -102,23 +90,20 @@ const useRestaurantOrderDetails = (orderId) => {
     }
   }, [orderId, token]);
 
-  // Update order status function
   const updateOrderStatus = useCallback(async (newStatus) => {
     try {
       await fetchDataFromEndpoint(
-        `/orders/${orderId}`,
+        API_ENDPOINTS.ORDERS.BY_ID(orderId),
         'PATCH',
         { status: newStatus },
-        true // isProtected
+        true
       );
 
-      // Update the order in the local state
       setOrder(prevOrder => prevOrder ? ({
         ...prevOrder,
         status: newStatus
       }) : null);
       
-      // Also update the enhanced order
       setOrderWithArticleDetails(prevOrder => prevOrder ? ({
         ...prevOrder,
         status: newStatus
@@ -131,7 +116,6 @@ const useRestaurantOrderDetails = (orderId) => {
     }
   }, [orderId, token]);
 
-  // Initial fetch when the component mounts or orderId/token changes
   useEffect(() => {
     fetchOrderDetails();
   }, [fetchOrderDetails]);
@@ -145,7 +129,6 @@ const useRestaurantOrderDetails = (orderId) => {
    * or other order information is updated.
    */
   useEffect(() => {
-    // Only process notifications if we have loaded order and restaurant ID
     if (!entity?.restaurantId || loading || !order || persistentNotifications.length === 0) {
       return;
     }
@@ -172,7 +155,6 @@ const useRestaurantOrderDetails = (orderId) => {
       return updated;
     });
 
-    // Handle status updates
     const statusUpdates = newOrderNotifications.filter(
       notification => notification.type === 'status_update' && notification.status
     );
@@ -198,7 +180,6 @@ const useRestaurantOrderDetails = (orderId) => {
       }
     }
     
-    // Handle general order updates that may require a full refresh
     const orderUpdates = newOrderNotifications.filter(
       notification => notification.type === 'order_update'
     );
@@ -208,13 +189,10 @@ const useRestaurantOrderDetails = (orderId) => {
     }
   }, [persistentNotifications, entity, order, orderId, loading, fetchOrderDetails, processedNotifications]);
 
-  // Add cleanup mechanism to prevent memory leaks from accumulating notifications
   useEffect(() => {
-    // Clean up processed notifications when they exceed a certain threshold
     if (processedNotifications.size > 50) {
       setProcessedNotifications(prev => {
         const newSet = new Set();
-        // Convert to array, get the most recent 20 notifications
         const recentNotifications = Array.from(prev).slice(-20);
         recentNotifications.forEach(id => newSet.add(id));
         return newSet;
@@ -222,7 +200,6 @@ const useRestaurantOrderDetails = (orderId) => {
     }
   }, [processedNotifications.size]);
 
-  // Manual refresh function
   const refreshOrder = useCallback(() => {
     fetchOrderDetails();
   }, [fetchOrderDetails]);

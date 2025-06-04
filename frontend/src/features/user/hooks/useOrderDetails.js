@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchDataFromEndpoint } from '../../../services/useApiService';
+import { API_ENDPOINTS } from '../../../utils/constants';
 import { useAuth } from '../../../context/AuthContext';
 import { useNotifications } from '../../../context/NotificationContext';
 
@@ -12,7 +13,6 @@ const useOrderDetails = (orderId) => {
   const [error, setError] = useState(null);
   const [processedNotifications, setProcessedNotifications] = useState(new Set());
 
-  // Fetch order details from the API
   const fetchOrderDetails = useCallback(async () => {
     if (!orderId || !token) {
       setLoading(false);
@@ -24,7 +24,7 @@ const useOrderDetails = (orderId) => {
     
     try {
       const orderData = await fetchDataFromEndpoint(
-        `/orders/${orderId}`, 
+        API_ENDPOINTS.ORDERS.BY_ID(orderId), 
         'GET', 
         null, 
         true, 
@@ -38,7 +38,6 @@ const useOrderDetails = (orderId) => {
     }
   }, [orderId, token]);
 
-  // Initial fetch when the component mounts or orderId/token changes
   useEffect(() => {
     fetchOrderDetails();
   }, [fetchOrderDetails]);
@@ -52,7 +51,6 @@ const useOrderDetails = (orderId) => {
    * or other order information is updated.
    */
   useEffect(() => {
-    // Only process notifications if we have loaded order and user ID
     if (!entity?.userId || loading || !order || persistentNotifications.length === 0) {
       return;
     }
@@ -79,7 +77,6 @@ const useOrderDetails = (orderId) => {
       return updated;
     });
 
-    // Handle status updates
     const statusUpdates = newOrderNotifications.filter(
       notification => notification.type === 'status_update' && notification.status
     );
@@ -100,7 +97,6 @@ const useOrderDetails = (orderId) => {
       }
     }
     
-    // Handle general order updates that may require a full refresh
     const orderUpdates = newOrderNotifications.filter(
       notification => notification.type === 'order_update'
     );
@@ -110,13 +106,10 @@ const useOrderDetails = (orderId) => {
     }
   }, [persistentNotifications, entity, order, orderId, loading, fetchOrderDetails, processedNotifications]);
 
-  // Add cleanup mechanism to prevent memory leaks from accumulating notifications
   useEffect(() => {
-    // Clean up processed notifications when they exceed a certain threshold
     if (processedNotifications.size > 50) {
       setProcessedNotifications(prev => {
         const newSet = new Set();
-        // Convert to array, get the most recent 20 notifications
         const recentNotifications = Array.from(prev).slice(-20);
         recentNotifications.forEach(id => newSet.add(id));
         return newSet;
@@ -124,7 +117,6 @@ const useOrderDetails = (orderId) => {
     }
   }, [processedNotifications.size]);
 
-  // Manual refresh function
   const refreshOrder = useCallback(() => {
     fetchOrderDetails();
   }, [fetchOrderDetails]);

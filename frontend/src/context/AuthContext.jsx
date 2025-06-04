@@ -1,16 +1,17 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import { fetchDataFromEndpoint, isAuthorized } from "../services/useApiService";
 import { jwtDecode } from "jwt-decode";
+import { API_ENDPOINTS, STORAGE_KEYS } from "../utils/constants";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [entity, setEntity] = useState(() => {
-    const storedEntity = localStorage.getItem("authenticatedEntity");
+    const storedEntity = localStorage.getItem(STORAGE_KEYS.AUTHENTICATED_ENTITY);
     return storedEntity ? JSON.parse(storedEntity) : null;
   });
 
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [token, setToken] = useState(localStorage.getItem(STORAGE_KEYS.TOKEN) || null);
 
   const [error, setError] = useState(null);
 
@@ -64,8 +65,8 @@ export const AuthProvider = ({ children }) => {
         if (entityDataToStore) {
           setEntity(entityDataToStore);
           setToken(data.token);
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("authenticatedEntity", JSON.stringify(entityDataToStore));
+          localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+          localStorage.setItem(STORAGE_KEYS.AUTHENTICATED_ENTITY, JSON.stringify(entityDataToStore));
           resultEntityData = entityDataToStore;
         } else {
           const errorMessage = "Token did not contain valid or complete entity information.";
@@ -88,20 +89,20 @@ export const AuthProvider = ({ children }) => {
   }, [setEntity, setToken, setError, setLoading]);
 
   const loginUser = useCallback(async ({ email, password }) => {
-    return handleLogin("/login", { email, password });
+    return handleLogin(API_ENDPOINTS.AUTH.LOGIN_USER, { email, password });
   }, [handleLogin]);
 
   const loginRestaurant = useCallback(async ({ email, password }) => {
-    return handleLogin("/restaurant/login", { email, password });
+    return handleLogin(API_ENDPOINTS.AUTH.LOGIN_RESTAURANT, { email, password });
   }, [handleLogin]);
 
   const logOut = useCallback(() => {
     setEntity(null);
     setToken(null);
     setError(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("authenticatedEntity");
-    localStorage.removeItem("cart");
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.AUTHENTICATED_ENTITY);
+    localStorage.removeItem(STORAGE_KEYS.CART_ITEMS);
   }, [setEntity, setToken, setError]);
 
   const isRestaurant = isAuthenticated() && entity?.roles?.includes('ROLE_RESTAURANT');

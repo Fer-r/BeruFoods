@@ -6,6 +6,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import useRestaurantOrders from '../../features/restaurant/hooks/useRestaurantOrders';
 
 import useRestaurantOwnedArticles from '../../features/restaurant/hooks/useRestaurantOwnedArticles';
+import { ROUTES } from '../../utils/constants';
 
 /**
  * @component RestaurantDashboard
@@ -110,7 +111,7 @@ const RestaurantDashboard = () => {
         <div className="alert alert-warning mb-6 shadow-md">
           <FaExclamationTriangle className="flex-shrink-0" />
           <span>You have {articleStats.unavailable} unavailable menu items. Consider updating your menu.</span>
-          <Link to="/restaurant/articles" className="btn btn-sm btn-outline">
+          <Link to={ROUTES.RESTAURANT.ARTICLES} className="btn btn-sm btn-outline">
             Manage Menu
           </Link>
         </div>
@@ -157,19 +158,19 @@ const RestaurantDashboard = () => {
       <section className="mb-8">
         <h2 className="text-2xl font-semibold mb-4 text-base-content">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <Link to="/restaurant/articles/new" className="btn btn-primary h-auto py-4 flex flex-col items-center justify-center shadow-md">
+          <Link to={ROUTES.RESTAURANT.ARTICLES_NEW} className="btn btn-primary h-auto py-4 flex flex-col items-center justify-center shadow-md">
             <FaPlusSquare className="text-2xl mb-2" /> 
             <span>Add Menu Item</span>
           </Link>
-          <Link to="/restaurant/orders" className="btn btn-secondary h-auto py-4 flex flex-col items-center justify-center shadow-md">
+          <Link to={ROUTES.RESTAURANT.ORDERS} className="btn btn-secondary h-auto py-4 flex flex-col items-center justify-center shadow-md">
             <FaEye className="text-2xl mb-2" /> 
             <span>View All Orders</span>
           </Link>
-          <Link to="/restaurant/articles" className="btn btn-accent h-auto py-4 flex flex-col items-center justify-center shadow-md">
+          <Link to={ROUTES.RESTAURANT.ARTICLES} className="btn btn-accent h-auto py-4 flex flex-col items-center justify-center shadow-md">
             <FaUtensils className="text-2xl mb-2" /> 
             <span>Manage Menu</span>
           </Link>
-          <Link to="/restaurant/profile" className="btn btn-info h-auto py-4 flex flex-col items-center justify-center shadow-md">
+          <Link to={ROUTES.RESTAURANT.PROFILE} className="btn btn-info h-auto py-4 flex flex-col items-center justify-center shadow-md">
             <FaEye className="text-2xl mb-2" /> 
             <span>Restaurant Profile</span>
           </Link>
@@ -184,7 +185,7 @@ const RestaurantDashboard = () => {
             <h2 className="text-2xl font-semibold text-base-content flex items-center">
               <FaClipboardList className="mr-3 text-info" /> Recent Orders
             </h2>
-            <Link to="/restaurant/orders" className="btn btn-sm btn-outline btn-primary">
+            <Link to={ROUTES.RESTAURANT.ORDERS} className="btn btn-sm btn-outline btn-primary">
               View All
             </Link>
           </div>
@@ -218,7 +219,7 @@ const RestaurantDashboard = () => {
                       </span>
                     </div>
                     <div className="card-actions justify-end mt-2">
-                      <Link to={`/restaurant/orders/${order.id}`} className="btn btn-xs btn-outline btn-primary">
+                      <Link to={ROUTES.RESTAURANT.ORDER_DETAILS_DYNAMIC(order.id)} className="btn btn-xs btn-outline btn-primary">
                         View Details
                       </Link>
                       {order.status?.toLowerCase() === 'pending' && (
@@ -249,7 +250,7 @@ const RestaurantDashboard = () => {
             <h2 className="text-2xl font-semibold text-base-content flex items-center">
               <FaUtensils className="mr-3 text-success" /> Menu Status
             </h2>
-            <Link to="/restaurant/articles" className="btn btn-sm btn-outline btn-secondary">
+            <Link to={ROUTES.RESTAURANT.ARTICLES} className="btn btn-sm btn-outline btn-secondary">
               Manage Menu
             </Link>
           </div>
@@ -284,7 +285,7 @@ const RestaurantDashboard = () => {
                       </div>
                     </div>
                     <div className="mt-4">
-                      <Link to="/restaurant/articles" className="btn btn-sm btn-warning">
+                      <Link to={ROUTES.RESTAURANT.ARTICLES} className="btn btn-sm btn-warning">
                         Update Availability
                       </Link>
                     </div>
@@ -301,7 +302,7 @@ const RestaurantDashboard = () => {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <Link to="/restaurant/articles/new" className="btn btn-sm btn-primary">
+                    <Link to={ROUTES.RESTAURANT.ARTICLES_NEW} className="btn btn-sm btn-primary">
                       Add New Item
                     </Link>
                   </div>

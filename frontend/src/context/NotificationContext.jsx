@@ -2,9 +2,10 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 import { useAuth } from './AuthContext';
 import { fetchDataFromEndpoint } from '../services/useApiService';
 import { toast } from 'sonner';
+import { API_ENDPOINTS, NOTIFICATION_TYPES } from '../utils/constants';
 
 const NotificationContext = createContext();
-const MERCURE_PUBLIC_URL = 'https://localhost/.well-known/mercure';
+const MERCURE_PUBLIC_URL = import.meta.env.VITE_MERCURE_PUBLIC_URL;
 
 export const NotificationProvider = ({ children }) => {
   const { entity, isAuthenticated, token: apiToken } = useAuth();
@@ -24,10 +25,7 @@ export const NotificationProvider = ({ children }) => {
     
     setLoading(true);
     try {
-      let url = `/notifications?page=${page}&limit=15`;
-      if (readStatus !== null) {
-        url += `&read=${readStatus}`;
-      }
+      const url = API_ENDPOINTS.NOTIFICATIONS.LIST(page, 15, readStatus);
       
       const result = await fetchDataFromEndpoint(url, 'GET', null, true);
       setPersistentNotifications(result.items || []);
@@ -43,7 +41,7 @@ export const NotificationProvider = ({ children }) => {
     if (!isAuthenticated() || !entity) return;
     
     try {
-      const result = await fetchDataFromEndpoint('/notifications/unread-count', 'GET', null, true);
+      const result = await fetchDataFromEndpoint(API_ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT, 'GET', null, true);
       setUnreadCount(result.count || 0);
     } catch (err) {
       console.error("Error fetching unread count:", err);
@@ -59,28 +57,28 @@ export const NotificationProvider = ({ children }) => {
     let message = "Notification received.";
     if (data.message) {
       message = data.message;
-    } else if (data.type === 'new_order' && data.orderId) {
+    } else if (data.type === NOTIFICATION_TYPES.NEW_ORDER && data.orderId) {
       message = `New order #${data.orderId} received!`;
-    } else if (data.type === 'status_update' && data.orderId && data.status) {
+    } else if (data.type === NOTIFICATION_TYPES.STATUS_UPDATE && data.orderId && data.status) {
       message = `Order #${data.orderId} status changed to: ${data.status}`;
     } else if (data.orderId) {
       message = `Update for order #${data.orderId}.`;
     }
 
     switch (data.type) {
-      case 'new_order':
+      case NOTIFICATION_TYPES.NEW_ORDER:
         toast.success(message, {
           description: 'Check your notifications for details',
           duration: 5000,
         });
         break;
-      case 'status_update':
+      case NOTIFICATION_TYPES.STATUS_UPDATE:
         toast.info(message, {
           description: 'Order status has been updated',
           duration: 4000,
         });
         break;
-      case 'order_update':
+      case NOTIFICATION_TYPES.ORDER_UPDATE:
         toast.info(message, {
           description: 'Order information updated',
           duration: 4000,
@@ -99,7 +97,7 @@ export const NotificationProvider = ({ children }) => {
       if (isAuthenticated() && entity && !mercureToken && apiToken) {
         try {
           setError(null);
-          const tokenData = await fetchDataFromEndpoint('/auth/mercure_token', 'GET', null, true);
+          const tokenData = await fetchDataFromEndpoint(API_ENDPOINTS.AUTH.MERCURE_TOKEN, 'GET', null, true);
           if (tokenData && tokenData.mercureToken) {
             setMercureToken(tokenData.mercureToken);
           } else {
@@ -125,9 +123,9 @@ export const NotificationProvider = ({ children }) => {
 
     let topics = [];
     if (entity.roles?.includes('ROLE_RESTAURANT') && entity.restaurantId) {
-      topics.push(`/orders/restaurant/${entity.restaurantId}`);
+      topics.push(API_ENDPOINTS.MERCURE_TOPICS.RESTAURANT_ORDERS(entity.restaurantId));
     } else if (entity.roles?.includes('ROLE_USER') && entity.userId) {
-      topics.push(`/orders/user/${entity.userId}`);
+      topics.push(API_ENDPOINTS.MERCURE_TOPICS.USER_ORDERS(entity.userId));
     }
 
     if (topics.length === 0) {
@@ -178,7 +176,7 @@ export const NotificationProvider = ({ children }) => {
   
   const markAsRead = useCallback(async (notificationId) => {
     try {
-      await fetchDataFromEndpoint(`/notifications/${notificationId}/read`, 'PUT', null, true);
+      await fetchDataFromEndpoint(API_ENDPOINTS.NOTIFICATIONS.MARK_READ(notificationId), 'PUT', null, true);
       
       setPersistentNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
@@ -194,7 +192,7 @@ export const NotificationProvider = ({ children }) => {
   
   const markAllAsRead = useCallback(async () => {
     try {
-      await fetchDataFromEndpoint('/notifications/read-all', 'PUT', null, true);
+      await fetchDataFromEndpoint(API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ, 'PUT', null, true);
       
       setPersistentNotifications(prev =>
         prev.map(n => ({ ...n, isRead: true }))

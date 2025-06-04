@@ -1,7 +1,5 @@
 import { fetchDataFromEndpoint } from '../../../services/useApiService'; // Import the core fetch utility
-
-const API_BASE_URL = '/articles'; // Keep for specific article actions like getById, create, update, delete
-const RESTAURANT_OWNER_ARTICLES_URL = '/articles/restaurant-owner'; // New endpoint for owned articles
+import { API_ENDPOINTS } from '../../../utils/constants';
 
 /**
  * Fetches articles for the currently logged-in restaurant owner with pagination.
@@ -11,12 +9,11 @@ const RESTAURANT_OWNER_ARTICLES_URL = '/articles/restaurant-owner'; // New endpo
  * @returns {Promise<Object>} The API response with articles and pagination info.
  */
 const getRestaurantArticles = (page = 1, limit = 10) => {
-  // restaurantId is determined by the backend from the authenticated user
   const queryParams = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
   });
-  return fetchDataFromEndpoint(`${RESTAURANT_OWNER_ARTICLES_URL}?${queryParams.toString()}`, 'GET', null, true);
+  return fetchDataFromEndpoint(`${API_ENDPOINTS.ARTICLES.RESTAURANT_OWNER}?${queryParams.toString()}`, 'GET', null, true);
 };
 
 /**
@@ -25,7 +22,7 @@ const getRestaurantArticles = (page = 1, limit = 10) => {
  * @returns {Promise<Object>} The API response with the article data.
  */
 const getArticleById = (articleId) => {
-  return fetchDataFromEndpoint(`${API_BASE_URL}/${articleId}`, 'GET', null, true); // Auth might be true if details are sensitive
+  return fetchDataFromEndpoint(API_ENDPOINTS.ARTICLES.BY_ID(articleId), 'GET', null, true); // Auth might be true if details are sensitive
 };
 
 /**
@@ -34,7 +31,7 @@ const getArticleById = (articleId) => {
  * @returns {Promise<Object>} The API response with the created article data.
  */
 const createArticle = (formData) => {
-  return fetchDataFromEndpoint(API_BASE_URL, 'POST', formData, true);
+  return fetchDataFromEndpoint(API_ENDPOINTS.ARTICLES.BASE, 'POST', formData, true);
 };
 
 /**
@@ -44,7 +41,7 @@ const createArticle = (formData) => {
  * @returns {Promise<Object>} The API response.
  */
 const updateArticle = (articleId, formData) => {
-  return fetchDataFromEndpoint(`${API_BASE_URL}/${articleId}`, 'POST', formData, true);
+  return fetchDataFromEndpoint(API_ENDPOINTS.ARTICLES.BY_ID(articleId), 'POST', formData, true);
 };
 
 /**
@@ -53,7 +50,7 @@ const updateArticle = (articleId, formData) => {
  * @returns {Promise<Object>} The API response.
  */
 const deleteArticle = (articleId) => {
-  return fetchDataFromEndpoint(`${API_BASE_URL}/${articleId}`, 'DELETE', null, true);
+  return fetchDataFromEndpoint(API_ENDPOINTS.ARTICLES.BY_ID(articleId), 'DELETE', null, true);
 };
 
 // This function would be for fetching articles publicly, e.g., for a customer view.
@@ -68,7 +65,7 @@ const getPublicArticlesByRestaurant = (restaurantId, page = 1, limit = 10, avail
         queryParams.append('available', 'false'); 
     } // If availableOnly is true, we rely on the backend default which is now available=true
 
-    return fetchDataFromEndpoint(`${API_BASE_URL}?${queryParams.toString()}`, 'GET', null, false); // Public, so auth is false
+    return fetchDataFromEndpoint(`${API_ENDPOINTS.ARTICLES.BASE}?${queryParams.toString()}`, 'GET', null, false); // Public, so auth is false
 }
 
 const articleService = {

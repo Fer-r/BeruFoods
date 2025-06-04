@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchDataFromEndpoint } from '../../../services/useApiService';
+import { API_ENDPOINTS, PAGINATION } from '../../../utils/constants';
 import { useAuth } from '../../../context/AuthContext';
 import { useNotifications } from '../../../context/NotificationContext';
 
-// Helper function to convert date filter to date parameters
 const getDateFilterParams = (dateFilter) => {
   const today = new Date();
   let dateFrom = null;
@@ -43,12 +43,12 @@ const getDateFilterParams = (dateFilter) => {
   return { dateFrom, dateTo };
 };
 
-const useRestaurantOrders = (initialPageSize = 10) => {
+const useRestaurantOrders = (initialPageSize = PAGINATION.DEFAULT_LIMIT) => {
   const { token, entity } = useAuth();
   const { persistentNotifications } = useNotifications();
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false); // For subsequent page loads
-  const [initialLoading, setInitialLoading] = useState(true); // For the very first load
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -68,18 +68,16 @@ const useRestaurantOrders = (initialPageSize = 10) => {
     if (currentPage === 1) {
         setInitialLoading(true);
     } else {
-        setLoading(true); // loading is for subsequent fetches
+        setLoading(true);
     }
     setError(null);
 
     try {
-      // Build query params
       let queryParams = `page=${currentPage}&limit=${initialPageSize}`;
       if (statusFilter !== 'all') {
         queryParams += `&status=${statusFilter}`;
       }
 
-      // Add date filtering
       if (dateFilter !== 'all') {
         const dateParams = getDateFilterParams(dateFilter);
         if (dateParams.dateFrom) {
@@ -90,12 +88,11 @@ const useRestaurantOrders = (initialPageSize = 10) => {
         }
       }
 
-      // The backend OrderController's index action handles pagination and restaurant-specific filtering
       const data = await fetchDataFromEndpoint(
-        `/orders?${queryParams}`,
+        API_ENDPOINTS.ORDERS.RESTAURANT_ORDERS(queryParams),
         'GET',
         null,
-        true // isProtected
+        true
       );
 
       if (data && data.items) {
@@ -118,12 +115,10 @@ const useRestaurantOrders = (initialPageSize = 10) => {
   }, [token, initialPageSize]);
 
   useEffect(() => {
-    // Fetch initial orders when the component mounts, token changes, or filters change
     fetchOrders(1, statusFilter, dateFilter);
-  }, [fetchOrders, statusFilter, dateFilter]); // fetchOrders is memoized and includes token in its deps
+  }, [fetchOrders, statusFilter, dateFilter]);
 
   const fetchMoreOrders = () => {
-    // Only fetch more if there are more orders and not currently loading (either initial or subsequent)
     if (hasMore && !loading && !initialLoading) {
       fetchOrders(page, statusFilter, dateFilter);
     }
@@ -131,21 +126,20 @@ const useRestaurantOrders = (initialPageSize = 10) => {
 
   const refreshOrders = useCallback(() => {
     setPage(1);
-    setOrders([]); // Clear existing orders
-    setHasMore(true); // Reset hasMore
-    fetchOrders(1, statusFilter, dateFilter); // Fetch from the first page
+    setOrders([]);
+    setHasMore(true);
+    fetchOrders(1, statusFilter, dateFilter);
   }, [fetchOrders, statusFilter, dateFilter]);
 
   const updateOrderStatus = useCallback(async (orderId, newStatus) => {
     try {
       await fetchDataFromEndpoint(
-        `/orders/${orderId}`,
+        API_ENDPOINTS.ORDERS.BY_ID(orderId),
         'PATCH',
         { status: newStatus },
-        true // isProtected
+        true
       );
 
-      // Update the order in the local state
       setOrders(prevOrders => 
         prevOrders.map(order => 
           order.id === orderId 
@@ -164,17 +158,15 @@ const useRestaurantOrders = (initialPageSize = 10) => {
   const filterOrdersByStatus = useCallback((status) => {
     setStatusFilter(status);
     setPage(1);
-    setOrders([]); // Clear existing orders
-    setHasMore(true); // Reset hasMore
-    // fetchOrders will be called by the useEffect when statusFilter changes
+    setOrders([]);
+    setHasMore(true);
   }, []);
 
   const filterOrdersByDate = useCallback((dateFilter) => {
     setDateFilter(dateFilter);
     setPage(1);
-    setOrders([]); // Clear existing orders
-    setHasMore(true); // Reset hasMore
-    // fetchOrders will be called by the useEffect when dateFilter changes
+    setOrders([]);
+    setHasMore(true);
   }, []);
 
   /**
@@ -186,12 +178,10 @@ const useRestaurantOrders = (initialPageSize = 10) => {
    * the entire list or updating specific orders in-place.
    */
   useEffect(() => {
-    // Only process notifications if we have loaded orders and have restaurant ID
     if (!entity?.restaurantId || initialLoading || persistentNotifications.length === 0) {
       return;
     }
 
-    // Find notifications about orders that we haven't processed yet
     const newOrderNotifications = persistentNotifications
       .filter(notification =>
         ['new_order', 'status_update', 'order_update'].includes(notification.type) &&
@@ -202,8 +192,6 @@ const useRestaurantOrders = (initialPageSize = 10) => {
       return;
     }
 
-    // Track which notifications we've processed to avoid infinite loops
-    // Update our processed notifications set
     setProcessedNotifications(prev => {
       const updated = new Set(prev);
       newOrderNotifications.forEach(notification => {
@@ -212,17 +200,15 @@ const useRestaurantOrders = (initialPageSize = 10) => {
       return updated;
     });
 
-    // Handle new order notifications (only need to refresh once even if multiple)
     const hasNewOrders = newOrderNotifications.some(
       notification => notification.type === 'new_order'
     );
     
     if (hasNewOrders) {
       refreshOrders();
-      return; // Skip further processing as refreshOrders will get everything
+      return;
     }
     
-    // Handle status updates without refreshing the whole list
     const statusUpdates = newOrderNotifications.filter(
       notification => notification.type === 'status_update' && notification.orderId
     );
@@ -235,12 +221,10 @@ const useRestaurantOrders = (initialPageSize = 10) => {
         }
       });
       
-      // Check which orders we need to update and which we need to fetch
       const orderIdsToUpdate = Object.keys(latestStatusByOrderId);
       const existingOrderIds = new Set(orders.map(order => order.id));
       const needsRefresh = orderIdsToUpdate.some(orderId => {
         const orderStatus = latestStatusByOrderId[orderId];
-        // Need refresh if: order isn't in our list AND (we're showing all statuses OR order's new status matches our filter)
         return !existingOrderIds.has(orderId) &&
                (statusFilter === 'all' || statusFilter === orderStatus);
       });
@@ -248,7 +232,6 @@ const useRestaurantOrders = (initialPageSize = 10) => {
       if (needsRefresh) {
         refreshOrders();
       } else {
-        // Just update the statuses of orders we already have
         setOrders(prevOrders =>
           prevOrders.map(order => {
             if (orderIdsToUpdate.includes(order.id) && latestStatusByOrderId[order.id]) {
@@ -261,14 +244,10 @@ const useRestaurantOrders = (initialPageSize = 10) => {
     }
   }, [persistentNotifications, entity, orders, statusFilter, refreshOrders, initialLoading]);
 
-  // Add cleanup mechanism to prevent memory leaks from accumulating notifications
   useEffect(() => {
-    // Clean up processed notifications when they exceed a certain threshold
-    // Only keep the most recent 100 notification IDs to prevent unbounded growth
     if (processedNotifications.size > 100) {
       setProcessedNotifications(prev => {
         const newSet = new Set();
-        // Convert to array, get the most recent 50 notifications
         const recentNotifications = Array.from(prev).slice(-50);
         recentNotifications.forEach(id => newSet.add(id));
         return newSet;

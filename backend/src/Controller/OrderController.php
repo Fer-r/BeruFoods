@@ -61,7 +61,7 @@ final class OrderController extends AbstractController
 
         // Status filtering
         if ($status = $request->query->get('status')) {
-            $validStatuses = ['pending', 'preparing', 'delivered', 'cancelled'];
+            $validStatuses = ['pending', 'preparing', 'ready', 'completed', 'cancelled'];
             if (in_array($status, $validStatuses)) {
                 $qb->andWhere('o.status = :status')->setParameter('status', $status);
             }
@@ -216,7 +216,8 @@ final class OrderController extends AbstractController
 
         $allowedTransitions = [
             'pending' => ['preparing', 'cancelled'],
-            'preparing' => ['delivered', 'cancelled']
+            'preparing' => ['ready', 'cancelled'],
+            'ready' => ['completed', 'cancelled']
         ];
 
         if (!isset($allowedTransitions[$currentState]) || !in_array($newState, $allowedTransitions[$currentState])) {

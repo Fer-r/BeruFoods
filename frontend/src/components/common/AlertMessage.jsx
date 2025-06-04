@@ -38,26 +38,27 @@ const alertTypeConfig = {
  * @param {string} [props.type='info'] - The type of alert, which determines its styling and icon.
  *                                       Valid types are 'error', 'success', 'warning', 'info'.
  *                                       Defaults to 'info'.
+ * @param {string} [props.className=''] - Additional CSS classes to apply to the alert container.
  */
-const AlertMessage = ({ message, type = 'info' }) => {
+const AlertMessage = ({ message, type = 'info', className = '' }) => {
   if (!message) return null;
 
   // Use the provided type or default to 'info' if the type is invalid
   const config = alertTypeConfig[type] || alertTypeConfig.info;
 
-  const alertClasses = `alert shadow-lg ${config.className} text-sm p-3 mb-4`;
+  const alertClasses = `alert shadow-lg ${config.className} text-sm p-3 mb-4 ${className}`;
   const IconComponent = config.Icon;
 
   return (
-    <div className={alertClasses}>
+    <div className={alertClasses} role="alert">
       <div className="flex items-center">
         {IconComponent && (
           <IconComponent className="h-5 w-5 mr-2 flex-shrink-0" />
         )}
-        <span>{message}</span>
+        <span className="text-current">{message}</span>
       </div>
     </div>
   );
 };
 
-export default AlertMessage; 
+export default AlertMessage;

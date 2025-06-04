@@ -6,6 +6,7 @@ import useRestaurantArticles from '../../features/restaurant/hooks/useRestaurant
 import useOrderDetails from '../../features/user/hooks/useOrderDetails';
 import { downloadOrderBill } from '../../utils/pdfGenerator';
 import { IoRefresh, IoDownload } from 'react-icons/io5';
+
 const UserOrderDetailsPage = () => {
   const { orderId } = useParams();
   const [wasUpdated, setWasUpdated] = useState(false);
@@ -84,6 +85,30 @@ const UserOrderDetailsPage = () => {
   if (orderError && !order) return <AlertMessage type="error" message={orderError} />;
   if (!order) return <AlertMessage type="info" message="Order not found." />;
 
+  // Helper function to get status display text
+  const getStatusText = (status) => {
+    const statusMap = {
+      'pending': 'Pendiente',
+      'preparing': 'Preparando',
+      'ready': 'Listo para recoger',
+      'completed': 'Completado',
+      'cancelled': 'Cancelado'
+    };
+    return statusMap[status] || status;
+  };
+
+  // Helper function to get status badge class
+  const getStatusBadgeClass = (status) => {
+    const classMap = {
+      'pending': 'badge-warning',
+      'preparing': 'badge-info',
+      'ready': 'badge-accent',
+      'completed': 'badge-success',
+      'cancelled': 'badge-error'
+    };
+    return classMap[status] || 'badge-ghost';
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -117,25 +142,25 @@ const UserOrderDetailsPage = () => {
       )}
       
       {pdfError && (
-        <AlertMessage type="error" message={pdfError} className="mb-4" />
+        <AlertMessage type="error\" message={pdfError} className="mb-4" />
       )}
       
-      {orderError && order && <AlertMessage type="warning" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
-      {articlesError && <AlertMessage type="warning" message={`Could not load full article information: ${articlesError}`} className="mb-4" />}
+      {orderError && order && <AlertMessage type="warning\" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
+      {articlesError && <AlertMessage type="warning\" message={`Could not load full article information: ${articlesError}`} className="mb-4" />}
 
       <div className={`bg-base-100 shadow-xl rounded-lg p-6 mb-6 ${wasUpdated ? 'border-2 border-success transition-all duration-700' : ''}`}>
         <h2 className="text-xl font-semibold mb-3">Order #{order.id}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-sm text-gray-600">Status:</p>
-            <p className={`text-lg font-medium badge badge-lg ${
-              order.status === 'pending' ? 'badge-warning' : 
-              order.status === 'preparing' ? 'badge-info' : 
-              order.status === 'delivered' ? 'badge-success' : 
-              order.status === 'cancelled' ? 'badge-error' : 'badge-ghost'
-            }`}>
-              {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'N/A'}
+            <p className={`text-lg font-medium badge badge-lg ${getStatusBadgeClass(order.status)}`}>
+              {getStatusText(order.status)}
             </p>
+            {order.status === 'ready' && (
+              <p className="text-sm text-accent mt-2">
+                Your order is ready for pickup at the restaurant!
+              </p>
+            )}
           </div>
           <div>
             <p className="text-sm text-gray-600">Order Date:</p>
@@ -153,7 +178,7 @@ const UserOrderDetailsPage = () => {
           )}
           <div>
             <p className="text-sm text-gray-600">Total Price:</p>
-            <p className="text-lg font-bold text-primary">€{parseFloat(order.total_price).toFixed(2)}</p>
+            <p className="text-lg font-bold text-primary">{parseFloat(order.total_price).toFixed(2)}€</p>
           </div>
         </div>
       </div>
@@ -175,7 +200,7 @@ const UserOrderDetailsPage = () => {
                   </div>
                   {articleDetail && (
                     <p className="text-md font-medium">
-                      Current price: €{(parseFloat(articleDetail.price) * item.quantity).toFixed(2)}
+                      Current price: {(parseFloat(articleDetail.price) * item.quantity).toFixed(2)}€
                     </p>
                   )}
                 </li>
@@ -195,4 +220,3 @@ const UserOrderDetailsPage = () => {
 };
 
 export default UserOrderDetailsPage;
-

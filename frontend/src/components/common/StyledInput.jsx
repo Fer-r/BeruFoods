@@ -92,4 +92,4 @@ const StyledInput = ({
   );
 };
 
-export default StyledInput; 
+export default StyledInput;

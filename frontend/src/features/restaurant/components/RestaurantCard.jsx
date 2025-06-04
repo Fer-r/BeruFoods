@@ -1,5 +1,20 @@
 import { useNavigate } from 'react-router';
 
+/**
+ * RestaurantCard displays a restaurant in a card format.
+ * It shows the restaurant's image, name, cuisine types, and opening hours.
+ * Clicking the card navigates to the restaurant's menu page.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.restaurant - The restaurant data to display
+ * @param {number} props.restaurant.id - Unique identifier for the restaurant
+ * @param {string} props.restaurant.name - Name of the restaurant
+ * @param {string} [props.restaurant.imageUrl] - Optional URL to the restaurant's image
+ * @param {Array} [props.restaurant.foodTypes] - Optional array of food type objects
+ * @param {string} [props.restaurant.openingTime] - Optional opening time string
+ * @param {string} [props.restaurant.closingTime] - Optional closing time string
+ * @returns {JSX.Element|null} The rendered restaurant card or null if restaurant is invalid
+ */
 const RestaurantCard = ({ restaurant }) => {
   const navigate = useNavigate();
 
@@ -11,7 +26,7 @@ const RestaurantCard = ({ restaurant }) => {
 
   return (
     <div 
-      className="card card-compact bg-base-100 shadow-md hover:shadow-lg transition-shadow group w-full h-full flex flex-col cursor-pointer"
+      className="card card-compact bg-base-100 shadow-md hover:shadow-lg transition-shadow group w-full h-full flex flex-col cursor-pointer restaurant-card"
       onClick={handleClick}
     >
       <figure className="relative w-full h-48">
@@ -20,9 +35,12 @@ const RestaurantCard = ({ restaurant }) => {
           alt={restaurant.name}
           className="absolute inset-0 w-full h-full object-cover group-hover:opacity-90 transition-opacity"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-70"></div>
+        <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
+          <h3 className="text-lg font-bold text-white truncate drop-shadow-md">{restaurant.name}</h3>
+        </div>
       </figure>
       <div className="card-body py-3 px-4 flex-grow">
-        <h3 className="card-title text-lg font-semibold truncate">{restaurant.name}</h3>
         <div className="flex flex-wrap gap-1 my-1">
           {restaurant.foodTypes && restaurant.foodTypes.length > 0
             ? restaurant.foodTypes.map(ft => (
@@ -32,14 +50,15 @@ const RestaurantCard = ({ restaurant }) => {
               ))
             : <span className="text-base text-base-content opacity-80 italic">Cuisine not specified</span>}
         </div>
-        <p className="text-sm text-base-content opacity-70">
+        <p className="text-sm text-base-content opacity-70 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           {restaurant.openingTime && restaurant.closingTime
-            ? `Open: ${restaurant.openingTime} - ${restaurant.closingTime}`
+            ? `${restaurant.openingTime} - ${restaurant.closingTime}`
             : 'Hours not specified'}
         </p>
       </div>
     </div>
   );
 };
-
-export default RestaurantCard; 

@@ -1,5 +1,23 @@
 import GoogleMapDisplay from '../../../components/common/GoogleMapDisplay';
 
+/**
+ * FilterControls provides a set of input controls for filtering restaurant search results.
+ * It includes a text search field, location search with Google Maps integration,
+ * an "Open Now" toggle, and a radius selector for location-based searches.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.searchText - Current value of the text search input
+ * @param {Function} props.onSearchChange - Callback function when the search text changes
+ * @param {React.RefObject} props.searchInputRef - Ref object for the search input element
+ * @param {string} props.locationInputText - Current value of the location input
+ * @param {Function} props.onLocationSelect - Callback function when a location is selected
+ * @param {boolean} props.isOpenNow - Whether the "Open Now" filter is active
+ * @param {Function} props.onIsOpenNowChange - Callback function when the "Open Now" toggle changes
+ * @param {number} props.selectedRadius - Currently selected search radius in meters
+ * @param {Function} props.onRadiusChange - Callback function when the radius selection changes
+ * @param {Array<{value: number, label: string}>} props.radiusOptions - Array of available radius options
+ * @returns {JSX.Element} The rendered filter controls component
+ */
 const FilterControls = ({
   searchText,
   onSearchChange,
@@ -17,7 +35,7 @@ const FilterControls = ({
       {/* Name Search Bar */}
       <div className="md:col-span-2">
         <label htmlFor="restaurantSearch" className="label">
-          <span className="label-text">What are you hungry for?</span>
+          <span className="label-text font-medium">What are you hungry for?</span>
         </label>
         <div className="relative">
           <input
@@ -25,7 +43,7 @@ const FilterControls = ({
             ref={searchInputRef}
             type="text"
             placeholder="Restaurant name or keyword..."
-            className="input input-bordered w-full p-4 pl-12 bg-base-200 text-lg focus:outline-none focus:border-primary"
+            className="input input-bordered w-full p-4 pl-12 bg-base-200 text-lg focus:outline-none focus:border-primary shadow-inner"
             value={searchText}
             onChange={onSearchChange}
           />
@@ -54,7 +72,7 @@ const FilterControls = ({
         <label className="label pb-1">
           <span className="label-text font-medium">Status</span>
         </label>
-        <label className="label cursor-pointer py-2 justify-start gap-3 rounded-lg p-3 h-full items-center">
+        <label className="label cursor-pointer py-2 justify-start gap-3 rounded-lg p-3 h-full items-center bg-base-200 shadow-inner">
           <input 
             type="checkbox" 
             className="toggle toggle-primary"
@@ -72,7 +90,7 @@ const FilterControls = ({
         </label>
         <select 
           id="radiusSelect"
-          className="select select-bordered w-full bg-base-200 shadow-sm h-full p-3"
+          className="select select-bordered w-full bg-base-200 shadow-inner h-full p-3"
           value={selectedRadius}
           onChange={(e) => onRadiusChange(Number(e.target.value))}
         >
@@ -85,4 +103,4 @@ const FilterControls = ({
   );
 };
 
-export default FilterControls; 
+export default FilterControls;

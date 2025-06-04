@@ -1,3 +1,9 @@
+/**
+ * Parses a CSV row, handling quoted values and commas within quotes.
+ * 
+ * @param {string} row - A single row from a CSV file
+ * @returns {string[]} An array of values from the row
+ */
 const parseCsvRow = (row) => {
   const result = [];
   let current = '';
@@ -20,6 +26,14 @@ const parseCsvRow = (row) => {
   return result;
 };
 
+/**
+ * Parses a CSV string into an array of article objects.
+ * Validates required fields and formats data appropriately.
+ * 
+ * @param {string} content - The CSV content as a string
+ * @returns {Object[]} An array of article objects with properties matching the CSV headers
+ * @throws {Error} If the CSV is invalid or missing required columns
+ */
 export const parseArticleCsv = (content) => {
   const lines = content.split('\n').filter(line => line.trim());
   if (lines.length < 2) {
@@ -95,10 +109,20 @@ export const parseArticleCsv = (content) => {
   return articles;
 };
 
+/**
+ * Generates a CSV template string with sample article data.
+ * 
+ * @returns {string} A CSV string with headers and sample data
+ */
 export const generateCsvTemplate = () => {
   return 'name,description,price,listed,available,allergies\n"Sample Pizza","Delicious cheese pizza with tomato sauce",12.99,true,true,"gluten;dairy"\n"Veggie Burger","Plant-based burger with fresh vegetables",10.50,true,true,""';
 };
 
+/**
+ * Creates and triggers download of a CSV template file.
+ * 
+ * @returns {void}
+ */
 export const downloadCsvTemplate = () => {
   const template = generateCsvTemplate();
   const blob = new Blob([template], { type: 'text/csv' });
@@ -108,4 +132,4 @@ export const downloadCsvTemplate = () => {
   link.download = 'articles_template.csv';
   link.click();
   URL.revokeObjectURL(url);
-}; 
+};

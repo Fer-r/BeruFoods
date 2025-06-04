@@ -134,10 +134,17 @@ export const NotificationProvider = ({ children }) => {
 
     const url = new URL(MERCURE_PUBLIC_URL);
     topics.forEach(topic => url.searchParams.append('topic', topic));
+
+    const isProduction = !MERCURE_PUBLIC_URL.includes('localhost');
     
-    document.cookie = `mercureAuthorization=${mercureToken}; path=/.well-known/mercure; secure; samesite=strict`;
-    
-    const es = new EventSource(url);
+    let es;
+    if (isProduction) {
+      url.searchParams.append('authorization', mercureToken);
+      es = new EventSource(url);
+    } else {
+      document.cookie = `mercureAuthorization=${mercureToken}; path=/; secure; samesite=none`;
+      es = new EventSource(url, { withCredentials: true });
+    }
 
     es.onopen = () => {
       setError(null);
@@ -230,7 +237,6 @@ export const NotificationProvider = ({ children }) => {
     addNotification,
     clearNotification,
     clearAllNotifications,
-    
     persistentNotifications,
     fetchNotifications,
     fetchUnreadCount,

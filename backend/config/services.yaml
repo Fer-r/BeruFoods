@@ -17,6 +17,9 @@ parameters:
     # Define the directory where images will be uploaded
     uploads_directory: '%kernel.project_dir%/public/uploads/images' # Or your desired path
     
+    # Base URL for generating complete image URLs in production
+    app.base_url: '%env(default::APP_BASE_URL)%'
+    
     # Mercure configuration
     mercure_jwt_secret: '%env(MERCURE_JWT_SECRET)%'
 
@@ -49,6 +52,7 @@ services:
             $filesystem: '@Symfony\Component\Filesystem\Filesystem'
             $imagesDirectory: '%article_images_directory%'
             $imagesPublicPath: '%article_images_public_path%'
+            $parameterBag: '@parameter_bag'
 
     app.image_uploader.restaurant:
         class: App\Service\ImageUploader
@@ -57,6 +61,7 @@ services:
             $filesystem: '@Symfony\Component\Filesystem\Filesystem'
             $imagesDirectory: '%restaurant_images_directory%'
             $imagesPublicPath: '%restaurant_images_public_path%'
+            $parameterBag: '@parameter_bag'
 
     App\Controller\ArticleController:
         arguments:
@@ -72,6 +77,11 @@ services:
         tags: ['controller.service_arguments']
         bind:
             App\Service\ImageUploader: '@app.image_uploader.restaurant'
+
+    App\Controller\UploadsController:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+        tags: ['controller.service_arguments']
 
     App\EventListener\JWTAuthenticatedListener:
         tags:

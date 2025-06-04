@@ -6,6 +6,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ImageUploader
 {
@@ -13,17 +14,20 @@ class ImageUploader
     private string $imagesPublicPath;
     private SluggerInterface $slugger;
     private Filesystem $filesystem;
+    private ParameterBagInterface $parameterBag;
 
     public function __construct(
         SluggerInterface $slugger,
         Filesystem $filesystem,
         string $imagesDirectory,
-        string $imagesPublicPath
+        string $imagesPublicPath,
+        ParameterBagInterface $parameterBag
     ) {
         $this->slugger = $slugger;
         $this->filesystem = $filesystem;
         $this->imagesDirectory = $imagesDirectory;
         $this->imagesPublicPath = $imagesPublicPath;
+        $this->parameterBag = $parameterBag;
     }
 
     /**
@@ -62,7 +66,19 @@ class ImageUploader
         if (!$filename) {
             return null;
         }
-        return rtrim($this->imagesPublicPath, '/') . '/' . $filename;
+        
+        $relativePath = rtrim($this->imagesPublicPath, '/') . '/' . $filename;
+        
+        // In production, return complete URL with domain (if base URL is configured)
+        if ($this->parameterBag->get('kernel.environment') === 'prod') {
+            $baseUrl = $this->parameterBag->get('app.base_url');
+            if (!empty($baseUrl)) {
+                return rtrim($baseUrl, '/') . $relativePath;
+            }
+        }
+        
+        // In dev/test, return relative path (nginx handles it)
+        return $relativePath;
     }
 
     /**

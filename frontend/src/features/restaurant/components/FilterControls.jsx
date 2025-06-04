@@ -32,9 +32,9 @@ const FilterControls = ({
   radiusOptions,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 items-end mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-19 gap-4 justify-around items-end mb-8">
       {/* Name Search Bar */}
-      <div className="md:col-span-2">
+      <div className="col-span-1 sm:col-span-2 md:col-span-8">
         <label htmlFor="restaurantSearch" className="label">
           <span className="label-text font-medium">What are you hungry for?</span>
         </label>
@@ -44,7 +44,7 @@ const FilterControls = ({
             ref={searchInputRef}
             type="text"
             placeholder="Restaurant name or keyword..."
-            className="input input-bordered w-full p-4 pl-12 bg-base-200 text-lg focus:outline-none focus:border-primary shadow-inner"
+            className="input input-bordered w-full pl-12 bg-base-200 focus:outline-none focus:border-primary shadow-inner"
             value={searchText}
             onChange={onSearchChange}
           />
@@ -55,7 +55,7 @@ const FilterControls = ({
       </div>
 
       {/* Location Search Bar */}
-      <div className="md:col-span-1">
+      <div className="col-span-1 sm:col-span-1 md:col-span-4">
         <div className="location-search-container">
           <GoogleMapDisplay 
             onAddressSelect={onLocationSelect} 
@@ -67,29 +67,29 @@ const FilterControls = ({
       </div>
 
       {/* Open Now Filter */}
-      <div className="form-control md:col-span-1">
+      <div className="form-control col-span-1 sm:col-span-1 md:col-span-3">
         <label className="label pb-1">
           <span className="label-text font-medium">Status</span>
         </label>
-        <label className="label cursor-pointer py-2 justify-start gap-3 rounded-lg p-3 h-full items-center bg-base-200 shadow-inner">
-          <input 
-            type="checkbox" 
+        <div className="cursor-pointer rounded-lg bg-base-200 shadow-inner flex items-center justify-start gap-3 h-12 px-4" onClick={() => onIsOpenNowChange(!isOpenNow)}>
+          <input
+            type="checkbox"
             className="toggle toggle-primary"
-            checked={isOpenNow} 
-            onChange={() => onIsOpenNowChange(!isOpenNow)} 
+            checked={isOpenNow}
+            onChange={() => onIsOpenNowChange(!isOpenNow)}
           />
-          <span className="label-text">Open now</span> 
-        </label>
+          <span className="label-text">Open now</span>
+        </div>
       </div>
 
       {/* Distance Filter */}
-      <div className="form-control md:col-span-1">
+      <div className="form-control col-span-1 sm:col-span-1 md:col-span-4">
         <label htmlFor="radiusSelect" className="label pb-1">
           <span className="label-text font-medium">Distance</span>
         </label>
         <select 
           id="radiusSelect"
-          className="select select-bordered w-full bg-base-200 shadow-inner h-full p-3"
+          className="select select-bordered w-full bg-base-200 shadow-inner h-12"
           value={selectedRadius}
           onChange={(e) => onRadiusChange(Number(e.target.value))}
         >

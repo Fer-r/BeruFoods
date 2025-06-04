@@ -112,10 +112,10 @@ const RestaurantOrderDetailsPage = () => {
       )}
 
       {updateError && (
-        <AlertMessage type="error\" message={updateError} className="mb-4" />
+        <AlertMessage type="error" message={updateError} className="mb-4" />
       )}
       
-      {orderError && displayOrder && <AlertMessage type="warning\" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
+      {orderError && displayOrder && <AlertMessage type="warning" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
 
       {/* Order Information Card */}
       <div className={`bg-base-100 shadow-xl rounded-lg p-6 mb-6 ${wasUpdated ? 'border-2 border-success transition-all duration-700' : ''}`}>
@@ -126,10 +126,15 @@ const RestaurantOrderDetailsPage = () => {
             <div className={`badge badge-lg text-white font-medium ${
               displayOrder.status === 'pending' ? 'badge-warning' : 
               displayOrder.status === 'preparing' ? 'badge-info' : 
-              displayOrder.status === 'delivered' ? 'badge-success' : 
+              displayOrder.status === 'ready' ? 'badge-accent' : 
+              displayOrder.status === 'completed' ? 'badge-success' : 
               displayOrder.status === 'cancelled' ? 'badge-error' : 'badge-ghost'
             }`}>
-              {displayOrder.status ? displayOrder.status.charAt(0).toUpperCase() + displayOrder.status.slice(1) : 'N/A'}
+              {displayOrder.status === 'pending' ? 'Pendiente' :
+               displayOrder.status === 'preparing' ? 'Preparando' :
+               displayOrder.status === 'ready' ? 'Listo para recoger' :
+               displayOrder.status === 'completed' ? 'Completado' :
+               displayOrder.status === 'cancelled' ? 'Cancelado' : 'N/A'}
             </div>
           </div>
           <div>

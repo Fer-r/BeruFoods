@@ -16,22 +16,26 @@ const OrderStatusBadge = ({ status }) => {
     case 'pending':
     case 'pendiente':
       badgeClass = 'badge-warning';
-      text = 'Pending';
+      text = 'Pendiente';
       break;
     case 'preparing':
     case 'preparando':
       badgeClass = 'badge-info';
-      text = 'Preparing';
+      text = 'Preparando';
       break;
-    case 'delivered':
+    case 'ready':
+      badgeClass = 'badge-accent';
+      text = 'Listo para recoger';
+      break;
+    case 'completed':
     case 'entregado':
       badgeClass = 'badge-success';
-      text = 'Delivered';
+      text = 'Completado';
       break;
     case 'cancelled':
     case 'cancelado':
       badgeClass = 'badge-error';
-      text = 'Cancelled';
+      text = 'Cancelado';
       break;
     default:
       break;

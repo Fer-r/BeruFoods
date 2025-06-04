@@ -18,22 +18,25 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
   // Define allowed status transitions based on backend logic
   const allowedTransitions = {
     'pending': ['preparing', 'cancelled'],
-    'preparing': ['delivered', 'cancelled'],
-    'delivered': [], // No further transitions
+    'preparing': ['ready', 'cancelled'],
+    'ready': ['completed', 'cancelled'],
+    'completed': [], // No further transitions
     'cancelled': [] // No further transitions
   };
 
   const statusLabels = {
     'pending': 'Pendiente',
     'preparing': 'Preparando',
-    'delivered': 'Entregado',
+    'ready': 'Listo para recoger',
+    'completed': 'Completado',
     'cancelled': 'Cancelado'
   };
 
   const statusColors = {
     'pending': 'btn-warning',
     'preparing': 'btn-info',
-    'delivered': 'btn-success',
+    'ready': 'btn-accent',
+    'completed': 'btn-success',
     'cancelled': 'btn-error'
   };
 
@@ -64,11 +67,11 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
     return (
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500">Estado:</span>
-        <div className={`badge ${currentStatus === 'delivered' ? 'badge-success' : 'badge-error'} text-white`}>
+        <div className={`badge ${currentStatus === 'completed' ? 'badge-success' : 'badge-error'} text-white`}>
           {statusLabels[currentStatus]}
         </div>
         <span className="text-xs text-gray-400">
-          {currentStatus === 'delivered' ? '(Pedido completado)' : '(Pedido cancelado)'}
+          {currentStatus === 'completed' ? '(Pedido completado)' : '(Pedido cancelado)'}
         </span>
       </div>
     );
@@ -79,7 +82,7 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-700 font-medium">Actualizar Estado:</span>
-          <div className={`badge ${currentStatus === 'pending' ? 'badge-warning' : 'badge-info'} text-white`}>
+          <div className={`badge ${currentStatus === 'pending' ? 'badge-warning' : currentStatus === 'ready' ? 'badge-accent' : 'badge-info'} text-white`}>
             {statusLabels[currentStatus]}
           </div>
         </div>

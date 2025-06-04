@@ -37,7 +37,9 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
         return 'badge-warning';
       case 'preparing':
         return 'badge-info';
-      case 'delivered':
+      case 'ready':
+        return 'badge-accent';
+      case 'completed':
         return 'badge-success';
       case 'cancelled':
         return 'badge-error';
@@ -47,7 +49,14 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
   };
 
   const formatStatus = (status) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    const statusMap = {
+      'pending': 'Pendiente',
+      'preparing': 'Preparando',
+      'ready': 'Listo para recoger',
+      'completed': 'Completado',
+      'cancelled': 'Cancelado'
+    };
+    return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   const handleStatusUpdate = async (newStatus) => {

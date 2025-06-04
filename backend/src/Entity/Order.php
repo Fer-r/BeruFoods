@@ -31,7 +31,7 @@ class Order
     #[ORM\Column(type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $created_at = null;
 
-    #[Assert\Choice(choices: ['pending', 'preparing', 'delivered', 'cancelled'])]
+    #[Assert\Choice(choices: ['pending', 'preparing', 'ready', 'completed', 'cancelled'])]
     #[ORM\Column(type: 'string', length: 15, options: ['default' => 'pending'], nullable: false)]
     private string $status = 'pending';
 
@@ -94,8 +94,8 @@ class Order
 
     public function setStatus(string $status): static
     {
-        if (!in_array($status, ['pending', 'preparing', 'delivered', 'cancelled'])) {
-            throw new \InvalidArgumentException("Invalid status value. Allowed values are: 'pending', 'preparing', 'delivered', 'cancelled'.");
+        if (!in_array($status, ['pending', 'preparing', 'ready', 'completed', 'cancelled'])) {
+            throw new \InvalidArgumentException("Invalid status value. Allowed values are: 'pending', 'preparing', 'ready', 'completed', 'cancelled'.");
         }
         $this->status = $status;
         return $this;

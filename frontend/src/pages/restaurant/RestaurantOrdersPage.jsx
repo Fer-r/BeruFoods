@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MdAccessTime, MdRestaurantMenu, MdCheckCircle, MdCancel } from 'react-icons/md';
+import { FaStar } from 'react-icons/fa';
 import InfiniteScrollContainer from '../../components/common/InfiniteScrollContainer';
 import useRestaurantOrders from '../../features/restaurant/hooks/useRestaurantOrders';
 import RestaurantOrderItem from '../../features/restaurant/components/RestaurantOrderItem';
@@ -145,9 +146,7 @@ const RestaurantOrdersPage = () => {
           
           <div className="stat bg-accent text-accent-content rounded-lg">
             <div className="stat-figure">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-              </svg>
+              <FaStar className="text-accent-content text-3xl" />
             </div>
             <div className="stat-title text-accent-content">Ready</div>
             <div className="stat-value text-accent-content">{orderCounts.ready}</div>

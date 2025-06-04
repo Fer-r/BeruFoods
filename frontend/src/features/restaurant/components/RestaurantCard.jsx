@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router';
+import { FaClock } from 'react-icons/fa';
 
 /**
  * RestaurantCard displays a restaurant in a card format.
@@ -51,9 +52,7 @@ const RestaurantCard = ({ restaurant }) => {
             : <span className="text-base text-base-content opacity-80 italic">Cuisine not specified</span>}
         </div>
         <p className="text-sm text-base-content opacity-70 flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <FaClock className="h-4 w-4 mr-1 inline" />
           {restaurant.openingTime && restaurant.closingTime
             ? `${restaurant.openingTime} - ${restaurant.closingTime}`
             : 'Hours not specified'}

@@ -6,6 +6,7 @@ import ArticleCsvImportModal from '../../features/restaurant/components/ArticleC
 import useRestaurantOwnedArticles from '../../features/restaurant/hooks/useRestaurantOwnedArticles';
 import LoadingFallback from '../../components/common/LoadingFallback';
 import articleService from '../../features/restaurant/services/articleService';
+import { FaCheckCircle, FaExclamationCircle, FaFileAlt } from 'react-icons/fa';
 
 // TODO: Later, import PATHS from router or a constants file if it's extracted
 const PATHS = {
@@ -89,11 +90,11 @@ const RestaurantArticlesManagementPage = () => {
       {message && (
         <div className={`alert ${message.includes('error') || message.includes('fail') ? 'alert-error' : 'alert-success'} shadow-lg mb-6`}>
           <div className="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={message.includes('error') || message.includes('fail') ? 
-                "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" : 
-                "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"} />
-            </svg>
+            {message.includes('error') || message.includes('fail') ? (
+              <FaExclamationCircle className="h-6 w-6 flex-shrink-0" />
+            ) : (
+              <FaCheckCircle className="h-6 w-6 flex-shrink-0" />
+            )}
             <span>{message}</span>
           </div>
         </div>
@@ -102,9 +103,7 @@ const RestaurantArticlesManagementPage = () => {
       {error && !initialLoading && (
         <div className="alert alert-error shadow-lg mb-6">
           <div className="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <FaExclamationCircle className="h-6 w-6 flex-shrink-0" />
             <span>Error fetching articles: {error}</span>
           </div>
         </div>
@@ -118,8 +117,8 @@ const RestaurantArticlesManagementPage = () => {
 
       {!initialLoading && !error && articles.length === 0 && !hasMoreArticles && (
         <div className="text-center py-12 bg-base-200 rounded-lg shadow-md">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-base-content opacity-30 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-          <h2 className="text-2xl font-bold text-base-content mb-4">You haven't added any articles yet</h2>
+          <FaFileAlt className="h-16 w-16 text-base-content opacity-30 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-base-content mb-4">You haven&#39;t added any articles yet</h2>
           <p className="text-base-content/70 mb-8 max-w-md mx-auto">Start by adding your delicious offerings to the menu. Your customers are waiting to discover your amazing food!</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button 

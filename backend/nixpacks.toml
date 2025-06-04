@@ -1,0 +1,29 @@
+# Nixpacks configuration for BeruFoods Backend (Symfony 7.2 + PHP 8.2)
+# Specifies PHP 8.2 and proper Symfony build process
+
+[variables]
+# Set Symfony environment to production
+APP_ENV = "prod"
+# Allow Composer to run as superuser (required in Railway containers)
+COMPOSER_ALLOW_SUPERUSER = "1"
+
+[phases.setup]
+# Install PHP 8.2 and required extensions + OpenSSL for JWT key generation
+nixPkgs = ["php82", "php82Packages.composer", "openssl", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.opcache", "php82Extensions.intl", "php82Extensions.mbstring", "php82Extensions.curl", "php82Extensions.xml", "php82Extensions.zip", "php82Extensions.openssl"]
+
+[phases.install]
+# Install Composer dependencies optimized for production
+cmds = [
+  "composer install --no-dev --no-interaction --optimize-autoloader"
+]
+
+[phases.build]
+# Create JWT directory, generate JWT keys, and clear cache
+cmds = [
+  "mkdir -p config/jwt",
+  "php bin/console lexik:jwt:generate-keypair --skip-if-exists"
+]
+
+[start]
+# Run migrations (with automatic database waiting) then start PHP server
+cmd = "php bin/console cache:clear --env=prod && php bin/console cache:warmup --env=prod && php bin/console doctrine:migration:migrate --no-interaction --allow-no-migration && php -S 0.0.0.0:$PORT -t public" 

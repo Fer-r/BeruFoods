@@ -1,0 +1,21 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+
+[[services]]
+name = "backend"
+source = "backend/"
+
+[[services]]
+name = "frontend" 
+source = "frontend/"
+
+[[services]]
+name = "mysql"
+image = "mysql:8.0"
+
+[[services]]
+name = "mercure"
+image = "dunglas/mercure:v0.16" 

@@ -1,15 +1,14 @@
 doctrine:
     dbal:
-        # Instead of a single URL, configure individual parameters
-        # url: '%env(resolve:DATABASE_URL)%' # Commented out/Removed
-        driver: '%env(DB_DRIVER)%'   # e.g., pdo_mysql
-        host: '%env(DB_HOST)%'       # e.g., database
-        port: '%env(int:DB_PORT)%'   # e.g., 3306 (use int: modifier)
-        dbname: '%env(DB_NAME)%'     # e.g., my_app_db
-        user: '%env(DB_USER)%'       # e.g., db_user
-        password: '%env(DB_PASSWORD)%' # e.g., db_password
-        server_version: '%env(DB_SERVER_VERSION)%' # e.g., 8.0 or 15 (for pgsql)
-        charset: utf8mb4             # Recommended for MySQL
+        # Use individual DB parameters that work correctly with Railway
+        driver: '%env(DB_DRIVER)%'
+        host: '%env(DB_HOST)%'
+        port: '%env(int:DB_PORT)%'
+        dbname: '%env(DB_NAME)%'
+        user: '%env(DB_USER)%'
+        password: '%env(DB_PASSWORD)%'
+        server_version: '%env(DB_SERVER_VERSION)%'
+        charset: utf8mb4
 
         # IMPORTANT: You MUST configure your server version,
         # either here or in the DATABASE_URL env var (see .env file)

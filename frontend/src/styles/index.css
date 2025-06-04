@@ -1,6 +1,10 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
 @plugin "daisyui";
 @theme {
+  /* Set Poppins as the main font family */
+  --font-body: "Poppins", sans-serif;
+  
   /* Define custom colors as CSS variables */
   --color-persian-red-50: #fdf3f3;
   --color-persian-red-100: #fde3e3;
@@ -46,6 +50,7 @@
   name: "light";
   default: true;
   color-scheme: "light";
+  font-family: "Poppins", sans-serif;
   --color-base-100: oklch(100% 0 0);
   --color-base-200: oklch(98% 0 0);
   --color-base-300: oklch(95% 0 0);
@@ -80,6 +85,7 @@
   name: "dark";
   default: false;
   color-scheme: "dark";
+  font-family: "Poppins", sans-serif;
   --color-base-100: oklch(25.33% 0.016 252.42);
   --color-base-200: oklch(23.26% 0.014 253.1);
   --color-base-300: oklch(21.15% 0.012 254.09);

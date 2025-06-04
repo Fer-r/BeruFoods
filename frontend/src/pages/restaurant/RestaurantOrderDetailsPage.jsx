@@ -112,10 +112,10 @@ const RestaurantOrderDetailsPage = () => {
       )}
 
       {updateError && (
-        <AlertMessage type="error" message={updateError} className="mb-4" />
+        <AlertMessage type="error\" message={updateError} className="mb-4" />
       )}
       
-      {orderError && displayOrder && <AlertMessage type="warning" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
+      {orderError && displayOrder && <AlertMessage type="warning\" message={`There was an issue loading order details: ${orderError}`} className="mb-4" />}
 
       {/* Order Information Card */}
       <div className={`bg-base-100 shadow-xl rounded-lg p-6 mb-6 ${wasUpdated ? 'border-2 border-success transition-all duration-700' : ''}`}>

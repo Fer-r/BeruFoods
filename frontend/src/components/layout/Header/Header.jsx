@@ -12,15 +12,16 @@ import { FaUserCircle, FaShoppingCart } from 'react-icons/fa';
 import { GrRestaurant } from "react-icons/gr";
 import NotificationBell from '../../common/NotificationBell';
 import SimpleThemeToggle from '../../common/SimpleThemeToggle.jsx';
+import { ROUTES } from '../../../utils/constants';
 
 const MENU_ITEMS = {
   RESTAURANT: [
-    { to: "/restaurant/dashboard", label: "Dashboard" },
-    { to: "/restaurant/orders", label: "Order History" },
-    { to: "/restaurant/articles", label: "Articles" }
+    { to: ROUTES.RESTAURANT.DASHBOARD, label: "Dashboard" },
+    { to: ROUTES.RESTAURANT.ORDERS, label: "Order History" },
+    { to: ROUTES.RESTAURANT.ARTICLES, label: "Articles" }
   ],
   USER: [
-    { to: "/user/orders", label: "Order History" }
+    { to: ROUTES.USER.ORDERS, label: "Order History" }
   ]
 };
 
@@ -93,12 +94,12 @@ const UnauthenticatedDrawerContent = ({ onLoginClick, onDrawerClose }) => (
           </button>
         </li>
         <li>
-          <NavLink to="/register" onClick={onDrawerClose} className="btn btn-secondary btn-block mb-2 text-base"> 
+          <NavLink to={ROUTES.REGISTER} onClick={onDrawerClose} className="btn btn-secondary btn-block mb-2 text-base"> 
             Register
           </NavLink>
         </li>
         <li className='self-center'>
-          <NavLink to="/restaurant" onClick={onDrawerClose} className="link link-hover mb-4 text-base"> 
+          <NavLink to={ROUTES.RESTAURANT.ROOT} onClick={onDrawerClose} className="link link-hover mb-4 text-base"> 
              Enter as a restaurant
           </NavLink>
         </li>
@@ -134,7 +135,7 @@ const AuthenticatedDrawerContent = ({ isRestaurant, isUser, totalCartItems, onMe
         {isUser && (
           <>
             <li>
-              <NavLink to="/cart" onClick={onMenuClose} className="flex items-center gap-3 text-base">
+              <NavLink to={ROUTES.USER.CART} onClick={onMenuClose} className="flex items-center gap-3 text-base">
                 <div className="indicator">
                   {totalCartItems > 0 && (
                     <span className="indicator-item badge badge-secondary badge-sm">{totalCartItems}</span>
@@ -153,7 +154,7 @@ const AuthenticatedDrawerContent = ({ isRestaurant, isUser, totalCartItems, onMe
         )}
 
         <NavMenuItem 
-          to={isRestaurant ? "/restaurant/profile" : "/user/profile"} 
+          to={isRestaurant ? ROUTES.RESTAURANT.PROFILE : ROUTES.USER.PROFILE} 
           onClick={onMenuClose}
         >
           Profile
@@ -211,7 +212,7 @@ const RestaurantUserActions = ({ onLogout }) => (
         </label>
         <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
           <li>
-            <NavLink to="/restaurant/profile">Profile</NavLink>
+            <NavLink to={ROUTES.RESTAURANT.PROFILE}>Profile</NavLink>
           </li>
           <li><SimpleThemeToggle inMenu /></li>
           <li><button onClick={onLogout}>Logout</button></li>
@@ -235,7 +236,7 @@ const CustomerUserActions = ({ totalCartItems, onLogout }) => (
   <div className="flex items-center">
     <NotificationBell className="notification-bell" />
     <div className="hidden lg:flex items-center">
-      <NavLink to="/cart" className="btn btn-ghost btn-circle mr-4 indicator">
+      <NavLink to={ROUTES.USER.CART} className="btn btn-ghost btn-circle mr-4 indicator">
         {totalCartItems > 0 && (
           <span className="indicator-item badge badge-secondary badge-sm">{totalCartItems}</span>
         )}
@@ -248,8 +249,8 @@ const CustomerUserActions = ({ totalCartItems, onLogout }) => (
           </div>
         </label>
         <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-          <li><NavLink to="/user/orders">Order History</NavLink></li>
-          <li><NavLink to="/user/profile">Profile</NavLink></li>
+          <li><NavLink to={ROUTES.USER.ORDERS}>Order History</NavLink></li>
+          <li><NavLink to={ROUTES.USER.PROFILE}>Profile</NavLink></li>
           <li><SimpleThemeToggle inMenu /></li>
           <li><button onClick={onLogout}>Logout</button></li>
         </ul>
@@ -352,7 +353,7 @@ const Header = () => {
           >
             <GiHamburgerMenu className="inline-block w-5 h-5" />
           </button>
-          <NavLink to="/" className="btn text-xl h-auto px-3 py-0 btn-link">
+          <NavLink to={ROUTES.ROOT} className="btn text-xl h-auto px-3 py-0 btn-link">
             <img src={logo} alt="Logo" className='h-10' />
           </NavLink>
         </div>

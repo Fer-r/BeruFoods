@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { postPublicJSONToAPI } from '../../../services/useApiService';
+import { API_ENDPOINTS, ROUTES } from '../../../utils/constants';
 import {
   validateEmail,
   validatePassword,
@@ -166,7 +167,7 @@ const useUserRegistration = () => {
         }
       };
 
-      const responseData = await postPublicJSONToAPI('/auth/register/user', registrationData);
+              const responseData = await postPublicJSONToAPI(API_ENDPOINTS.AUTH.REGISTER_USER, registrationData);
 
       setSuccess(responseData.message || 'Registration successful! Redirecting to login...');
       setFormData(initialFormData); // Reset form to initial state
@@ -190,7 +191,7 @@ const useUserRegistration = () => {
     let timeoutId;
     if (navigationTrigger) {
       timeoutId = setTimeout(() => {
-        navigate('/');
+        navigate(ROUTES.ROOT);
       }, 1000);
       setNavigationTrigger(false);
     }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchDataFromEndpoint } from '../../../services/useApiService';
+import { API_ENDPOINTS, PAGINATION } from '../../../utils/constants';
 import { useAuth } from '../../../context/AuthContext';
 import { useNotifications } from '../../../context/NotificationContext';
 
@@ -7,7 +8,7 @@ import { useNotifications } from '../../../context/NotificationContext';
  * Hook for managing user orders with real-time updates.
  * Simple approach: refresh orders whenever we get a relevant notification.
  */
-const useUserOrders = (initialPageSize = 10) => {
+const useUserOrders = (initialPageSize = PAGINATION.DEFAULT_LIMIT) => {
   const { token, entity } = useAuth();
   const { persistentNotifications } = useNotifications();
   const [orders, setOrders] = useState([]);
@@ -36,7 +37,7 @@ const useUserOrders = (initialPageSize = 10) => {
 
     try {
       const data = await fetchDataFromEndpoint(
-        `/orders?page=${currentPage}&limit=${initialPageSize}`,
+        API_ENDPOINTS.ORDERS.USER_ORDERS(currentPage, initialPageSize),
         'GET',
         null,
         true
@@ -78,10 +79,6 @@ const useUserOrders = (initialPageSize = 10) => {
     fetchOrders(1);
   }, [fetchOrders]);
 
-  /**
-   * SIMPLIFIED: Just refresh orders when we get any relevant notification
-   * No complex logic - just do what the refresh button does!
-   */
   useEffect(() => {
     if (!entity?.userId || initialLoading || persistentNotifications.length === 0) {
       return;
@@ -109,7 +106,6 @@ const useUserOrders = (initialPageSize = 10) => {
 
   }, [persistentNotifications, entity, refreshOrders, initialLoading]);
 
-  // Add cleanup mechanism to prevent memory leaks from accumulating notifications
   useEffect(() => {
     if (processedNotifications.size > 100) {
       setProcessedNotifications(prev => {

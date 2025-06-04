@@ -2,6 +2,7 @@ import { Navigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import LoadingFallback from '../components/common/LoadingFallback';
 import { Suspense, lazy } from 'react';
+import { ROUTES } from '../utils/constants';
 
 const Home = lazy(() => import("./home/Home.jsx"));
 
@@ -13,7 +14,7 @@ const HomeHandler = () => {
   }
 
   if (isRestaurant) {
-    return <Navigate to="/restaurant/dashboard" replace />;
+    return <Navigate to={ROUTES.RESTAURANT.DASHBOARD} replace />;
   }
 
   return (

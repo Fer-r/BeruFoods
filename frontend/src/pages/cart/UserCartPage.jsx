@@ -6,6 +6,7 @@ import { fetchDataFromEndpoint } from '../../services/useApiService';
 import AlertMessage from '../../components/common/AlertMessage.jsx';
 import { FaShoppingCart } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { API_ENDPOINTS, ROUTES } from '../../utils/constants';
 
 /**
  * @component UserCartPage
@@ -66,11 +67,11 @@ const UserCartPage = () => {
         items: orderItems,
       };
       
-      const result = await fetchDataFromEndpoint('/orders', 'POST', orderData, true, token);
+      const result = await fetchDataFromEndpoint(API_ENDPOINTS.ORDERS.BASE, 'POST', orderData, true, token);
       
-      if (result && result.id) { // Assuming backend returns the created order with an id
+      if (result && result.id) {
         clearCart();
-        navigate(`/user/orders/${result.id}`); // Navigate to the new order details page
+        navigate(ROUTES.USER.ORDER_DETAILS_DYNAMIC(result.id));
       } else {
         throw new Error(result?.message || 'Failed to create order. No ID returned.');
       }
@@ -88,7 +89,7 @@ const UserCartPage = () => {
         <div className="max-w-md w-full bg-base-100 p-8 rounded-lg shadow-lg">
           <FaShoppingCart className="h-16 w-16 mx-auto text-base-content opacity-30 mb-4" />
           <p className="text-lg mb-4">Your cart is currently empty.</p>
-          <Link to="/" className="btn btn-primary">Start Shopping</Link>
+          <Link to={ROUTES.ROOT} className="btn btn-primary">Start Shopping</Link>
         </div>
       </div>
     );
@@ -114,7 +115,7 @@ const UserCartPage = () => {
           <span className="text-lg">Subtotal:</span>
           <span className="text-lg font-bold">€{totalPrice.toFixed(2)}</span>
         </div>
-        {/* Add more details like shipping, taxes if applicable later */}
+
         <div className="divider"></div>
         <div className="flex justify-between mb-4">
           <span className="text-xl font-bold">Total:</span>
@@ -142,7 +143,7 @@ const UserCartPage = () => {
                  Clear Cart
               </button>
               
-              <Link to="/" className="btn btn-ghost btn-block">
+              <Link to={ROUTES.ROOT} className="btn btn-ghost btn-block">
                  Continue Shopping
               </Link>
             </div>

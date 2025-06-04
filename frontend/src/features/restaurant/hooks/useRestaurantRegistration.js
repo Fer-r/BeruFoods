@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { postFormDataToAPI } from '../../../services/useApiService';
+import { API_ENDPOINTS } from '../../../utils/constants';
 import {
   validateEmail,
   validatePassword,
@@ -120,7 +121,6 @@ const useRestaurantRegistration = () => {
     setLoading(true);
     const submitFormData = new FormData();
 
-    // Append standard fields
     submitFormData.append('name', formData.name);
     submitFormData.append('email', formData.email);
     submitFormData.append('password', formData.password);
@@ -128,12 +128,10 @@ const useRestaurantRegistration = () => {
     submitFormData.append('openingTime', formatTime(formData.openingTime));
     submitFormData.append('closingTime', formatTime(formData.closingTime));
 
-    // Append image file if exists
     if (imageFile) {
       submitFormData.append('imageFile', imageFile);
     }
 
-    // Append address payload as JSON string
     const addressPayload = JSON.stringify({
       address_line: formData.addressLine,
       lat: formData.lat,
@@ -145,17 +143,14 @@ const useRestaurantRegistration = () => {
     submitFormData.append('food_type_ids', JSON.stringify(formData.selectedFoodTypeIds));
 
     try {
-      // Use the new service function
-      // Assuming endpoint is /auth/register/restaurant based on original component
-      const responseData = await postFormDataToAPI('/auth/register/restaurant', submitFormData);
+      await postFormDataToAPI(API_ENDPOINTS.AUTH.REGISTER_RESTAURANT, submitFormData);
             
       setSuccess('Restaurant registration successful! You will be redirected shortly.');
-      setFormData(initialFormData); // Reset form
-      setImageFile(null); // Reset file input
+      setFormData(initialFormData);
+      setImageFile(null);
 
     } catch (err) {
       console.error("Registration failed:", err);
-      // Use the detailed error from useApiService if available
       setError(err.details?.message || err.message || 'Registration failed. Please try again.');
       if (err.details?.errors) {
         const fieldErrors = Object.entries(err.details.errors)

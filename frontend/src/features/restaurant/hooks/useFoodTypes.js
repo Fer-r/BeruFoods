@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchDataFromEndpoint } from '../../../services/useApiService';
+import { API_ENDPOINTS } from '../../../utils/constants';
 
 /**
  * Custom hook to fetch available food types from the API.
@@ -17,13 +18,11 @@ const useFoodTypes = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await fetchDataFromEndpoint('/food-types');
-        // Handle potential API structures (e.g., Hydra)
+        const data = await fetchDataFromEndpoint(API_ENDPOINTS.FOOD_TYPES);
         const types = data['hydra:member'] || data || [];
         setFoodTypes(types);
       } catch (err) {
         console.error("Error fetching food types:", err);
-        // Use the error message provided by useApiService if available
         setError(err.message || 'Could not load food types.');
       } finally {
         setIsLoading(false);
@@ -31,7 +30,7 @@ const useFoodTypes = () => {
     };
 
     loadFoodTypes();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   return { foodTypes, isLoading, error };
 };

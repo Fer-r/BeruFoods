@@ -24,6 +24,16 @@ const MENU_ITEMS = {
   ]
 };
 
+/**
+ * A styled NavLink component for use within menus.
+ *
+ * @param {object} props - Component props.
+ * @param {string} props.to - The navigation path for the NavLink.
+ * @param {function} [props.onClick] - Optional click handler for the NavLink.
+ * @param {React.ReactNode} props.children - The content to be displayed within the menu item.
+ * @param {string} [props.className=""] - Optional additional CSS classes to apply.
+ * @returns {JSX.Element} A list item containing a styled NavLink.
+ */
 const NavMenuItem = ({ to, onClick, children, className = "" }) => (
   <li>
     <NavLink to={to} onClick={onClick} className={`text-base ${className}`}>
@@ -32,6 +42,15 @@ const NavMenuItem = ({ to, onClick, children, className = "" }) => (
   </li>
 );
 
+/**
+ * A styled button component for use within menus.
+ *
+ * @param {object} props - Component props.
+ * @param {function} props.onClick - The click handler for the button.
+ * @param {React.ReactNode} props.children - The content to be displayed within the button.
+ * @param {string} [props.className=""] - Optional additional CSS classes to apply.
+ * @returns {JSX.Element} A list item containing a styled button.
+ */
 const MenuButton = ({ onClick, children, className = "" }) => (
   <li>
     <button onClick={onClick} className={`text-base text-left ${className}`}>
@@ -40,6 +59,12 @@ const MenuButton = ({ onClick, children, className = "" }) => (
   </li>
 );
 
+/**
+ * Renders the theme toggle section, typically used within drawers or menus.
+ * It displays a "Theme" label and the `SimpleThemeToggle` component.
+ *
+ * @returns {JSX.Element} A div containing the theme selection UI.
+ */
 const ThemeSection = () => (
   <div className="mt-auto pt-6 border-t border-base-300">
     <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-base-100">
@@ -49,6 +74,15 @@ const ThemeSection = () => (
   </div>
 );
 
+/**
+ * Renders the content for the navigation drawer when the user is not authenticated.
+ * Includes options to log in, register, or enter as a restaurant.
+ *
+ * @param {object} props - Component props.
+ * @param {function} props.onLoginClick - Handler function to be called when the login button is clicked.
+ * @param {function} props.onDrawerClose - Handler function to close the drawer, typically called on navigation.
+ * @returns {JSX.Element} The drawer content for unauthenticated users.
+ */
 const UnauthenticatedDrawerContent = ({ onLoginClick, onDrawerClose }) => (
   <div className="flex flex-col h-full">
     <div className="flex-1">
@@ -74,6 +108,19 @@ const UnauthenticatedDrawerContent = ({ onLoginClick, onDrawerClose }) => (
   </div>
 );
 
+/**
+ * Renders the content for the navigation drawer when the user is authenticated.
+ * Displays navigation links based on user type (restaurant or regular user),
+ * cart information, profile link, and a logout button.
+ *
+ * @param {object} props - Component props.
+ * @param {boolean} props.isRestaurant - Flag indicating if the authenticated user is a restaurant.
+ * @param {boolean} props.isUser - Flag indicating if the authenticated user is a regular user.
+ * @param {number} props.totalCartItems - The total number of items in the user's cart.
+ * @param {function} props.onMenuClose - Handler function to close the menu/drawer, typically called on navigation.
+ * @param {function} props.onLogout - Handler function to be called when the logout button is clicked.
+ * @returns {JSX.Element} The drawer content for authenticated users.
+ */
 const AuthenticatedDrawerContent = ({ isRestaurant, isUser, totalCartItems, onMenuClose, onLogout }) => (
   <div className="flex flex-col h-full">
     <div className="flex-1">
@@ -121,6 +168,15 @@ const AuthenticatedDrawerContent = ({ isRestaurant, isUser, totalCartItems, onMe
   </div>
 );
 
+/**
+ * Renders the desktop navigation menu links, specifically for restaurant users.
+ * This component is hidden on smaller screens.
+ *
+ * @param {object} props - Component props.
+ * @param {boolean} props.isRestaurant - Flag indicating if the current user is a restaurant,
+ *                                     determining whether to display the restaurant-specific menu items.
+ * @returns {JSX.Element | null} The desktop navigation menu for restaurants, or null if not applicable.
+ */
 const DesktopNavMenu = ({ isRestaurant }) => (
   <div className="navbar-center hidden lg:flex">
     {isRestaurant && (
@@ -135,6 +191,14 @@ const DesktopNavMenu = ({ isRestaurant }) => (
   </div>
 );
 
+/**
+ * Renders user action controls in the header for authenticated restaurant users.
+ * Includes a notification bell and a dropdown menu with profile and logout options.
+ *
+ * @param {object} props - Component props.
+ * @param {function} props.onLogout - Handler function to be called when the logout button is clicked.
+ * @returns {JSX.Element} The user actions section for restaurant users.
+ */
 const RestaurantUserActions = ({ onLogout }) => (
   <>
     <NotificationBell />
@@ -157,6 +221,16 @@ const RestaurantUserActions = ({ onLogout }) => (
   </>
 );
 
+/**
+ * Renders user action controls in the header for authenticated customer users.
+ * Includes a notification bell, a shopping cart link, and a dropdown menu
+ * with order history, profile, and logout options.
+ *
+ * @param {object} props - Component props.
+ * @param {number} props.totalCartItems - The total number of items in the user's cart, displayed as a badge on the cart icon.
+ * @param {function} props.onLogout - Handler function to be called when the logout button is clicked.
+ * @returns {JSX.Element} The user actions section for customer users.
+ */
 const CustomerUserActions = ({ totalCartItems, onLogout }) => (
   <div className="flex items-center">
     <NotificationBell />
@@ -184,6 +258,15 @@ const CustomerUserActions = ({ totalCartItems, onLogout }) => (
   </div>
 );
 
+/**
+ * @component Header
+ * The main site header component. It handles site-wide navigation, user authentication status display,
+ * access to user actions (login, logout, profile, cart), and a mobile navigation drawer.
+ * It utilizes context hooks (`useModal`, `useAuth`, `useCart`) to manage its state and behavior
+ * rather than direct props.
+ *
+ * @returns {JSX.Element} The rendered header component.
+ */
 const Header = () => {
   const { isLoginModalOpen, openLoginModal, closeLoginModal } = useModal();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

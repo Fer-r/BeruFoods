@@ -2,11 +2,29 @@ import { jwtDecode } from "jwt-decode";
 
 const BASE_URL = import.meta.env.VITE_URL_API;
 
+/**
+ * Retrieves the Authorization header with the JWT token if available in localStorage.
+ *
+ * @returns {object} An object containing the Authorization header if a token exists,
+ *                   otherwise an empty object.
+ * @example
+ * // Returns { Authorization: "Bearer <token>" } or {}
+ * getAuthHeader();
+ */
 const getAuthHeader = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+/**
+ * Constructs a Headers object for API requests.
+ *
+ * @param {boolean} [includeAuth=false] - Whether to include the Authorization header.
+ * @param {string | null} [contentType="application/json"] - The Content-Type header value.
+ *                                                       If null, Content-Type header is omitted (e.g., for FormData).
+ * @returns {Headers} A Headers object configured with Accept, Content-Type (if specified),
+ *                    and Authorization (if requested and available).
+ */
 const getHeaders = (includeAuth = false, contentType = "application/json") => {
   const headers = {
     Accept: "application/json",
@@ -17,6 +35,25 @@ const getHeaders = (includeAuth = false, contentType = "application/json") => {
   return includeAuth ? { ...headers, ...getAuthHeader() } : headers;
 };
 
+/**
+ * Generic function to fetch data from a specified API endpoint.
+ * It handles request configuration, authorization, and error parsing.
+ *
+ * @async
+ * @param {string} endpoint - The API endpoint to fetch data from (e.g., "/users").
+ * @param {string} [method="GET"] - The HTTP method to use (e.g., "GET", "POST", "PUT", "DELETE").
+ * @param {object | FormData | null} [data=null] - The data to send with the request.
+ *                                                 For "GET" or "DELETE" requests, this is typically null.
+ *                                                 Can be a plain object (will be JSON.stringified) or FormData.
+ * @param {boolean} [requiresAuth=false] - Whether the request requires authentication.
+ *                                         If true, it checks `isAuthorized()` and throws `AuthorizationError` if not.
+ * @returns {Promise<any>} A promise that resolves to the JSON response from the API.
+ *                         Returns `null` if the response is empty (e.g., 204 No Content for DELETE).
+ * @throws {AuthorizationError} If `requiresAuth` is true and the user is not authorized or the token is expired.
+ * @throws {ApiError} If the API response is not ok (e.g., 4xx or 5xx status codes).
+ *                    The error object will contain a `details` property with parsed error information from the API if available.
+ * @throws {Error} For network errors or other unexpected issues during the fetch operation.
+ */
 const fetchDataFromEndpoint = async (endpoint, method = "GET", data = null, requiresAuth = false) => {
   if (requiresAuth && !isAuthorized()) {
     const error = new Error("User is not authorized or token expired.");
@@ -85,23 +122,91 @@ const fetchDataFromEndpoint = async (endpoint, method = "GET", data = null, requ
   }
 };
 
+/**
+ * Fetches data from a public API endpoint using the GET method.
+ *
+ * @async
+ * @param {string} endpoint - The API endpoint to fetch from.
+ * @returns {Promise<any>} A promise that resolves to the JSON response from the API.
+ * @throws {ApiError} If the API response is not ok.
+ * @throws {Error} For network or other unexpected errors.
+ */
 const fetchFromAPI = (endpoint) => fetchDataFromEndpoint(endpoint, "GET", null, false);
 
+/**
+ * Sends data to an authenticated API endpoint using the POST method.
+ *
+ * @async
+ * @param {string} endpoint - The API endpoint to post to.
+ * @param {object | FormData} data - The data to send in the request body.
+ * @returns {Promise<any>} A promise that resolves to the JSON response from the API.
+ * @throws {AuthorizationError} If the user is not authorized.
+ * @throws {ApiError} If the API response is not ok.
+ * @throws {Error} For network or other unexpected errors.
+ */
 const postToAPI = (endpoint, data) =>
   fetchDataFromEndpoint(endpoint, "POST", data, true);
 
+/**
+ * Sends data to an authenticated API endpoint using the PUT method.
+ *
+ * @async
+ * @param {string} endpoint - The API endpoint to send the PUT request to.
+ * @param {object | FormData} data - The data to send in the request body.
+ * @returns {Promise<any>} A promise that resolves to the JSON response from the API.
+ * @throws {AuthorizationError} If the user is not authorized.
+ * @throws {ApiError} If the API response is not ok.
+ * @throws {Error} For network or other unexpected errors.
+ */
 const putToAPI = (endpoint, data) =>
   fetchDataFromEndpoint(endpoint, "PUT", data, true);
 
+/**
+ * Sends a DELETE request to an authenticated API endpoint.
+ *
+ * @async
+ * @param {string} endpoint - The API endpoint to send the DELETE request to.
+ * @returns {Promise<null>} A promise that resolves to null if the deletion is successful (204 No Content).
+ * @throws {AuthorizationError} If the user is not authorized.
+ * @throws {ApiError} If the API response is not ok.
+ * @throws {Error} For network or other unexpected errors.
+ */
 const deleteFromAPI = (endpoint) =>
   fetchDataFromEndpoint(endpoint, "DELETE", null, true);
 
+/**
+ * Sends JSON data to a public API endpoint using the POST method.
+ *
+ * @async
+ * @param {string} endpoint - The API endpoint to post to.
+ * @param {object} data - The JSON data to send in the request body.
+ * @returns {Promise<any>} A promise that resolves to the JSON response from the API.
+ * @throws {ApiError} If the API response is not ok.
+ * @throws {Error} For network or other unexpected errors.
+ */
 const postPublicJSONToAPI = (endpoint, data) =>
   fetchDataFromEndpoint(endpoint, "POST", data, false);
 
+/**
+ * Sends FormData to a public API endpoint using the POST method.
+ * This is typically used for file uploads.
+ *
+ * @async
+ * @param {string} endpoint - The API endpoint to post to.
+ * @param {FormData} formData - The FormData object to send.
+ * @returns {Promise<any>} A promise that resolves to the JSON response from the API.
+ * @throws {ApiError} If the API response is not ok.
+ * @throws {Error} For network or other unexpected errors.
+ */
 const postFormDataToAPI = (endpoint, formData) =>
   fetchDataFromEndpoint(endpoint, "POST", formData, false);
 
+/**
+ * Checks if the user's JWT token (stored in localStorage) is present, valid, and not expired.
+ * If the token is invalid or expired, it is removed from localStorage.
+ *
+ * @returns {boolean} True if the user is authorized (token exists, is valid, and not expired), false otherwise.
+ */
 const isAuthorized = () => {
   const token = localStorage.getItem("token");
   if (!token) {

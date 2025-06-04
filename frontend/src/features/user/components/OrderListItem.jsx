@@ -36,7 +36,7 @@ const OrderStatusBadge = ({ status }) => {
     default:
       break;
   }
-  return <span className={`badge badge-lg ${badgeClass}`}>{text}</span>;
+  return <span className={`badge badge-lg ${badgeClass} text-white font-medium`}>{text}</span>;
 };
 
 /**
@@ -75,7 +75,7 @@ const OrderListItem = ({ order }) => {
 
   return (
     <div
-      className={`card ${highlight ? 'bg-primary bg-opacity-20 border-2 border-primary' : 'bg-base-100'} shadow-md hover:shadow-lg transition-all duration-500 ease-in-out mb-4 w-full`}
+      className={`card order-card ${highlight ? 'bg-primary bg-opacity-20 border-2 border-primary' : 'bg-base-100'} shadow-md hover:shadow-lg transition-all duration-500 ease-in-out mb-4 w-full`}
     >
       <div className="card-body p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">

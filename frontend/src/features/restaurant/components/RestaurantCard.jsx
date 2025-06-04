@@ -36,9 +36,11 @@ const RestaurantCard = ({ restaurant }) => {
           className="absolute inset-0 w-full h-full object-cover group-hover:opacity-90 transition-opacity"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-70"></div>
+        <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
+          <h3 className="text-lg font-bold text-white truncate drop-shadow-md">{restaurant.name}</h3>
+        </div>
       </figure>
       <div className="card-body py-3 px-4 flex-grow">
-        <h3 className="card-title text-lg font-semibold truncate">{restaurant.name}</h3>
         <div className="flex flex-wrap gap-1 my-1">
           {restaurant.foodTypes && restaurant.foodTypes.length > 0
             ? restaurant.foodTypes.map(ft => (
@@ -48,14 +50,15 @@ const RestaurantCard = ({ restaurant }) => {
               ))
             : <span className="text-base text-base-content opacity-80 italic">Cuisine not specified</span>}
         </div>
-        <p className="text-sm text-base-content opacity-70">
+        <p className="text-sm text-base-content opacity-70 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           {restaurant.openingTime && restaurant.closingTime
-            ? `Open: ${restaurant.openingTime} - ${restaurant.closingTime}`
+            ? `${restaurant.openingTime} - ${restaurant.closingTime}`
             : 'Hours not specified'}
         </p>
       </div>
     </div>
   );
 };
-
-export default RestaurantCard;

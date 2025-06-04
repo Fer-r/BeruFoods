@@ -193,6 +193,23 @@
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+.restaurant-card figure::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  z-index: 1;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.restaurant-card:hover figure::after {
+  opacity: 0.6;
+}
+
 /* Improve header appearance */
 .navbar {
   background-image: linear-gradient(to right, var(--color-base-100), var(--color-base-200));
@@ -214,4 +231,77 @@
 
 .notification-bell:hover {
   animation: bell-shake 0.5s ease;
+}
+
+/* Enhance user profile and auth pages */
+.auth-container {
+  background-image: linear-gradient(135deg, var(--color-base-200), var(--color-base-100));
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhance order cards */
+.order-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.order-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(to bottom right, var(--color-base-100), var(--color-base-200));
+  opacity: 0.8;
+  z-index: -1;
+}
+
+/* Enhance article cards */
+.article-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.article-card:hover {
+  transform: translateY(-3px);
+}
+
+.article-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, var(--color-primary-content/5), transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+/* Enhance loading states */
+.loading {
+  opacity: 0.8;
+}
+
+/* Enhance alerts and messages */
+.alert {
+  border-left: 4px solid;
+}
+
+.alert-success {
+  border-color: var(--color-success);
+}
+
+.alert-error {
+  border-color: var(--color-error);
+}
+
+.alert-warning {
+  border-color: var(--color-warning);
+}
+
+.alert-info {
+  border-color: var(--color-info);
 }

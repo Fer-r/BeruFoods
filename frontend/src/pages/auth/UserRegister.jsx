@@ -34,7 +34,7 @@ const UserRegister = () => {
 
   return (
     <>
-      <h2 className="card-title text-2xl mb-6">User Sign Up</h2>
+      <h2 className="card-title text-2xl mb-6 text-base-content">User Sign Up</h2>
       <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-4">
         {error && <AlertMessage type="error" message={error} />}
         {success && <AlertMessage type="success" message={success} />}
@@ -49,6 +49,7 @@ const UserRegister = () => {
           onChange={handleChange}
           required
           autoComplete="email"
+          className="input input-bordered w-full focus:input-primary shadow-sm"
         />
 
         <StyledInput
@@ -60,6 +61,7 @@ const UserRegister = () => {
           value={formData.name}
           onChange={handleChange}
           autoComplete="name"
+          className="input input-bordered w-full focus:input-primary shadow-sm"
         />
 
         <StyledInput
@@ -71,6 +73,7 @@ const UserRegister = () => {
           value={formData.phone}
           onChange={handleChange}
           autoComplete="tel"
+          className="input input-bordered w-full focus:input-primary shadow-sm"
         />
 
         <StyledInput
@@ -84,6 +87,7 @@ const UserRegister = () => {
           required
           minLength="6"
           autoComplete="new-password"
+          className="input input-bordered w-full focus:input-primary shadow-sm"
         />
 
         <StyledInput
@@ -96,6 +100,7 @@ const UserRegister = () => {
           onChange={handleChange}
           required
           autoComplete="new-password"
+          className="input input-bordered w-full focus:input-primary shadow-sm"
         />
 
         <div className="form-control w-full">
@@ -110,11 +115,12 @@ const UserRegister = () => {
           placeholder="Apartment, suite, unit, building, or floor"
           value={formData.addressLine2 || ''}
           onChange={handleChange}
+          className="input input-bordered w-full focus:input-primary shadow-sm"
         />
 
         <button
           type="submit"
-          className="btn btn-primary w-full"
+          className="btn btn-primary w-full mt-4 shadow-md"
           disabled={loading}
         >
           {loading ? (

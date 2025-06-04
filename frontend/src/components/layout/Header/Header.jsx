@@ -324,7 +324,7 @@ const Header = () => {
         <button
           type="button"
           onClick={handleOpenLoginModal}
-          className="btn btn-sm btn-primary ml-2"
+          className="btn btn-sm btn-primary ml-2 shadow-sm"
         >
           Sign in
         </button>

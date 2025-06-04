@@ -71,46 +71,64 @@ const RestaurantArticlesManagementPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold text-base-content">Manage Your Articles</h1>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+        <h1 className="text-3xl font-bold text-base-content">Manage Your Menu</h1>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button 
             onClick={() => setShowImportModal(true)}
-            className="btn btn-outline btn-primary w-full sm:w-auto"
+            className="btn btn-outline btn-primary w-full sm:w-auto shadow-sm"
           >
             Import from CSV
           </button>
-          <Link to={PATHS.RESTAURANT_ARTICLES_NEW} className="btn btn-primary w-full sm:w-auto">
+          <Link to={PATHS.RESTAURANT_ARTICLES_NEW} className="btn btn-primary w-full sm:w-auto shadow-sm">
             Add New Article
           </Link>
         </div>
       </div>
 
       {message && (
-        <div className={`alert ${error ? 'alert-error' : 'alert-success'} shadow-lg mb-4`}>
-          <div>
+        <div className={`alert ${message.includes('error') || message.includes('fail') ? 'alert-error' : 'alert-success'} shadow-lg mb-6`}>
+          <div className="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={message.includes('error') || message.includes('fail') ? 
+                "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" : 
+                "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"} />
+            </svg>
             <span>{message}</span>
           </div>
         </div>
       )}
 
-      {error && !initialLoading && <p className="text-center text-error py-6">Error fetching articles: {error}</p>}
+      {error && !initialLoading && (
+        <div className="alert alert-error shadow-lg mb-6">
+          <div className="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Error fetching articles: {error}</span>
+          </div>
+        </div>
+      )}
 
-      {initialLoading && !error && <LoadingFallback message="Loading your articles..." />}
+      {initialLoading && !error && (
+        <div className="flex justify-center items-center py-12">
+          <LoadingFallback message="Loading your articles..." />
+        </div>
+      )}
 
       {!initialLoading && !error && articles.length === 0 && !hasMoreArticles && (
-        <div className="text-center py-10 bg-base-200 rounded-lg shadow">
+        <div className="text-center py-12 bg-base-200 rounded-lg shadow-md">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-base-content opacity-30 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-          <p className="text-xl text-base-content mb-4">You haven&apos;t added any articles yet.</p>
-          <p className="text-sm text-base-content opacity-70 mb-6">Start by adding your delicious offerings to the menu.</p>
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+          <h2 className="text-2xl font-bold text-base-content mb-4">You haven't added any articles yet</h2>
+          <p className="text-base-content/70 mb-8 max-w-md mx-auto">Start by adding your delicious offerings to the menu. Your customers are waiting to discover your amazing food!</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button 
               onClick={() => setShowImportModal(true)}
-              className="btn btn-outline btn-accent"
+              className="btn btn-outline btn-accent shadow-sm"
             >
               Import from CSV
             </button>
-            <Link to={PATHS.RESTAURANT_ARTICLES_NEW} className="btn btn-accent">
+            <Link to={PATHS.RESTAURANT_ARTICLES_NEW} className="btn btn-accent shadow-sm">
               Add Your First Article
             </Link>
           </div>
@@ -119,22 +137,27 @@ const RestaurantArticlesManagementPage = () => {
 
       {/* Only show InfiniteScrollContainer if not initial loading, no error, or if there are articles/more to load */}
       {(!initialLoading || articles.length > 0) && !error && (articles.length > 0 || hasMoreArticles) && (
-        <InfiniteScrollContainer
-          data={articles}
-          fetchMoreData={fetchMoreArticles}
-          hasMore={hasMoreArticles}
-          renderItem={renderArticleItem}
-          loader={<div className="text-center col-span-full py-4"><span className="loading loading-dots loading-md"></span></div>}
-          endMessage={
-            articles.length > 0 && !hasMoreArticles ? (
-              <p className="text-center col-span-full py-4 text-base-content opacity-75">
-                <b>You&apos;ve seen all your articles.</b>
-              </p>
-            ) : null
-          }
-          isLoadingMore={loading && articles.length > 0} // Show loader for "load more" only when articles are already present
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-        />
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-base-200/30 to-base-100/30 rounded-lg -z-10"></div>
+          <div className="p-4">
+            <InfiniteScrollContainer
+              data={articles}
+              fetchMoreData={fetchMoreArticles}
+              hasMore={hasMoreArticles}
+              renderItem={renderArticleItem}
+              loader={<div className="text-center col-span-full py-4"><span className="loading loading-dots loading-md"></span></div>}
+              endMessage={
+                articles.length > 0 && !hasMoreArticles ? (
+                  <div className="text-center col-span-full py-6 text-base-content/70">
+                    <p className="font-medium">You've seen all your articles</p>
+                  </div>
+                ) : null
+              }
+              isLoadingMore={loading && articles.length > 0} // Show loader for "load more" only when articles are already present
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+            />
+          </div>
+        </div>
       )}
 
       <ArticleCsvImportModal
@@ -146,4 +169,4 @@ const RestaurantArticlesManagementPage = () => {
   );
 };
 
-export default RestaurantArticlesManagementPage; 
+export default RestaurantArticlesManagementPage;

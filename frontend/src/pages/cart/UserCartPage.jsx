@@ -83,54 +83,84 @@ const UserCartPage = () => {
 
   if (cartItems.length === 0) {
     return (
-      <div className="container mx-auto p-4 text-center">
-        <h1 className="text-2xl font-bold mb-4">Shopping Cart</h1>
-        <p className="text-lg mb-4">Your cart is currently empty.</p>
-        <Link to="/" className="btn btn-primary">Start Shopping</Link>
+      <div className="container mx-auto p-4 text-center min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="max-w-md w-full bg-base-100 p-8 rounded-lg shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-base-content opacity-30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
+          <p className="text-base-content/70 mb-6">Looks like you haven't added any items to your cart yet.</p>
+          <Link to="/" className="btn btn-primary">Start Shopping</Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Shopping Cart</h1>
-      {error && <AlertMessage type="error" message={error} className="mb-4" />}
+    <div className="container mx-auto p-4 py-8">
+      <h1 className="text-3xl font-bold mb-8 text-center">Your Shopping Cart</h1>
+      {error && <AlertMessage type="error" message={error} className="mb-6" />}
       
-      <div className="mb-6">
-        {cartItems.map(item => (
-          <CartItemCard key={`${item.restaurantId}-${item.id}`} item={item} />
-        ))}
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-4">
+          {cartItems.map(item => (
+            <CartItemCard key={`${item.restaurantId}-${item.id}`} item={item} />
+          ))}
+        </div>
 
-      <div className="bg-base-200 p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-        <div className="flex justify-between mb-2">
-          <span className="text-lg">Subtotal:</span>
-          <span className="text-lg font-bold">€{totalPrice.toFixed(2)}</span>
+        <div className="lg:col-span-1">
+          <div className="bg-base-200 p-6 rounded-lg shadow-lg sticky top-24">
+            <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-base-300">Order Summary</h2>
+            
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between text-base">
+                <span>Subtotal:</span>
+                <span className="font-medium">€{totalPrice.toFixed(2)}</span>
+              </div>
+              
+              <div className="flex justify-between text-base">
+                <span>Delivery Fee:</span>
+                <span className="font-medium">€0.00</span>
+              </div>
+              
+              <div className="divider my-2"></div>
+              
+              <div className="flex justify-between text-lg font-bold">
+                <span>Total:</span>
+                <span className="text-primary">€{totalPrice.toFixed(2)}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <button 
+                onClick={handleProceedToCheckout} 
+                className="btn btn-primary btn-block shadow-md" 
+                disabled={loading || cartItems.length === 0}
+              >
+                {loading ? (
+                  <><span className="loading loading-spinner"></span> Processing...</>
+                ) : (
+                  'Proceed to Checkout'
+                )}
+              </button>
+              
+              <button 
+                onClick={() => clearCart()} 
+                className="btn btn-outline btn-block"
+                disabled={loading || cartItems.length === 0}
+              >
+                Clear Cart
+              </button>
+              
+              <Link to="/" className="btn btn-ghost btn-block">
+                Continue Shopping
+              </Link>
+            </div>
+          </div>
         </div>
-        {/* Add more details like shipping, taxes if applicable later */}
-        <div className="divider"></div>
-        <div className="flex justify-between mb-4">
-          <span className="text-xl font-bold">Total:</span>
-          <span className="text-xl font-bold text-primary">€{totalPrice.toFixed(2)}</span>
-        </div>
-        <button 
-          onClick={handleProceedToCheckout} 
-          className="btn btn-primary btn-block" 
-          disabled={loading || cartItems.length === 0}
-        >
-          {loading ? <span className="loading loading-spinner"></span> : 'Proceed to Checkout'}
-        </button>
-        <button 
-          onClick={() => clearCart()} 
-          className="btn btn-ghost btn-block mt-2"
-          disabled={loading || cartItems.length === 0}
-        >
-          Clear Cart
-        </button>
       </div>
     </div>
   );
 };
 
-export default UserCartPage; 
+export default UserCartPage;

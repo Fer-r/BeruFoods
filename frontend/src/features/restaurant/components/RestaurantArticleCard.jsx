@@ -70,10 +70,13 @@ const RestaurantArticleCard = ({ article, onDelete }) => {
   };
 
   return (
-    <div className="card bg-base-100 shadow-xl mb-6 overflow-hidden">
-      <figure className="h-48 w-full overflow-hidden">
+    <div className="card bg-base-100 shadow-xl mb-6 overflow-hidden article-card">
+      <figure className="h-48 w-full overflow-hidden relative">
         {article.imageUrl ? (
-          <img src={article.imageUrl} alt={article.name} className="object-cover h-full w-full" />
+          <>
+            <img src={article.imageUrl} alt={article.name} className="object-cover h-full w-full transition-transform duration-300 hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </>
         ) : (
           <div className="h-full w-full bg-base-300 flex items-center justify-center">
             <span className="text-base-content opacity-50">No Image</span>

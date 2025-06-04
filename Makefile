@@ -13,7 +13,7 @@ COMPOSE := docker compose
 .DEFAULT_GOAL := help
 
 # Phony targets prevent conflicts with files of the same name
-.PHONY: help init up down restart build logs-backend logs-frontend bash-backend bash-frontend install db cache cache-clear migration test-backend frontend backend fix-linux-permissions start-frontend-dev-blocking generate-keys deploy deploy-build deploy-up deploy-init
+.PHONY: help init up down restart build logs-backend logs-frontend bash-backend bash-frontend install db cache cache-clear migration test-backend frontend backend fix-linux-permissions start-frontend-dev-blocking generate-keys
 
 help: ## Display this help message
 	@echo "Usage: make [target]"
@@ -41,10 +41,6 @@ help: ## Display this help message
 	@echo "  backend         Validate backend composer setup"
 	@echo "  start-frontend-dev Show frontend dev server logs (starts automatically)"
 	@echo "  generate-keys   Generate LexikJWTBundle RSA keys and Mercure HMAC secret"
-	@echo "  deploy          Deploy application to production (no phpMyAdmin)"
-	@echo "  deploy-build    Build production images"
-	@echo "  deploy-up       Start production services"
-	@echo "  deploy-init     Full production deployment: build, start, install deps, setup DB"
 
 init: stop up install db cache ## Initialize the project: stop, build, start, install deps, setup DB, warm cache (frontend dev server starts automatically)
 	@echo "Project initialization complete. Frontend dev server is starting..."
@@ -140,103 +136,6 @@ generate-keys: ## Generate LexikJWTBundle RSA keys and Mercure HMAC secret, then
 	@echo "Restarting services to apply new keys..."
 	$(COMPOSE) restart
 	@echo "Keys generation and service restart complete!"
-
-# Production deployment targets
-deploy: deploy-init ## Deploy application to production (alias for deploy-init)
-
-deploy-build: ## Build production images
-	@echo "Building production images..."
-	@PUBLIC_IP=$$(curl -s ifconfig.me || curl -s ipecho.net/plain || echo "localhost"); \
-	PUBLIC_IP=$$PUBLIC_IP $(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
-
-deploy-up: ## Start production services
-	@echo "Starting production services..."
-	@PUBLIC_IP=$$(curl -s ifconfig.me || curl -s ipecho.net/plain || echo "localhost"); \
-	export PUBLIC_IP=$$PUBLIC_IP; \
-	echo "Starting services with PUBLIC_IP=$$PUBLIC_IP"; \
-	PUBLIC_IP=$$PUBLIC_IP $(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml up -d
-
-deploy-init: deploy-setup deploy-build deploy-up deploy-install deploy-db deploy-cache ## Full production deployment
-	@echo "Production deployment completed! 🎉"
-	@echo ""
-	@PUBLIC_IP=$$(curl -s ifconfig.me || curl -s ipecho.net/plain || echo "localhost"); \
-	echo "🌐 Application URLs:"; \
-	echo "   - Main Application: https://$$PUBLIC_IP"; \
-	echo "   - API Endpoint: https://$$PUBLIC_IP/api"; \
-	echo "   - Mercure Hub: https://$$PUBLIC_IP/.well-known/mercure"
-	@echo ""
-	@echo "📋 Next Steps:"
-	@echo "   1. Update Google Maps API key in frontend/.env: VITE_GOOGLE_MAPS_API_KEY=your_key"
-	@echo "   2. Configure SSL certificates (Let's Encrypt recommended)"
-	@echo "   3. Set up automated backups"
-	@echo ""
-	@echo "🔧 Environment Files Configured:"
-	@echo "   - Root .env: Docker Compose variables"
-	@echo "   - frontend/.env: Vite/React variables (VITE_*)"
-	@echo "   - backend/.env: Symfony variables (APP_ENV=prod, CORS, etc.)"
-	@echo ""
-	@echo "🔒 SSL Certificates:"
-	@echo "   - Generated automatically by nginx container using entrypoint.sh"
-	@echo "   - Certificate CN set to detected public IP"
-
-deploy-setup: ## Setup production environment and SSL certificates
-	@echo "Setting up production environment..."
-	@PUBLIC_IP=$$(curl -s ifconfig.me || curl -s ipecho.net/plain || echo "localhost"); \
-	echo "Detected public IP: $$PUBLIC_IP"; \
-	echo "Configuring environment files for IP: $$PUBLIC_IP"
-	@echo "1. Configuring root .env (Docker Compose)..."
-	@PUBLIC_IP=$$(curl -s ifconfig.me || curl -s ipecho.net/plain || echo "localhost"); \
-	if [ ! -f ".env" ]; then \
-		echo "Creating root .env file..."; \
-		cp .env.example .env; \
-	fi; \
-	if grep -q "MERCURE_PUBLIC_URL=" .env; then \
-		sed -i "s|^MERCURE_PUBLIC_URL=.*|MERCURE_PUBLIC_URL=https://$$PUBLIC_IP/.well-known/mercure|" .env; \
-	else \
-		echo "MERCURE_PUBLIC_URL=https://$$PUBLIC_IP/.well-known/mercure" >> .env; \
-	fi; \
-	if grep -q "CORS_ALLOW_ORIGIN=" .env; then \
-		sed -i "s|^CORS_ALLOW_ORIGIN=.*|CORS_ALLOW_ORIGIN=^https?://($$PUBLIC_IP\|localhost\|127\\\.0\\\.0\\\.1)(:[0-9]+)?\$$|" .env; \
-	else \
-		echo "CORS_ALLOW_ORIGIN=^https?://($$PUBLIC_IP|localhost|127\.0\.0\.1)(:[0-9]+)?\$$" >> .env; \
-	fi
-	@echo "2. Configuring frontend/.env (Vite variables)..."
-	@PUBLIC_IP=$$(curl -s ifconfig.me || curl -s ipecho.net/plain || echo "localhost"); \
-	if grep -q "VITE_URL_API=" frontend/.env; then \
-		sed -i "s|^VITE_URL_API=.*|VITE_URL_API=https://$$PUBLIC_IP/api|" frontend/.env; \
-	else \
-		echo "VITE_URL_API=https://$$PUBLIC_IP/api" >> frontend/.env; \
-	fi; \
-	echo "Frontend configured to use API at: https://$$PUBLIC_IP/api"
-	@echo "3. Configuring backend/.env (Symfony variables)..."
-	@PUBLIC_IP=$$(curl -s ifconfig.me || curl -s ipecho.net/plain || echo "localhost"); \
-	sed -i "s|^APP_ENV=.*|APP_ENV=prod|" backend/.env; \
-	sed -i "s|^MERCURE_PUBLIC_URL=.*|MERCURE_PUBLIC_URL=\"https://$$PUBLIC_IP/.well-known/mercure\"|" backend/.env; \
-	sed -i "s|^CORS_ALLOW_ORIGIN=.*|CORS_ALLOW_ORIGIN='^https?://($$PUBLIC_IP\|localhost\|127\\\.0\\\.0\\\.1)(:[0-9]+)?\$$'|" backend/.env; \
-	echo "Backend configured for production with IP: $$PUBLIC_IP"
-	@echo "Preparing SSL certificate configuration..."
-	@mkdir -p docker/nginx/certs
-	@echo "SSL certificates will be generated automatically by nginx entrypoint.sh"
-
-deploy-install: ## Install production dependencies
-	@echo "Installing production dependencies..."
-	$(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml exec -T ${BACKEND_SERVICE} composer install --no-dev --optimize-autoloader --no-interaction
-	@echo "Generating JWT keys..."
-	$(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml exec -T ${BACKEND_SERVICE} bin/console lexik:jwt:generate-keypair --skip-if-exists
-
-deploy-db: ## Setup production database
-	@echo "Setting up production database..."
-	@echo "Waiting for database to be ready..."
-	@sleep 15
-	$(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml exec -T ${BACKEND_SERVICE} bin/console doctrine:migration:migrate --no-interaction --allow-no-migration
-
-deploy-cache: ## Clear and warm production cache
-	@echo "Setting up production cache..."
-	$(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml exec -T ${BACKEND_SERVICE} bin/console cache:clear --env=prod
-	$(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml exec -T ${BACKEND_SERVICE} bin/console cache:warmup --env=prod
-	@echo "Setting proper permissions..."
-	$(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml exec -T ${BACKEND_SERVICE} chown -R www-data:www-data /var/www/backend/var
-	$(COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml exec -T ${BACKEND_SERVICE} chmod -R 775 /var/www/backend/var
 
 fix-linux-permissions: ## Ensures necessary backend directories are writable on Linux hosts (used by 'init')
 	@if [ "$(shell uname)" = "Linux" ]; then \

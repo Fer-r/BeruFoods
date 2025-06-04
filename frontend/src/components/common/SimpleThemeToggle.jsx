@@ -1,6 +1,16 @@
 import { FaSun, FaMoon } from 'react-icons/fa6';
 import { useThemeManager } from '../../hooks/useThemeManager';
 
+/**
+ * SimpleThemeToggle provides a UI element to toggle between light and dark themes.
+ * It utilizes the `useThemeManager` hook to access and update the current theme state.
+ * The component can be rendered as a standalone icon button or as a menu item
+ * with a text label and an icon, based on the `inMenu` prop.
+ *
+ * @param {object} props - The component's props.
+ * @param {string} [props.className=""] - Additional CSS classes for the main container, primarily used when `inMenu` is false (standalone mode).
+ * @param {boolean} [props.inMenu=false] - If true, renders the toggle in a style suitable for a menu item (text label + icon). Otherwise, renders as a standalone icon button.
+ */
 const SimpleThemeToggle = ({ className = "", inMenu = false }) => {
   const { theme, toggleTheme } = useThemeManager();
 

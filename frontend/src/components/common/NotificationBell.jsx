@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router';
 import { FaBell } from 'react-icons/fa';
 import { useNotifications } from '../../context/NotificationContext';
 
+/**
+ * NotificationBell displays a bell icon that shows a count of unread notifications.
+ * When clicked, it opens a dropdown listing recent notifications. Users can view notifications,
+ * mark them as read individually, mark all as read, and navigate to notification-related content (e.g., specific orders).
+ * The component fetches and manages notification state through the `useNotifications` hook,
+ * which connects to the NotificationContext. It allows toggling between viewing only unread
+ * notifications and all notifications.
+ * This component does not accept direct props as it relies on the NotificationContext for its data and actions.
+ */
 const NotificationBell = () => {
   const { 
     persistentNotifications, 

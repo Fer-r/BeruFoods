@@ -62,7 +62,7 @@ const ArticleCard = ({ article, restaurantId }) => {
         
         {article.allergies && article.allergies.length > 0 && (
           <div className="mb-2">
-            <h4 className="text-xs font-semibold text-gray-600">Alérgenos:</h4>
+            <h4 className="text-xs font-semibold text-gray-600">Allergies:</h4>
             <div className="flex flex-wrap gap-1 mt-1">
               {article.allergies.map((allergy, index) => (
                 <span key={index} className="badge badge-outline badge-sm">{allergy}</span>
@@ -72,7 +72,7 @@ const ArticleCard = ({ article, restaurantId }) => {
         )}
 
         {!article.available && (
-          <span className="text-sm text-error font-semibold mt-1 block">No disponible</span>
+          <span className="text-sm text-error font-semibold mt-1 block">Not Available</span>
         )}
 
         {article.available && isUser && (
@@ -80,7 +80,7 @@ const ArticleCard = ({ article, restaurantId }) => {
             onClick={handleAddToCart} 
             className="btn btn-sm btn-primary mt-2 relative overflow-hidden"
           >
-            Añadir al Carrito
+            Add to Cart
           </button>
         )}
          {article.available && !isAuthenticated() && (
@@ -88,7 +88,7 @@ const ArticleCard = ({ article, restaurantId }) => {
             onClick={handleAddToCart} 
             className="btn btn-sm btn-primary mt-2 relative overflow-hidden"
           >
-            Añadir al Carrito
+            Add to Cart
           </button>
         )}
       </div>

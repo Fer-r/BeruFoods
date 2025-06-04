@@ -138,7 +138,7 @@ const RestaurantOrderDetailsPage = () => {
           </div>
           <div>
             <p className="text-sm text-gray-600">Total Price:</p>
-            <p className="text-lg font-bold text-primary">€{parseFloat(displayOrder.total_price).toFixed(2)}</p>
+            <p className="text-lg font-bold text-primary">{parseFloat(displayOrder.total_price).toFixed(2)}€</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Total Items:</p>
@@ -231,14 +231,14 @@ const RestaurantOrderDetailsPage = () => {
                       </td>
                       <td>
                         {unitPrice > 0 ? (
-                          <span className="font-medium">€{parseFloat(unitPrice).toFixed(2)}</span>
+                          <span className="font-medium">{parseFloat(unitPrice).toFixed(2)}€</span>
                         ) : (
                           <span className="text-gray-500">N/A</span>
                         )}
                       </td>
                       <td>
                         {lineTotal > 0 ? (
-                          <span className="font-bold text-primary">€{lineTotal.toFixed(2)}</span>
+                          <span className="font-bold text-primary">{lineTotal.toFixed(2)}€</span>
                         ) : (
                           <span className="text-gray-500">-</span>
                         )}
@@ -250,12 +250,12 @@ const RestaurantOrderDetailsPage = () => {
               <tfoot>
                 <tr className="border-t-2">
                   <td colSpan="3" className="font-bold text-right">Order Total:</td>
-                  <td className="font-bold text-primary text-lg">€{parseFloat(displayOrder.total_price).toFixed(2)}</td>
+                  <td className="font-bold text-primary text-lg">{parseFloat(displayOrder.total_price).toFixed(2)}€</td>
                 </tr>
                 {displayOrder.calculatedTotal && Math.abs(displayOrder.calculatedTotal - parseFloat(displayOrder.total_price)) > 0.01 && (
                   <tr className="border-t">
                     <td colSpan="3" className="text-sm text-gray-500 text-right">Calculated Total:</td>
-                    <td className="text-sm text-gray-500">€{displayOrder.calculatedTotal.toFixed(2)}</td>
+                    <td className="text-sm text-gray-500">{displayOrder.calculatedTotal.toFixed(2)}€</td>
                   </tr>
                 )}
               </tfoot>
@@ -273,4 +273,4 @@ const RestaurantOrderDetailsPage = () => {
   );
 };
 
-export default RestaurantOrderDetailsPage; 
+export default RestaurantOrderDetailsPage;

@@ -153,7 +153,7 @@ const UserOrderDetailsPage = () => {
           )}
           <div>
             <p className="text-sm text-gray-600">Total Price:</p>
-            <p className="text-lg font-bold text-primary">€{parseFloat(order.total_price).toFixed(2)}</p>
+            <p className="text-lg font-bold text-primary">{parseFloat(order.total_price).toFixed(2)}€</p>
           </div>
         </div>
       </div>
@@ -175,7 +175,7 @@ const UserOrderDetailsPage = () => {
                   </div>
                   {articleDetail && (
                     <p className="text-md font-medium">
-                      Current price: €{(parseFloat(articleDetail.price) * item.quantity).toFixed(2)}
+                      Current price: {(parseFloat(articleDetail.price) * item.quantity).toFixed(2)}€
                     </p>
                   )}
                 </li>
@@ -195,4 +195,3 @@ const UserOrderDetailsPage = () => {
 };
 
 export default UserOrderDetailsPage;
-

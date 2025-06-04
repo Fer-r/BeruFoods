@@ -77,7 +77,7 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
             <div className={`badge ${getStatusBadgeClass(order.status)} text-white font-medium`}>
               {formatStatus(order.status)}
             </div>
-            <p className="text-lg font-bold mt-1">${order.total_price}</p>
+            <p className="text-lg font-bold mt-1">{parseFloat(order.total_price).toFixed(2)}€</p>
           </div>
         </div>
 
@@ -106,7 +106,7 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
                   </span>
                   {item.price && (
                     <span className="text-gray-600">
-                      ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+                      {(parseFloat(item.price) * item.quantity).toFixed(2)}€
                     </span>
                   )}
                 </div>

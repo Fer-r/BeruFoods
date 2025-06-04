@@ -16,22 +16,22 @@ const OrderStatusBadge = ({ status }) => {
     case 'pending':
     case 'pendiente':
       badgeClass = 'badge-warning';
-      text = 'Pendiente';
+      text = 'Pending';
       break;
     case 'preparing':
     case 'preparando':
       badgeClass = 'badge-info';
-      text = 'Preparando';
+      text = 'Preparing';
       break;
     case 'delivered':
     case 'entregado':
       badgeClass = 'badge-success';
-      text = 'Entregado';
+      text = 'Delivered';
       break;
     case 'cancelled':
     case 'cancelado':
       badgeClass = 'badge-error';
-      text = 'Cancelado';
+      text = 'Cancelled';
       break;
     default:
       break;
@@ -80,9 +80,9 @@ const OrderListItem = ({ order }) => {
       <div className="card-body p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
           <h2 className="card-title text-lg md:text-xl mb-2 sm:mb-0">
-            Pedido #{order.id}
+            Order #{order.id}
             {highlight && (
-              <span className="badge badge-accent badge-sm ml-2 animate-pulse">¡Actualizado!</span>
+              <span className="badge badge-accent badge-sm ml-2 animate-pulse">Updated!</span>
             )}
           </h2>
           <OrderStatusBadge status={order.status} />
@@ -90,15 +90,15 @@ const OrderListItem = ({ order }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 text-sm mb-4">
           <div>
-            <p className="font-semibold text-gray-600">Restaurante:</p>
+            <p className="font-semibold text-gray-600">Restaurant:</p>
             <p className="text-base-content truncate">{order.restaurant?.name || 'N/A'}</p>
           </div>
           <div>
-            <p className="font-semibold text-gray-600">Fecha del Pedido:</p>
+            <p className="font-semibold text-gray-600">Order Date:</p>
             <p className="text-base-content">{new Date(order.created_at).toLocaleString()}</p>
           </div>
           <div>
-            <p className="font-semibold text-gray-600">Precio Total:</p>
+            <p className="font-semibold text-gray-600">Total Price:</p>
             <p className="font-bold text-primary text-base-content">{parseFloat(order.total_price).toFixed(2)}€</p>
           </div>
         </div>
@@ -108,7 +108,7 @@ const OrderListItem = ({ order }) => {
             to={`/user/orders/${order.id}`}
             className="btn btn-sm btn-primary"
           >
-            Ver Detalles
+            View Details
           </Link>
         </div>
       </div>

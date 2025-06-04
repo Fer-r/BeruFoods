@@ -10,6 +10,10 @@ export default defineConfig({
   ],
   server: {
     host: "0.0.0.0",
-    allowedHosts: ["frontend"],
+    allowedHosts: ["frontend","frontend-production-9900.up.railway.app"],
+    preview: {
+      host: "0.0.0.0",
+      allowedHosts: ["frontend","frontend-production-9900.up.railway.app"],
+    },
   },
 });

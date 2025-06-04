@@ -34,17 +34,17 @@ const UserRegister = () => {
 
   return (
     <>
-      <h2 className="card-title text-2xl mb-6 text-base-content">Registro de Usuario</h2>
+      <h2 className="card-title text-2xl mb-6 text-base-content">User Sign Up</h2>
       <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-4">
-        {error && <AlertMessage type="error\" message={error} />}
+        {error && <AlertMessage type="error" message={error} />}
         {success && <AlertMessage type="success" message={success} />}
 
         <StyledInput
           type="email"
           id="email"
           name="email"
-          label="Correo Electrónico"
-          placeholder="tu@email.com"
+          label="Email Address"
+          placeholder="your@email.com"
           value={formData.email}
           onChange={handleChange}
           required
@@ -56,8 +56,8 @@ const UserRegister = () => {
           type="text"
           id="name"
           name="name"
-          label="Nombre Completo (Opcional)"
-          placeholder="Tu Nombre"
+          label="Full Name (Optional)"
+          placeholder="Your Name"
           value={formData.name}
           onChange={handleChange}
           autoComplete="name"
@@ -68,8 +68,8 @@ const UserRegister = () => {
           type="tel"
           id="phone"
           name="phone"
-          label="Número de Teléfono (Opcional)"
-          placeholder="612 345 678"
+          label="Phone Number (Optional)"
+          placeholder="123-456-7890"
           value={formData.phone}
           onChange={handleChange}
           autoComplete="tel"
@@ -80,7 +80,7 @@ const UserRegister = () => {
           type="password"
           id="password"
           name="password"
-          label="Contraseña"
+          label="Password"
           placeholder="******"
           value={formData.password}
           onChange={handleChange}
@@ -94,7 +94,7 @@ const UserRegister = () => {
           type="password"
           id="confirmPassword"
           name="confirmPassword"
-          label="Confirmar Contraseña"
+          label="Confirm Password"
           placeholder="******"
           value={formData.confirmPassword}
           onChange={handleChange}
@@ -111,8 +111,8 @@ const UserRegister = () => {
           type="text"
           id="addressLine2"
           name="addressLine2"
-          label="Detalles de dirección (Opcional)"
-          placeholder="Piso, puerta, escalera, etc."
+          label="Address details (Optional)"
+          placeholder="Apartment, suite, unit, building, or floor"
           value={formData.addressLine2 || ''}
           onChange={handleChange}
           className="input input-bordered w-full focus:input-primary shadow-sm"
@@ -126,13 +126,13 @@ const UserRegister = () => {
           {loading ? (
             <span className="loading loading-spinner"></span>
           ) : (
-            "Registrarse"
+            "Sign Up"
           )}
         </button>
 
         <div className="text-center text-sm space-y-2 mt-4">
           <p>
-            ¿Ya tienes una cuenta?{" "}
+            Already have an account?{" "}
             <button 
               type="button"
               onClick={() => {
@@ -141,13 +141,13 @@ const UserRegister = () => {
               }}
               className="link link-secondary"
             >
-              Iniciar Sesión
+              Sign In
             </button>
           </p>
           <p>
-            ¿Registrar un restaurante?{" "}
+            Register as a restaurant?{" "}
             <Link to="/restaurant/register" className="link link-accent">
-              Registro de Restaurante
+              Restaurant Sign Up
             </Link>
           </p>
         </div>

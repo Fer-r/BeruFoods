@@ -78,21 +78,21 @@ const UserLoginModal = ({ open, handleClose }) => {
     <dialog ref={modalRef} className={`modal ${open ? 'modal-open' : ''}`} onClose={handleDialogNativeClose}>
       <div className="modal-box" onClick={stopPropagation}>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">Iniciar Sesión</h3>
+          <h3 className="font-bold text-lg">Sign in</h3>
           <form method="dialog">
             <button className="btn btn-sm btn-circle btn-ghost">✕</button>
           </form>
         </div>
 
         <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4 py-4">
-          {authError && <AlertMessage type="error\" message={authError} />}
+          {authError && <AlertMessage type="error" message={authError} />}
           
           <StyledInput
             type="email"
             id="login-email"
             name="email"
-            label="Correo Electrónico"
-            placeholder="tu@email.com"
+            label="Email Address"
+            placeholder="your@email.com"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -102,12 +102,12 @@ const UserLoginModal = ({ open, handleClose }) => {
             autoFocus
             autoComplete="email"
           />
-          {emailError && <AlertMessage type="error\" message={emailError} />}
+          {emailError && <AlertMessage type="error" message={emailError} />}
           <StyledInput
             type="password"
             id="login-password"
             name="password"
-            label="Contraseña"
+            label="Password"
             placeholder="******"
             value={password}
             onChange={(e) => {
@@ -117,13 +117,13 @@ const UserLoginModal = ({ open, handleClose }) => {
             required
             autoComplete="current-password"
           />
-          {passwordError && <AlertMessage type="error\" message={passwordError} />}
+          {passwordError && <AlertMessage type="error" message={passwordError} />}
           <div className="modal-action mt-4">
             <button type="button" className="btn btn-ghost" onClick={handleClose} disabled={authLoading}>
-              Cancelar
+              Cancel
             </button>
             <button type="submit" className="btn btn-primary" disabled={authLoading}>
-              {authLoading ? <span className="loading loading-spinner loading-xs"></span> : 'Iniciar Sesión'}
+              {authLoading ? <span className="loading loading-spinner loading-xs"></span> : 'Sign In'}
             </button>
           </div>
         </form>

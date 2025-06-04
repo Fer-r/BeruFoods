@@ -48,21 +48,21 @@ const FoodTypeModal = ({
       aria-labelledby="food_type_modal_title"
     >
       <div className="modal-box">
-        <h3 className="font-bold text-lg mb-4" id="food_type_modal_title">Seleccionar Tipos de Cocina</h3>
+        <h3 className="font-bold text-lg mb-4" id="food_type_modal_title">Select Food Types</h3>
         <button
           type="button"
           className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
           onClick={onClose}
-          aria-label="Cerrar"
+          aria-label="Close"
         >
           ✕
         </button>
 
         <ul className="menu p-0 bg-base-100 rounded-box w-full max-h-60 overflow-y-auto mb-4" aria-live="polite">
           {isLoading ? (
-            <li className="menu-title p-4"><span>Cargando tipos de cocina...</span></li>
+            <li className="menu-title p-4"><span>Loading food types...</span></li>
           ) : error ? (
-            <li className="menu-title p-4 text-error"><span>Error al cargar tipos de cocina.</span></li>
+            <li className="menu-title p-4 text-error"><span>Failed to load types.</span></li>
           ) : availableFoodTypes?.length > 0 ? (
             availableFoodTypes.map(type => (
               <li key={type.id}>
@@ -73,19 +73,19 @@ const FoodTypeModal = ({
                     checked={selectedFoodTypeIds.includes(type.id)}
                     onChange={handleFoodTypeChange}
                     className="checkbox checkbox-primary mr-4"
-                    aria-label={`Seleccionar ${type.name}`}
+                    aria-label={`Select ${type.name}`}
                   />
                   <span className="label-text whitespace-normal">{type.name}</span>
                 </label>
               </li>
             ))
           ) : (
-            <li className="menu-title p-4"><span>No hay tipos de cocina disponibles.</span></li>
+            <li className="menu-title p-4"><span>No food types available.</span></li>
           )}
         </ul>
 
         <div className="modal-action">
-          <button type="button" className="btn" onClick={onClose}>Aceptar</button>
+          <button type="button" className="btn" onClick={onClose}>Done</button>
         </div>
       </div>
       <div className="modal-backdrop" onClick={onClose}></div>

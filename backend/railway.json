@@ -5,6 +5,12 @@
     "nixpacksConfigPath": "nixpacks.toml"
   },
   "deploy": {
-    "restartPolicyType": "ON_FAILURE"
+    "restartPolicyType": "ON_FAILURE",
+    "volumeMounts": [
+      {
+        "mountPath": "/app/public/uploads",
+        "volumeName": "uploads-storage"
+      }
+    ]
   }
 } 

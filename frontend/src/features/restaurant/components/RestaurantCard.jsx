@@ -62,3 +62,5 @@ const RestaurantCard = ({ restaurant }) => {
     </div>
   );
 };
+
+export default RestaurantCard; 

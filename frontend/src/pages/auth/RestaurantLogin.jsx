@@ -42,19 +42,19 @@ const RestaurantLogin = () => {
 
   return (
     <>
-      <h2 className="card-title text-2xl mb-6">Acceso para Restaurantes</h2>
-      <p className="mb-6 text-center">Inicia sesión para gestionar tu restaurante.</p>
+      <h2 className="card-title text-2xl mb-6">Restaurant Login</h2>
+      <p className="mb-6 text-center">Log in to manage your restaurant.</p>
       <form onSubmit={handleLogin} className="w-full max-w-xs space-y-4">
         {(formError || authError) && (
-          <AlertMessage type="error\" message={formError || authError} />
+          <AlertMessage type="error" message={formError || authError} />
         )}
 
         <StyledInput
           type="email"
           id="email"
           name="email"
-          label="Correo Electrónico del Negocio"
-          placeholder="contacto@restaurante.com"
+          label="Business Email Address"
+          placeholder="contact@restaurant.com"
           value={email}
           onChange={(e) => { setEmail(e.target.value); setFormError(''); }}
           required
@@ -66,7 +66,7 @@ const RestaurantLogin = () => {
           type="password"
           id="password"
           name="password"
-          label="Contraseña"
+          label="Password"
           placeholder="******"
           value={password}
           onChange={(e) => { setPassword(e.target.value); setFormError(''); }}
@@ -76,15 +76,15 @@ const RestaurantLogin = () => {
         />
 
         <button type="submit" className={`btn btn-primary w-full ${authLoading ? 'loading' : ''}`} disabled={authLoading}>
-          {authLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+          {authLoading ? 'Logging in...' : 'Login'}
         </button>
 
         <div className="text-center mt-4">
-          <p className="text-sm">¿No tienes una cuenta? <Link to="/restaurant/register" className="link link-secondary">Registrar Restaurante</Link></p>
+          <p className="text-sm">Don&apos;t have an account? <Link to="/restaurant/register" className="link link-secondary">Register Restaurant</Link></p>
         </div>
       </form>
     </>
   );
 };
 
-export default RestaurantLogin;
+export default RestaurantLogin; 

@@ -178,7 +178,7 @@ const RestaurantOrdersPage = () => {
 
       {/* General Error Alert */}
       {error && orders.length > 0 && (
-        <AlertMessage type="warning\" message={`Error loading more orders: ${error}`} className="mb-4" />
+        <AlertMessage type="warning" message={`Error loading more orders: ${error}`} className="mb-4" />
       )}
 
       {/* Orders List */}

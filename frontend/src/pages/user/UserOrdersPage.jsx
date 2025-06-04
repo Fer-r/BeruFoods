@@ -42,7 +42,7 @@ const UserOrdersPage = () => {
          <h1 className="text-3xl font-bold mb-6 text-center">My Orders</h1>
         <AlertMessage type="error" message={`${error}`} />
         {mercureError && (
-          <AlertMessage type="warning" message={`Real-time updates unavailable: ${mercureError}`} className="mt-2" />
+          <AlertMessage type="warning\" message={`Real-time updates unavailable: ${mercureError}`} className="mt-2" />
         )}
       </div>
     );
@@ -83,7 +83,7 @@ const UserOrdersPage = () => {
       )}
       
       {error && orders.length > 0 && (
-        <AlertMessage type="warning" message={`Error loading more orders: ${error}`} className="mb-6" />
+        <AlertMessage type="warning\" message={`Error loading more orders: ${error}`} className="mb-6" />
       )}
 
       <div className="relative">

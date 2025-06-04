@@ -1,6 +1,23 @@
 import InfiniteScrollContainer from '../../../components/common/InfiniteScrollContainer';
 import RestaurantCard from './RestaurantCard'; // Import RestaurantCard
 
+/**
+ * RestaurantList displays a grid of restaurant cards with infinite scrolling.
+ * It handles various states including loading, errors, and empty results.
+ * The component uses InfiniteScrollContainer to load more restaurants as the user scrolls.
+ * 
+ * @param {Object} props - Component props
+ * @param {Array} props.restaurants - Array of restaurant objects to display
+ * @param {boolean} props.isLoadingRestaurants - Whether the initial restaurant data is loading
+ * @param {boolean} props.isLoadingMore - Whether additional restaurant data is being loaded
+ * @param {string|null} props.error - Error message if restaurant data failed to load
+ * @param {boolean} props.hasMore - Whether there are more restaurants to load
+ * @param {Function} props.loadMoreRestaurants - Callback function to load more restaurants
+ * @param {string} props.debouncedSearchText - The current search text (for empty state message)
+ * @param {string} props.currentLocationName - The current location name (for empty state message)
+ * @param {boolean} props.isLocationLoading - Whether location data is currently loading
+ * @returns {JSX.Element|null} The rendered restaurant list component
+ */
 const RestaurantList = ({
   restaurants,
   isLoadingRestaurants,
@@ -58,4 +75,4 @@ const RestaurantList = ({
   return null; // Fallback, should ideally be handled by above conditions
 };
 
-export default RestaurantList; 
+export default RestaurantList;

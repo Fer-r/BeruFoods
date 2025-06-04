@@ -1,5 +1,12 @@
 import jsPDF from 'jspdf';
 
+/**
+ * Generates a PDF document for an order bill/receipt.
+ * 
+ * @param {Object} order - The order object containing details to include in the PDF
+ * @param {boolean} isRestaurantView - Whether the PDF is being generated for restaurant view (true) or customer view (false)
+ * @returns {jsPDF} The generated PDF document object
+ */
 export const generateOrderBill = (order, isRestaurantView = false) => {
   const doc = new jsPDF();
   
@@ -144,6 +151,13 @@ export const generateOrderBill = (order, isRestaurantView = false) => {
   return doc;
 };
 
+/**
+ * Generates and downloads a PDF bill for an order.
+ * 
+ * @param {Object} order - The order object containing details to include in the PDF
+ * @param {boolean} isRestaurantView - Whether the PDF is being generated for restaurant view (true) or customer view (false)
+ * @returns {Object} An object with success status and either filename or error message
+ */
 export const downloadOrderBill = (order, isRestaurantView = false) => {
   try {
     const doc = generateOrderBill(order, isRestaurantView);
@@ -154,4 +168,4 @@ export const downloadOrderBill = (order, isRestaurantView = false) => {
     console.error('Error generating PDF:', error);
     return { success: false, error: error.message };
   }
-}; 
+};

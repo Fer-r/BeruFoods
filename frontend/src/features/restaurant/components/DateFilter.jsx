@@ -1,5 +1,14 @@
 import { MdDateRange } from 'react-icons/md';
 
+/**
+ * DateFilter provides a set of buttons for filtering data by date ranges.
+ * It displays options like "All Time", "Today", "Yesterday", etc., and highlights the currently selected filter.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.dateFilter - The currently selected date filter value
+ * @param {Function} props.onDateFilterChange - Callback function when a date filter is selected
+ * @returns {JSX.Element} The rendered date filter component
+ */
 const DateFilter = ({ dateFilter, onDateFilterChange }) => {
   const dateOptions = [
     { value: 'all', label: 'All Time' },
@@ -35,4 +44,4 @@ const DateFilter = ({ dateFilter, onDateFilterChange }) => {
   );
 };
 
-export default DateFilter; 
+export default DateFilter;

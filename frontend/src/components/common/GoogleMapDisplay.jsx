@@ -113,4 +113,4 @@ const GoogleMapDisplay = ({ onAddressSelect, showMap = false, placeholder, defau
   );
 };
 
-export default GoogleMapDisplay; 
+export default GoogleMapDisplay;

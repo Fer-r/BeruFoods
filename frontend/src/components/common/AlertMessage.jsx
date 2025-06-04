@@ -60,4 +60,4 @@ const AlertMessage = ({ message, type = 'info' }) => {
   );
 };
 
-export default AlertMessage; 
+export default AlertMessage;

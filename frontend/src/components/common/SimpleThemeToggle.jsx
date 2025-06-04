@@ -54,4 +54,4 @@ const SimpleThemeToggle = ({ className = "", inMenu = false }) => {
   );
 };
 
-export default SimpleThemeToggle; 
+export default SimpleThemeToggle;

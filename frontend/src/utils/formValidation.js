@@ -123,4 +123,4 @@ export const validatePhone = (phone, fieldName = 'Phone number') => {
   if (!phone) return null; // Optional field, so no validation if empty
   if (!/^[\d\s()-]+$/.test(phone)) return `Invalid ${fieldName} format. Only digits, spaces, hyphens, and parentheses are allowed.`;
   return null;
-}; 
+};

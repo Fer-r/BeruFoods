@@ -1,5 +1,23 @@
 import GoogleMapDisplay from '../../../components/common/GoogleMapDisplay';
 
+/**
+ * FilterControls provides a set of input controls for filtering restaurant search results.
+ * It includes a text search field, location search with Google Maps integration,
+ * an "Open Now" toggle, and a radius selector for location-based searches.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.searchText - Current value of the text search input
+ * @param {Function} props.onSearchChange - Callback function when the search text changes
+ * @param {React.RefObject} props.searchInputRef - Ref object for the search input element
+ * @param {string} props.locationInputText - Current value of the location input
+ * @param {Function} props.onLocationSelect - Callback function when a location is selected
+ * @param {boolean} props.isOpenNow - Whether the "Open Now" filter is active
+ * @param {Function} props.onIsOpenNowChange - Callback function when the "Open Now" toggle changes
+ * @param {number} props.selectedRadius - Currently selected search radius in meters
+ * @param {Function} props.onRadiusChange - Callback function when the radius selection changes
+ * @param {Array<{value: number, label: string}>} props.radiusOptions - Array of available radius options
+ * @returns {JSX.Element} The rendered filter controls component
+ */
 const FilterControls = ({
   searchText,
   onSearchChange,
@@ -85,4 +103,4 @@ const FilterControls = ({
   );
 };
 
-export default FilterControls; 
+export default FilterControls;

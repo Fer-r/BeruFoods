@@ -80,4 +80,4 @@ export const useThemeManager = () => {
     getCurrentTheme,
     availableThemes: ['light', 'dark'], // Assuming these are your DaisyUI themes
   };
-}; 
+};

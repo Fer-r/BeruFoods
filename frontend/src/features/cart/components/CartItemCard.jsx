@@ -1,6 +1,22 @@
 import { useCart } from '../../../context/CartContext';
 import { FaPlus, FaMinus, FaTrash } from 'react-icons/fa';
 
+/**
+ * CartItemCard displays a single item in the shopping cart.
+ * It shows the item's image (if available), name, price, quantity, and total price.
+ * The component provides controls to increase/decrease quantity or remove the item entirely.
+ * It uses the CartContext to access cart management functions.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.item - The cart item to display
+ * @param {number} props.item.id - Unique identifier for the item
+ * @param {number} props.item.restaurantId - ID of the restaurant this item belongs to
+ * @param {string} props.item.name - Name of the item
+ * @param {string|number} props.item.price - Price of a single unit of the item
+ * @param {number} props.item.quantity - Quantity of this item in the cart
+ * @param {string} [props.item.imageUrl] - Optional URL to the item's image
+ * @returns {JSX.Element|null} The rendered cart item card or null if item is invalid
+ */
 const CartItemCard = ({ item }) => {
   const { updateQuantity, removeFromCart } = useCart();
 
@@ -57,4 +73,4 @@ const CartItemCard = ({ item }) => {
   );
 };
 
-export default CartItemCard; 
+export default CartItemCard;

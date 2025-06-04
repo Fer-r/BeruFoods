@@ -1,5 +1,20 @@
 import { useRef, useEffect } from 'react';
 
+/**
+ * FoodTypeModal displays a modal dialog for selecting food types/cuisines.
+ * It shows a list of available food types with checkboxes, allowing users to select multiple options.
+ * The component handles loading states, errors, and provides a "Done" button to close the modal.
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Whether the modal is currently open
+ * @param {Function} props.onClose - Callback function to close the modal
+ * @param {Array} props.availableFoodTypes - Array of food type objects with id and name properties
+ * @param {Array<number>} props.selectedFoodTypeIds - Array of currently selected food type IDs
+ * @param {Function} props.handleFoodTypeChange - Callback function when a food type selection changes
+ * @param {boolean} props.isLoading - Whether food types are currently loading
+ * @param {string|null} props.error - Error message if food types failed to load
+ * @param {string} [props.modalId="food_type_modal"] - ID for the modal element
+ */
 const FoodTypeModal = ({
   isOpen,
   onClose,
@@ -78,4 +93,4 @@ const FoodTypeModal = ({
   );
 };
 
-export default FoodTypeModal; 
+export default FoodTypeModal;

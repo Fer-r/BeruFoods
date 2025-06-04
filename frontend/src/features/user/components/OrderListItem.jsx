@@ -1,6 +1,13 @@
 import { Link } from 'react-router';
 import { useState, useEffect } from 'react';
 
+/**
+ * OrderStatusBadge displays a colored badge indicating the order status.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.status - The order status to display
+ * @returns {JSX.Element} The rendered status badge
+ */
 const OrderStatusBadge = ({ status }) => {
   let badgeClass = 'badge-ghost';
   let text = status ? status.charAt(0).toUpperCase() + status.slice(1) : 'N/A';
@@ -32,6 +39,20 @@ const OrderStatusBadge = ({ status }) => {
   return <span className={`badge badge-lg ${badgeClass}`}>{text}</span>;
 };
 
+/**
+ * OrderListItem displays an order in the user's order history.
+ * It shows order details including ID, date, status, restaurant name, and total price.
+ * The component highlights itself when the order status changes and provides a link to view details.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.order - The order data to display
+ * @param {number} props.order.id - Unique identifier for the order
+ * @param {string} props.order.created_at - Creation date/time of the order
+ * @param {string} props.order.status - Current status of the order
+ * @param {string|number} props.order.total_price - Total price of the order
+ * @param {Object} [props.order.restaurant] - Optional restaurant information
+ * @returns {JSX.Element|null} The rendered order item or null if order is invalid
+ */
 const OrderListItem = ({ order }) => {
   const [highlight, setHighlight] = useState(false);
   const [previousStatus, setPreviousStatus] = useState(order?.status);
@@ -83,7 +104,10 @@ const OrderListItem = ({ order }) => {
         </div>
         
         <div className="card-actions justify-end mt-2">
-          <Link to={`/user/orders/${order.id}`} className="btn btn-sm btn-primary">
+          <Link 
+            to={`/user/orders/${order.id}`}
+            className="btn btn-sm btn-primary"
+          >
             View Details
           </Link>
         </div>
@@ -92,4 +116,4 @@ const OrderListItem = ({ order }) => {
   );
 };
 
-export default OrderListItem; 
+export default OrderListItem;

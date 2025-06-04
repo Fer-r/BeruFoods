@@ -268,4 +268,4 @@ const ModernGooglePlacesAutocomplete = ({ onAddressSelect, placeholder = "Start 
   );
 };
 
-export default ModernGooglePlacesAutocomplete; 
+export default ModernGooglePlacesAutocomplete;

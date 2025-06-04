@@ -4,6 +4,15 @@ import StyledInput from '../../../common/StyledInput';
 import AlertMessage from '../../../common/AlertMessage';
 import { useAuth } from '../../../../context/AuthContext.jsx';
 
+/**
+ * UserLoginModal provides a modal dialog for user authentication.
+ * It includes form fields for email and password, validation, and error handling.
+ * The component uses the AuthContext to handle the login process and track authentication state.
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.open - Controls whether the modal is open or closed
+ * @param {Function} props.handleClose - Callback function to close the modal
+ */
 const UserLoginModal = ({ open, handleClose }) => {
   const modalRef = useRef(null);
   const [email, setEmail] = useState('');

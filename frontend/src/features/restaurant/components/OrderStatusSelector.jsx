@@ -1,5 +1,16 @@
 import { useState } from 'react';
 
+/**
+ * OrderStatusSelector provides UI controls for restaurant owners to update the status of an order.
+ * It displays buttons for allowed status transitions based on the current order status,
+ * and includes a confirmation dialog for cancellation actions.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.currentStatus - The current status of the order
+ * @param {Function} props.onStatusChange - Callback function when status is changed
+ * @param {boolean} props.isUpdating - Whether a status update is currently in progress
+ * @returns {JSX.Element} The rendered order status selector component
+ */
 const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingStatus, setPendingStatus] = useState(null);
@@ -118,4 +129,4 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
   );
 };
 
-export default OrderStatusSelector; 
+export default OrderStatusSelector;

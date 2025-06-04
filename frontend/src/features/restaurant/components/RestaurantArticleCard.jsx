@@ -7,6 +7,24 @@ const PATHS = {
     RESTAURANT_ARTICLES_EDIT: '/restaurant/articles/:articleId/edit',
 };
 
+/**
+ * RestaurantArticleCard displays a menu item (article) in the restaurant management interface.
+ * It shows the article's image, name, description, price, availability status, and allergies.
+ * The component provides controls to toggle availability status and buttons to edit or delete the article.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.article - The article data to display
+ * @param {number} props.article.id - Unique identifier for the article
+ * @param {string} props.article.name - Name of the article
+ * @param {string} [props.article.description] - Optional description of the article
+ * @param {string|number} props.article.price - Price of the article
+ * @param {boolean} props.article.listed - Whether the article is listed on the menu
+ * @param {boolean} props.article.available - Whether the article is currently available
+ * @param {string} [props.article.imageUrl] - Optional URL to the article's image
+ * @param {Array<string>} [props.article.allergies] - Optional array of allergy information
+ * @param {Function} props.onDelete - Callback function when the delete button is clicked
+ * @returns {JSX.Element} The rendered article card
+ */
 const RestaurantArticleCard = ({ article, onDelete }) => {
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -120,4 +138,4 @@ const RestaurantArticleCard = ({ article, onDelete }) => {
   );
 };
 
-export default RestaurantArticleCard; 
+export default RestaurantArticleCard;

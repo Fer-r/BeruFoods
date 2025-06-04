@@ -3,6 +3,23 @@ import { useCart } from '../../../context/CartContext';
 import { useModal } from '../../../context/ModalContext';
 import { useNavigate } from 'react-router';
 
+/**
+ * ArticleCard displays a menu item (article) from a restaurant.
+ * It shows the article's image, name, description, price, and allergies.
+ * For authenticated users, it provides an "Add to Cart" button.
+ * For unauthenticated users, clicking "Add to Cart" will redirect to the login modal.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.article - The article data to display
+ * @param {string} props.article.name - Name of the article
+ * @param {string} [props.article.description] - Optional description of the article
+ * @param {string|number} props.article.price - Price of the article
+ * @param {string} [props.article.imageUrl] - Optional URL to the article's image
+ * @param {boolean} props.article.available - Whether the article is currently available
+ * @param {Array<string>} [props.article.allergies] - Optional array of allergy information
+ * @param {number} props.restaurantId - ID of the restaurant this article belongs to
+ * @returns {JSX.Element|null} The rendered article card or null if article is invalid
+ */
 const ArticleCard = ({ article, restaurantId }) => {
   const { isAuthenticated, isUser } = useAuth();
   const { addToCart } = useCart();
@@ -73,4 +90,4 @@ const ArticleCard = ({ article, restaurantId }) => {
   );
 };
 
-export default ArticleCard; 
+export default ArticleCard;

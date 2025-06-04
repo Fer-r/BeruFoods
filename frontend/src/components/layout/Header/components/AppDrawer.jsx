@@ -64,4 +64,4 @@ const AppDrawer = ({ toggleDrawer, handleOpenLoginModal }) => {
   );
 };
 
-export default AppDrawer; 
+export default AppDrawer;

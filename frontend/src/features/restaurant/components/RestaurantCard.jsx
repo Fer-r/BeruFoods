@@ -1,5 +1,20 @@
 import { useNavigate } from 'react-router';
 
+/**
+ * RestaurantCard displays a restaurant in a card format.
+ * It shows the restaurant's image, name, cuisine types, and opening hours.
+ * Clicking the card navigates to the restaurant's menu page.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.restaurant - The restaurant data to display
+ * @param {number} props.restaurant.id - Unique identifier for the restaurant
+ * @param {string} props.restaurant.name - Name of the restaurant
+ * @param {string} [props.restaurant.imageUrl] - Optional URL to the restaurant's image
+ * @param {Array} [props.restaurant.foodTypes] - Optional array of food type objects
+ * @param {string} [props.restaurant.openingTime] - Optional opening time string
+ * @param {string} [props.restaurant.closingTime] - Optional closing time string
+ * @returns {JSX.Element|null} The rendered restaurant card or null if restaurant is invalid
+ */
 const RestaurantCard = ({ restaurant }) => {
   const navigate = useNavigate();
 
@@ -42,4 +57,4 @@ const RestaurantCard = ({ restaurant }) => {
   );
 };
 
-export default RestaurantCard; 
+export default RestaurantCard;

@@ -2,6 +2,22 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import OrderStatusSelector from './OrderStatusSelector';
 
+/**
+ * RestaurantOrderItem displays an order in the restaurant's order management interface.
+ * It shows order details including ID, date, status, total price, customer information, and items.
+ * The component provides controls to update the order status and a link to view detailed information.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.order - The order data to display
+ * @param {number} props.order.id - Unique identifier for the order
+ * @param {string} props.order.created_at - Creation date/time of the order
+ * @param {string} props.order.status - Current status of the order
+ * @param {string|number} props.order.total_price - Total price of the order
+ * @param {Array} [props.order.items] - Optional array of order items
+ * @param {Object} [props.order.user] - Optional customer information
+ * @param {Function} props.onStatusUpdate - Callback function when order status is updated
+ * @returns {JSX.Element} The rendered order item component
+ */
 const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -118,4 +134,4 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
   );
 };
 
-export default RestaurantOrderItem; 
+export default RestaurantOrderItem;

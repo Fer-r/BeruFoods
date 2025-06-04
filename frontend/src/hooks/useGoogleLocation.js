@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GOOGLE_MAPS_CONFIG } from '../utils/googleMapsConstants';
 
+/**
+ * Default location object used when geolocation fails or is unavailable
+ * @type {Object}
+ */
 export const DEFAULT_LOCATION = {
   name: 'Madrid',
   latitude: GOOGLE_MAPS_CONFIG.MADRID_CENTER.lat,
@@ -9,6 +13,23 @@ export const DEFAULT_LOCATION = {
   isGeolocated: false,
 };
 
+/**
+ * Custom hook for managing location data with Google Maps integration.
+ * Provides functionality for getting the user's current location via browser geolocation,
+ * handling manual location searches, and managing location-related state.
+ *
+ * @param {number} initialRadius - Initial search radius in meters
+ * @returns {Object} Location state and functions
+ * @property {Object|null} currentLocation - Current location object with coordinates and metadata
+ * @property {string} locationInputText - Text displayed in the location input field
+ * @property {function} setLocationInputText - Function to update the location input text
+ * @property {boolean} isLocationLoading - Whether location is currently being determined
+ * @property {function} handleManualLocationSearch - Function to handle manual location search
+ * @property {boolean} initialLocationDetermined - Whether initial location has been determined
+ * @property {Object} DEFAULT_LOCATION - Default location object (Madrid)
+ * @property {number} selectedRadius - Currently selected search radius in meters
+ * @property {function} setSelectedRadius - Function to update the selected radius
+ */
 const useGoogleLocation = (initialRadius = GOOGLE_MAPS_CONFIG.DEFAULT_RADIUS) => {
   const [locationInputText, setLocationInputText] = useState('');
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -16,6 +37,9 @@ const useGoogleLocation = (initialRadius = GOOGLE_MAPS_CONFIG.DEFAULT_RADIUS) =>
   const [initialLocationDetermined, setInitialLocationDetermined] = useState(false);
   const [selectedRadius, setSelectedRadius] = useState(initialRadius);
 
+  /**
+   * Sets the default location (Madrid) when geolocation fails or is unavailable
+   */
   const setDefaultLocation = useCallback(() => {
     setCurrentLocation(DEFAULT_LOCATION);
     setLocationInputText(DEFAULT_LOCATION.name);
@@ -23,6 +47,10 @@ const useGoogleLocation = (initialRadius = GOOGLE_MAPS_CONFIG.DEFAULT_RADIUS) =>
     setInitialLocationDetermined(true);
   }, []);
 
+  /**
+   * Handles successful geolocation by setting the current location
+   * @param {GeolocationPosition} position - Position object from browser geolocation API
+   */
   const handleGeolocationSuccess = useCallback((position) => {
     const { latitude, longitude } = position.coords;
     
@@ -38,6 +66,9 @@ const useGoogleLocation = (initialRadius = GOOGLE_MAPS_CONFIG.DEFAULT_RADIUS) =>
     setInitialLocationDetermined(true);
   }, [selectedRadius]);
 
+  /**
+   * Handles geolocation errors by falling back to the default location
+   */
   const handleGeolocationError = useCallback(() => {
     setDefaultLocation();
   }, [setDefaultLocation]);
@@ -65,6 +96,9 @@ const useGoogleLocation = (initialRadius = GOOGLE_MAPS_CONFIG.DEFAULT_RADIUS) =>
     }
   }, [initialLocationDetermined, handleGeolocationSuccess, handleGeolocationError]);
 
+  /**
+   * Handles manual location search when user enters a location
+   */
   const handleManualLocationSearch = useCallback(() => {
     if (!locationInputText.trim()) {
       setCurrentLocation(prev => ({...DEFAULT_LOCATION, radius: prev?.radius || selectedRadius }));
@@ -74,6 +108,10 @@ const useGoogleLocation = (initialRadius = GOOGLE_MAPS_CONFIG.DEFAULT_RADIUS) =>
     
   }, [locationInputText, selectedRadius]);
   
+  /**
+   * Updates the search radius and updates the current location with the new radius
+   * @param {number} newRadius - New radius value in meters
+   */
   const updateRadius = useCallback((newRadius) => {
     setSelectedRadius(newRadius);
     if (currentLocation) {
@@ -94,4 +132,4 @@ const useGoogleLocation = (initialRadius = GOOGLE_MAPS_CONFIG.DEFAULT_RADIUS) =>
   };
 };
 
-export default useGoogleLocation; 
+export default useGoogleLocation;

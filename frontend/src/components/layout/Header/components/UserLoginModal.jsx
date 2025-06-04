@@ -78,7 +78,7 @@ const UserLoginModal = ({ open, handleClose }) => {
     <dialog ref={modalRef} className={`modal ${open ? 'modal-open' : ''}`} onClose={handleDialogNativeClose}>
       <div className="modal-box" onClick={stopPropagation}>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">Sign in</h3>
+          <h3 className="font-bold text-lg">Iniciar Sesión</h3>
           <form method="dialog">
             <button className="btn btn-sm btn-circle btn-ghost">✕</button>
           </form>
@@ -91,8 +91,8 @@ const UserLoginModal = ({ open, handleClose }) => {
             type="email"
             id="login-email"
             name="email"
-            label="Email Address"
-            placeholder="your@email.com"
+            label="Correo Electrónico"
+            placeholder="tu@email.com"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -107,7 +107,7 @@ const UserLoginModal = ({ open, handleClose }) => {
             type="password"
             id="login-password"
             name="password"
-            label="Password"
+            label="Contraseña"
             placeholder="******"
             value={password}
             onChange={(e) => {
@@ -120,10 +120,10 @@ const UserLoginModal = ({ open, handleClose }) => {
           {passwordError && <AlertMessage type="error" message={passwordError} />}
           <div className="modal-action mt-4">
             <button type="button" className="btn btn-ghost" onClick={handleClose} disabled={authLoading}>
-              Cancel
+              Cancelar
             </button>
             <button type="submit" className="btn btn-primary" disabled={authLoading}>
-              {authLoading ? <span className="loading loading-spinner loading-xs"></span> : 'Sign In'}
+              {authLoading ? <span className="loading loading-spinner loading-xs"></span> : 'Iniciar Sesión'}
             </button>
           </div>
         </form>

@@ -26,9 +26,9 @@ const PATHS = {
  * @returns {JSX.Element} The rendered article card
  */
 const RestaurantArticleCard = ({ article, onDelete }) => {
-  const formattedPrice = new Intl.NumberFormat('en-US', {
+  const formattedPrice = new Intl.NumberFormat('es-ES', {
     style: 'currency',
-    currency: 'EUR', // Or use a dynamic currency from restaurant settings
+    currency: 'EUR',
   }).format(article.price);
 
   const editUrl = PATHS.RESTAURANT_ARTICLES_EDIT.replace(':articleId', article.id);
@@ -57,14 +57,14 @@ const RestaurantArticleCard = ({ article, onDelete }) => {
     } catch (err) {
       console.error("Failed to update article availability:", err.response || err);
       setIsAvailable(previousAvailability);
-      setUpdateError(err.response?.data?.message || err.message || 'Failed to update status.');
+      setUpdateError(err.response?.data?.message || err.message || 'Error al actualizar estado.');
     } finally {
       setIsUpdating(false);
     }
   };
 
   const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete "${article.name}"?`)) {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar "${article.name}"?`)) {
       onDelete(article.id);
     }
   };
@@ -79,26 +79,26 @@ const RestaurantArticleCard = ({ article, onDelete }) => {
           </>
         ) : (
           <div className="h-full w-full bg-base-300 flex items-center justify-center">
-            <span className="text-base-content opacity-50">No Image</span>
+            <span className="text-base-content opacity-50">Sin Imagen</span>
           </div>
         )}
       </figure>
       <div className="card-body p-4">
         <h2 className="card-title text-lg font-semibold mb-1 truncate" title={article.name}>{article.name}</h2>
         <p className="text-sm text-base-content opacity-80 mb-2 h-10 overflow-hidden text-ellipsis">
-          {article.description || 'No description available.'}
+          {article.description || 'Sin descripción disponible.'}
         </p>
         <div className="flex justify-between items-center mb-3">
             <p className="text-accent font-semibold text-md">{formattedPrice}</p>
             <div className="space-y-1 text-right">
                 <div>
                     <span className={`badge ${article.listed ? 'badge-success' : 'badge-warning'} badge-sm`}>
-                        {article.listed ? 'Listed' : 'Unlisted'}
+                        {article.listed ? 'Listado' : 'No listado'}
                     </span>
                 </div>
                 <div className="flex items-center justify-end space-x-2">
                     <span className={`badge ${isAvailable ? 'badge-info' : 'badge-error'} badge-sm`}>
-                        {isAvailable ? 'Available' : 'Unavailable'}
+                        {isAvailable ? 'Disponible' : 'No disponible'}
                     </span>
                     <input
                       type="checkbox"
@@ -106,7 +106,7 @@ const RestaurantArticleCard = ({ article, onDelete }) => {
                       checked={isAvailable}
                       onChange={handleToggleAvailability}
                       disabled={isUpdating}
-                      aria-label="Toggle article availability"
+                      aria-label="Cambiar disponibilidad del artículo"
                     />
                 </div>
                 {updateError && <p className="text-error text-xs mt-1 text-right" role="alert">{updateError}</p>}
@@ -116,7 +116,7 @@ const RestaurantArticleCard = ({ article, onDelete }) => {
         {/* Allergies display (optional, can be enhanced) */}
         {article.allergies && article.allergies.length > 0 && (
             <div className="mb-2">
-                <p className="text-xs font-semibold">Allergies:</p>
+                <p className="text-xs font-semibold">Alérgenos:</p>
                 <div className="flex flex-wrap gap-1 mt-1">
                     {article.allergies.map(allergy => (
                         <span key={allergy} className="badge badge-outline badge-xs">{allergy}</span>
@@ -127,13 +127,13 @@ const RestaurantArticleCard = ({ article, onDelete }) => {
 
         <div className="card-actions justify-end mt-2 border-t border-base-300 pt-3">
           <Link to={editUrl} className="btn btn-outline btn-sm btn-secondary">
-            Edit
+            Editar
           </Link>
           <button 
             onClick={handleDelete} 
             className="btn btn-outline btn-sm btn-error"
           >
-            Delete
+            Eliminar
           </button>
         </div>
       </div>

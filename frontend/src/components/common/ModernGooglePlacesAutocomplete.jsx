@@ -18,7 +18,7 @@ import {
  * @param {string} [props.placeholder='Start typing restaurant address...'] - Placeholder text for the input field.
  * @param {string} [props.defaultValue=''] - The default value for the input field.
  */
-const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Start typing restaurant address...", defaultValue = '' }) => {
+const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Comienza a escribir la dirección del restaurante...", defaultValue = '' }) => {
   const [inputValue, setInputValue] = useState(defaultValue);
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -191,7 +191,7 @@ const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Start typing restaura
         onKeyDown={handleKeyDown}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
-        aria-label="Address search"
+        aria-label="Búsqueda de dirección"
         aria-expanded={showDropdown}
         aria-haspopup="listbox"
         role="combobox"
@@ -199,7 +199,7 @@ const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Start typing restaura
       
       {isLoading && (
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-          <span className="loading loading-spinner loading-sm" aria-label="Loading suggestions"></span>
+          <span className="loading loading-spinner loading-sm" aria-label="Cargando sugerencias"></span>
         </div>
       )}
 
@@ -253,11 +253,11 @@ const PlaceAutocomplete = ({ onPlaceSelect, placeholder = "Start typing restaura
  * @param {string} [props.placeholder='Start typing restaurant address...'] - Placeholder text for the address input field.
  * @param {string} [props.defaultValue] - The default value for the address input field.
  */
-const ModernGooglePlacesAutocomplete = ({ onAddressSelect, placeholder = "Start typing restaurant address...", defaultValue }) => {
+const ModernGooglePlacesAutocomplete = ({ onAddressSelect, placeholder = "Comienza a escribir la dirección del restaurante...", defaultValue }) => {
   return (
     <div className="form-control w-full">
       <label className="label">
-        <span className="label-text">Address</span>
+        <span className="label-text">Dirección</span>
       </label>
       <PlaceAutocomplete 
         onPlaceSelect={onAddressSelect} 

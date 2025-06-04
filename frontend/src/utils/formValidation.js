@@ -5,8 +5,8 @@
  * @returns {string | null} An error message string if validation fails, otherwise null.
  */
 export const validateEmail = (email) => {
-  if (!email) return 'Email is required.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Invalid email address.';
+  if (!email) return 'El correo electrónico es obligatorio.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Dirección de correo electrónico no válida.';
   return null; // No error
 };
 
@@ -18,8 +18,8 @@ export const validateEmail = (email) => {
  * @returns {string | null} An error message string if validation fails, otherwise null.
  */
 export const validatePassword = (password, minLength = 6) => {
-  if (!password) return 'Password is required.';
-  if (password.length < minLength) return `Password must be at least ${minLength} characters long.`;
+  if (!password) return 'La contraseña es obligatoria.';
+  if (password.length < minLength) return `La contraseña debe tener al menos ${minLength} caracteres.`;
   return null;
 };
 
@@ -31,8 +31,8 @@ export const validatePassword = (password, minLength = 6) => {
  * @returns {string | null} An error message string if validation fails, otherwise null.
  */
 export const validateConfirmPassword = (password, confirmPassword) => {
-  if (!confirmPassword) return 'Confirm password is required.';
-  if (password !== confirmPassword) return 'Passwords do not match.';
+  if (!confirmPassword) return 'Confirmar contraseña es obligatorio.';
+  if (password !== confirmPassword) return 'Las contraseñas no coinciden.';
   return null;
 };
 
@@ -40,12 +40,12 @@ export const validateConfirmPassword = (password, confirmPassword) => {
  * Validates that a value is present and not empty.
  *
  * @param {*} value - The value to validate.
- * @param {string} [fieldName='This field'] - The name of the field being validated, used in the error message.
+ * @param {string} [fieldName='Este campo'] - The name of the field being validated, used in the error message.
  * @returns {string | null} An error message string if validation fails, otherwise null.
  */
-export const validateRequired = (value, fieldName = 'This field') => {
-  if (value === null || value === undefined || String(value).trim() === '') return `${fieldName} is required.`;
-  if (Array.isArray(value) && value.length === 0) return `${fieldName} requires at least one selection.`;
+export const validateRequired = (value, fieldName = 'Este campo') => {
+  if (value === null || value === undefined || String(value).trim() === '') return `${fieldName} es obligatorio.`;
+  if (Array.isArray(value) && value.length === 0) return `${fieldName} requiere al menos una selección.`;
   return null;
 };
 
@@ -54,11 +54,11 @@ export const validateRequired = (value, fieldName = 'This field') => {
  *
  * @param {string} value - The value whose length is to be validated.
  * @param {number} minLength - The minimum required length.
- * @param {string} [fieldName='This field'] - The name of the field being validated, used in the error message.
+ * @param {string} [fieldName='Este campo'] - The name of the field being validated, used in the error message.
  * @returns {string | null} An error message string if validation fails, otherwise null.
  */
-export const validateMinLength = (value, minLength, fieldName = 'This field') => {
-  if (!value || String(value).length < minLength) return `${fieldName} must be at least ${minLength} characters long.`;
+export const validateMinLength = (value, minLength, fieldName = 'Este campo') => {
+  if (!value || String(value).length < minLength) return `${fieldName} debe tener al menos ${minLength} caracteres.`;
   return null;
 };
 
@@ -69,11 +69,11 @@ export const validateMinLength = (value, minLength, fieldName = 'This field') =>
  *
  * @param {string} startTime - The start time string (e.g., "09:00" or "09:00:00").
  * @param {string} endTime - The end time string (e.g., "17:00" or "17:00:00").
- * @param {string} [startFieldName='Opening time'] - The name for the start time field, used in error messages.
- * @param {string} [endFieldName='Closing time'] - The name for the end time field, used in error messages.
+ * @param {string} [startFieldName='Hora de apertura'] - The name for the start time field, used in error messages.
+ * @param {string} [endFieldName='Hora de cierre'] - The name for the end time field, used in error messages.
  * @returns {string | null} An error message string if validation fails, otherwise null.
  */
-export const validateTimeOrder = (startTime, endTime, startFieldName = 'Opening time', endFieldName = 'Closing time') => {
+export const validateTimeOrder = (startTime, endTime, startFieldName = 'Hora de apertura', endFieldName = 'Hora de cierre') => {
   if (!startTime || !endTime) return null; // If one is missing, another validator should catch it if required
   // Basic HH:MM format check (can be expanded)
   const timeRegexWithSeconds = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
@@ -84,7 +84,7 @@ export const validateTimeOrder = (startTime, endTime, startFieldName = 'Opening 
   };
 
   if (!isValidTimeFormat(startTime) || !isValidTimeFormat(endTime)) {
-    return 'Time must be in HH:MM or HH:MM:SS format.';
+    return 'El formato de hora debe ser HH:MM o HH:MM:SS.';
   }
 
   const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -99,11 +99,11 @@ export const validateTimeOrder = (startTime, endTime, startFieldName = 'Opening 
   }
 
   if (startDate > endDate) {
-    return `${startFieldName} must be before ${endFieldName}.`;
+    return `${startFieldName} debe ser anterior a ${endFieldName}.`;
   }
   
   if (startDate.getTime() === endDate.getTime()) {
-    return `For 24-hour operation, please specify different ${startFieldName} and ${endFieldName}.`;
+    return `Para operación 24 horas, especifica diferentes ${startFieldName} y ${endFieldName}.`;
   }
   return null;
 };
@@ -116,11 +116,11 @@ export const validateTimeOrder = (startTime, endTime, startFieldName = 'Opening 
  * If provided, it checks for a basic format (digits, spaces, hyphens, parentheses).
  *
  * @param {string | null | undefined} phone - The phone number to validate.
- * @param {string} [fieldName='Phone number'] - The name of the field being validated, used in the error message.
+ * @param {string} [fieldName='Número de teléfono'] - The name of the field being validated, used in the error message.
  * @returns {string | null} An error message string if validation fails and the field is not empty, otherwise null.
  */
-export const validatePhone = (phone, fieldName = 'Phone number') => {
+export const validatePhone = (phone, fieldName = 'Número de teléfono') => {
   if (!phone) return null; // Optional field, so no validation if empty
-  if (!/^[\d\s()-]+$/.test(phone)) return `Invalid ${fieldName} format. Only digits, spaces, hyphens, and parentheses are allowed.`;
+  if (!/^[\d\s()-]+$/.test(phone)) return `Formato de ${fieldName} no válido. Solo se permiten dígitos, espacios, guiones y paréntesis.`;
   return null;
 };

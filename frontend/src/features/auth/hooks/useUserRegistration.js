@@ -221,4 +221,4 @@ const useUserRegistration = () => {
   };
 };
 
-export default useUserRegistration; 
+export default useUserRegistration;

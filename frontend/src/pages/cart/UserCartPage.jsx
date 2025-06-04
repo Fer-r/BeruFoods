@@ -47,7 +47,7 @@ const UserCartPage = () => {
    */
   const handleProceedToCheckout = async () => {
     if (!restaurantId || cartItems.length === 0) {
-      setError("Cart is empty or restaurant information is missing.");
+      setError("El carrito está vacío o falta información del restaurante.");
       return;
     }
 
@@ -71,11 +71,11 @@ const UserCartPage = () => {
         clearCart();
         navigate(`/user/orders/${result.id}`); // Navigate to the new order details page
       } else {
-        throw new Error(result?.message || 'Failed to create order. No ID returned.');
+        throw new Error(result?.message || 'Error al crear el pedido. No se recibió ID.');
       }
     } catch (err) {
       console.error("Order creation failed:", err);
-      setError(err.details?.message || err.message || 'Could not create the order. Please try again.');
+      setError(err.details?.message || err.message || 'No se pudo crear el pedido. Por favor, inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -88,9 +88,9 @@ const UserCartPage = () => {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-base-content opacity-30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
-          <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
-          <p className="text-base-content/70 mb-6">Looks like you haven't added any items to your cart yet.</p>
-          <Link to="/" className="btn btn-primary">Start Shopping</Link>
+          <h1 className="text-2xl font-bold mb-4">Tu carrito está vacío</h1>
+          <p className="text-base-content/70 mb-6">Parece que aún no has añadido ningún artículo a tu carrito.</p>
+          <Link to="/" className="btn btn-primary">Explorar Restaurantes</Link>
         </div>
       </div>
     );
@@ -98,7 +98,7 @@ const UserCartPage = () => {
 
   return (
     <div className="container mx-auto p-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">Your Shopping Cart</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center">Tu Carrito de Compra</h1>
       {error && <AlertMessage type="error" message={error} className="mb-6" />}
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -110,24 +110,24 @@ const UserCartPage = () => {
 
         <div className="lg:col-span-1">
           <div className="bg-base-200 p-6 rounded-lg shadow-lg sticky top-24">
-            <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-base-300">Order Summary</h2>
+            <h2 className="text-xl font-semibold mb-6 pb-2 border-b border-base-300">Resumen del Pedido</h2>
             
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-base">
                 <span>Subtotal:</span>
-                <span className="font-medium">€{totalPrice.toFixed(2)}</span>
+                <span className="font-medium">{totalPrice.toFixed(2)}€</span>
               </div>
               
               <div className="flex justify-between text-base">
-                <span>Delivery Fee:</span>
-                <span className="font-medium">€0.00</span>
+                <span>Gastos de envío:</span>
+                <span className="font-medium">0,00€</span>
               </div>
               
               <div className="divider my-2"></div>
               
               <div className="flex justify-between text-lg font-bold">
                 <span>Total:</span>
-                <span className="text-primary">€{totalPrice.toFixed(2)}</span>
+                <span className="text-primary">{totalPrice.toFixed(2)}€</span>
               </div>
             </div>
             
@@ -138,9 +138,9 @@ const UserCartPage = () => {
                 disabled={loading || cartItems.length === 0}
               >
                 {loading ? (
-                  <><span className="loading loading-spinner"></span> Processing...</>
+                  <><span className="loading loading-spinner"></span> Procesando...</>
                 ) : (
-                  'Proceed to Checkout'
+                  'Finalizar Compra'
                 )}
               </button>
               
@@ -149,11 +149,11 @@ const UserCartPage = () => {
                 className="btn btn-outline btn-block"
                 disabled={loading || cartItems.length === 0}
               >
-                Clear Cart
+                Vaciar Carrito
               </button>
               
               <Link to="/" className="btn btn-ghost btn-block">
-                Continue Shopping
+                Seguir Comprando
               </Link>
             </div>
           </div>

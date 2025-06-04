@@ -24,10 +24,10 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
   };
 
   const statusLabels = {
-    'pending': 'Pending',
-    'preparing': 'Preparing',
-    'delivered': 'Delivered',
-    'cancelled': 'Cancelled'
+    'pending': 'Pendiente',
+    'preparing': 'Preparando',
+    'delivered': 'Entregado',
+    'cancelled': 'Cancelado'
   };
 
   const statusColors = {
@@ -63,12 +63,12 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
   if (availableTransitions.length === 0) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500">Status:</span>
+        <span className="text-sm text-gray-500">Estado:</span>
         <div className={`badge ${currentStatus === 'delivered' ? 'badge-success' : 'badge-error'} text-white`}>
           {statusLabels[currentStatus]}
         </div>
         <span className="text-xs text-gray-400">
-          {currentStatus === 'delivered' ? '(Order completed)' : '(Order cancelled)'}
+          {currentStatus === 'delivered' ? '(Pedido completado)' : '(Pedido cancelado)'}
         </span>
       </div>
     );
@@ -78,7 +78,7 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
     <>
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700 font-medium">Update Status:</span>
+          <span className="text-sm text-gray-700 font-medium">Actualizar Estado:</span>
           <div className={`badge ${currentStatus === 'pending' ? 'badge-warning' : 'badge-info'} text-white`}>
             {statusLabels[currentStatus]}
           </div>
@@ -92,7 +92,7 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
               disabled={isUpdating}
               className={`btn btn-sm ${statusColors[status]} text-white ${isUpdating ? 'loading' : ''}`}
             >
-              {isUpdating ? '' : `Mark as ${statusLabels[status]}`}
+              {isUpdating ? '' : `Marcar como ${statusLabels[status]}`}
             </button>
           ))}
         </div>
@@ -102,9 +102,9 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
       {showConfirmation && (
         <div className="modal modal-open">
           <div className="modal-box">
-            <h3 className="font-bold text-lg">Confirm Cancellation</h3>
+            <h3 className="font-bold text-lg">Confirmar Cancelación</h3>
             <p className="py-4">
-              Are you sure you want to cancel this order? This action cannot be undone.
+              ¿Estás seguro de que quieres cancelar este pedido? Esta acción no se puede deshacer.
             </p>
             <div className="modal-action">
               <button 
@@ -112,14 +112,14 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
                 onClick={handleConfirmCancel}
                 disabled={isUpdating}
               >
-                {isUpdating ? 'Cancelling...' : 'Yes, Cancel Order'}
+                {isUpdating ? 'Cancelando...' : 'Sí, Cancelar Pedido'}
               </button>
               <button 
                 className="btn btn-outline"
                 onClick={handleCancelConfirmation}
                 disabled={isUpdating}
               >
-                Keep Order
+                Mantener Pedido
               </button>
             </div>
           </div>

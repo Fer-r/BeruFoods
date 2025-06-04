@@ -109,3 +109,109 @@
   --depth: 1;
   --noise: 0;
 }
+
+/* Add gradient backgrounds for cards and sections */
+.card {
+  background-image: linear-gradient(to bottom right, var(--color-base-100), var(--color-base-200));
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Improve contrast for text on various backgrounds */
+.text-base-content {
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .text-base-content {
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Add subtle patterns to sections */
+.bg-base-200 {
+  background-image: radial-gradient(circle at 1px 1px, var(--color-base-300) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+/* Enhance form elements */
+.input, .select, .textarea {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input:focus, .select:focus, .textarea:focus {
+  box-shadow: 0 0 0 2px rgba(var(--color-primary), 0.2);
+}
+
+/* Add subtle animation to buttons */
+.btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.btn:hover:after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20, 20);
+    opacity: 0;
+  }
+}
+
+/* Enhance restaurant cards */
+.restaurant-card {
+  transition: all 0.3s ease;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.restaurant-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Improve header appearance */
+.navbar {
+  background-image: linear-gradient(to right, var(--color-base-100), var(--color-base-200));
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Add subtle animation to notification bell */
+@keyframes bell-shake {
+  0% { transform: rotate(0); }
+  15% { transform: rotate(5deg); }
+  30% { transform: rotate(-5deg); }
+  45% { transform: rotate(4deg); }
+  60% { transform: rotate(-4deg); }
+  75% { transform: rotate(2deg); }
+  85% { transform: rotate(-2deg); }
+  92% { transform: rotate(1deg); }
+  100% { transform: rotate(0); }
+}
+
+.notification-bell:hover {
+  animation: bell-shake 0.5s ease;
+}

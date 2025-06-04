@@ -26,7 +26,7 @@ const RestaurantCard = ({ restaurant }) => {
 
   return (
     <div 
-      className="card card-compact bg-base-100 shadow-md hover:shadow-lg transition-shadow group w-full h-full flex flex-col cursor-pointer"
+      className="card card-compact bg-base-100 shadow-md hover:shadow-lg transition-shadow group w-full h-full flex flex-col cursor-pointer restaurant-card"
       onClick={handleClick}
     >
       <figure className="relative w-full h-48">
@@ -35,6 +35,7 @@ const RestaurantCard = ({ restaurant }) => {
           alt={restaurant.name}
           className="absolute inset-0 w-full h-full object-cover group-hover:opacity-90 transition-opacity"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-70"></div>
       </figure>
       <div className="card-body py-3 px-4 flex-grow">
         <h3 className="card-title text-lg font-semibold truncate">{restaurant.name}</h3>

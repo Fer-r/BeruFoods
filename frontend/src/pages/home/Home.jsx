@@ -152,31 +152,49 @@ const Home = () => {
   const showDeterminingLocation = !isLocationReady && (isLocationLoading || !finalLocation);
 
   if (showDeterminingLocation) { 
-      return <p className="text-center text-lg py-10">Determining your location...</p>;
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center p-8 max-w-md">
+            <div className="loading loading-spinner loading-lg text-primary mb-4"></div>
+            <p className="text-xl font-medium">Determining your location...</p>
+            <p className="text-sm text-base-content/70 mt-2">We're finding the best restaurants near you</p>
+          </div>
+        </div>
+      );
   }
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      <FilterControls
-        searchText={searchText}
-        onSearchChange={handleSearchChange}
-        searchInputRef={searchInputRef}
-        locationInputText={finalLocationText || locationInputText || 'Madrid'}
-        onLocationSelect={handleLocationSelect}
-        isOpenNow={isOpenNow}
-        onIsOpenNowChange={setIsOpenNow}
-        selectedRadius={selectedRadius}
-        onRadiusChange={setSelectedRadius}
-        radiusOptions={radiusOptions}
-      />
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg -z-10"></div>
+        <div className="p-6">
+          <FilterControls
+            searchText={searchText}
+            onSearchChange={handleSearchChange}
+            searchInputRef={searchInputRef}
+            locationInputText={finalLocationText || locationInputText || 'Madrid'}
+            onLocationSelect={handleLocationSelect}
+            isOpenNow={isOpenNow}
+            onIsOpenNowChange={setIsOpenNow}
+            selectedRadius={selectedRadius}
+            onRadiusChange={setSelectedRadius}
+            radiusOptions={radiusOptions}
+          />
+        </div>
+      </div>
 
-      <CuisineFilter
-        cuisineOptions={cuisineOptions}
-        selectedFoodTypeIds={selectedFoodTypeIds}
-        onCuisineFilterChange={handleCuisineFilter}
-        isLoadingCuisines={isLoadingCuisines}
-        errorCuisines={errorCuisines}
-      />
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-secondary/5 to-accent/5 rounded-lg -z-10"></div>
+        <div className="p-6">
+          <CuisineFilter
+            cuisineOptions={cuisineOptions}
+            selectedFoodTypeIds={selectedFoodTypeIds}
+            onCuisineFilterChange={handleCuisineFilter}
+            isLoadingCuisines={isLoadingCuisines}
+            errorCuisines={errorCuisines}
+          />
+        </div>
+      </div>
 
       {error && restaurants.length > 0 && (
          <p className="text-center text-sm text-error py-2">Error loading more: {error}</p>

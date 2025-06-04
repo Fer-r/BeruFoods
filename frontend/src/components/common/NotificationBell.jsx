@@ -12,7 +12,7 @@ import { useNotifications } from '../../context/NotificationContext';
  * notifications and all notifications.
  * This component does not accept direct props as it relies on the NotificationContext for its data and actions.
  */
-const NotificationBell = () => {
+const NotificationBell = ({ className = "" }) => {
   const { 
     persistentNotifications, 
     unreadCount, 
@@ -80,7 +80,7 @@ const NotificationBell = () => {
   };
   
   return (
-    <div className="relative px-2" ref={dropdownRef}>
+    <div className={`relative px-2 ${className}`} ref={dropdownRef}>
       <button
         className="btn btn-ghost btn-circle"
         onClick={toggleDropdown}

@@ -35,7 +35,7 @@ const FilterControls = ({
       {/* Name Search Bar */}
       <div className="md:col-span-2">
         <label htmlFor="restaurantSearch" className="label">
-          <span className="label-text">What are you hungry for?</span>
+          <span className="label-text font-medium">What are you hungry for?</span>
         </label>
         <div className="relative">
           <input
@@ -43,7 +43,7 @@ const FilterControls = ({
             ref={searchInputRef}
             type="text"
             placeholder="Restaurant name or keyword..."
-            className="input input-bordered w-full p-4 pl-12 bg-base-200 text-lg focus:outline-none focus:border-primary"
+            className="input input-bordered w-full p-4 pl-12 bg-base-200 text-lg focus:outline-none focus:border-primary shadow-inner"
             value={searchText}
             onChange={onSearchChange}
           />
@@ -72,7 +72,7 @@ const FilterControls = ({
         <label className="label pb-1">
           <span className="label-text font-medium">Status</span>
         </label>
-        <label className="label cursor-pointer py-2 justify-start gap-3 rounded-lg p-3 h-full items-center">
+        <label className="label cursor-pointer py-2 justify-start gap-3 rounded-lg p-3 h-full items-center bg-base-200 shadow-inner">
           <input 
             type="checkbox" 
             className="toggle toggle-primary"
@@ -90,7 +90,7 @@ const FilterControls = ({
         </label>
         <select 
           id="radiusSelect"
-          className="select select-bordered w-full bg-base-200 shadow-sm h-full p-3"
+          className="select select-bordered w-full bg-base-200 shadow-inner h-full p-3"
           value={selectedRadius}
           onChange={(e) => onRadiusChange(Number(e.target.value))}
         >

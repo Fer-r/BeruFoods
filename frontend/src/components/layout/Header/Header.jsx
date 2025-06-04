@@ -201,7 +201,7 @@ const DesktopNavMenu = ({ isRestaurant }) => (
  */
 const RestaurantUserActions = ({ onLogout }) => (
   <>
-    <NotificationBell />
+    <NotificationBell className="notification-bell" />
     <div className="hidden lg:flex items-center">
       <div className="dropdown dropdown-end">
         <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
@@ -233,7 +233,7 @@ const RestaurantUserActions = ({ onLogout }) => (
  */
 const CustomerUserActions = ({ totalCartItems, onLogout }) => (
   <div className="flex items-center">
-    <NotificationBell />
+    <NotificationBell className="notification-bell" />
     <div className="hidden lg:flex items-center">
       <NavLink to="/cart" className="btn btn-ghost btn-circle mr-4 indicator">
         {totalCartItems > 0 && (

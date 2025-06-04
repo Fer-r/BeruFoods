@@ -39,40 +39,46 @@ const ArticleCard = ({ article, restaurantId }) => {
   };
 
   return (
-    <div className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row">
+    <div className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row relative overflow-hidden">
+      {/* Add gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-base-100/30 to-base-200/30 pointer-events-none"></div>
+      
       {article.imageUrl && (
-        <img 
-          src={article.imageUrl} // Assuming imageUrl is the full URL or API_BASE_URL is prepended where it's used
-          alt={article.name} 
-          className="w-full sm:w-32 h-32 object-cover rounded-md mr-0 sm:mr-4 mb-4 sm:mb-0 flex-shrink-0" 
-        />
+        <div className="w-full sm:w-32 h-32 flex-shrink-0 mr-0 sm:mr-4 mb-4 sm:mb-0 relative overflow-hidden rounded-md">
+          <img 
+            src={article.imageUrl}
+            alt={article.name} 
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+          />
+        </div>
       )}
-      <div className="flex-1">
+      
+      <div className="flex-1 z-10">
         <h3 className="text-xl font-semibold mb-1">{article.name}</h3>
         {article.description && (
           <p className="text-gray-700 mb-2 text-sm">{article.description}</p>
         )}
-        <p className="text-lg font-bold text-green-600 mb-2">€{parseFloat(article.price).toFixed(2)}</p>
+        <p className="text-lg font-bold text-primary mb-2">€{parseFloat(article.price).toFixed(2)}</p>
         
         {article.allergies && article.allergies.length > 0 && (
           <div className="mb-2">
             <h4 className="text-xs font-semibold text-gray-600">Allergies:</h4>
-            <ul className="list-disc list-inside pl-1">
+            <div className="flex flex-wrap gap-1 mt-1">
               {article.allergies.map((allergy, index) => (
-                <li key={index} className="text-xs text-gray-500">{allergy}</li>
+                <span key={index} className="badge badge-outline badge-sm">{allergy}</span>
               ))}
-            </ul>
+            </div>
           </div>
         )}
 
         {!article.available && (
-          <span className="text-sm text-red-500 font-semibold mt-1 block">Not Available</span>
+          <span className="text-sm text-error font-semibold mt-1 block">Not Available</span>
         )}
 
         {article.available && isUser && (
           <button 
             onClick={handleAddToCart} 
-            className="btn btn-sm btn-primary mt-2"
+            className="btn btn-sm btn-primary mt-2 relative overflow-hidden"
           >
             Add to Cart
           </button>
@@ -80,7 +86,7 @@ const ArticleCard = ({ article, restaurantId }) => {
          {article.available && !isAuthenticated() && (
           <button 
             onClick={handleAddToCart} 
-            className="btn btn-sm btn-primary mt-2"
+            className="btn btn-sm btn-primary mt-2 relative overflow-hidden"
           >
             Add to Cart
           </button>

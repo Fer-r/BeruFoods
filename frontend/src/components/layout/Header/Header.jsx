@@ -136,9 +136,9 @@ const AuthenticatedDrawerContent = ({ isRestaurant, isUser, totalCartItems, onMe
           <>
             <li>
               <NavLink to={ROUTES.USER.CART} onClick={onMenuClose} className="flex items-center gap-3 text-base">
-                <div className="indicator">
+                <div className="indicator overflow-visible">
                   {totalCartItems > 0 && (
-                    <span className="indicator-item badge badge-secondary badge-sm">{totalCartItems}</span>
+                    <span className="indicator-item badge badge-secondary badge-sm z-10">{totalCartItems}</span>
                   )}
                   <FaShoppingCart className="w-5 h-5" />
                 </div>
@@ -201,8 +201,8 @@ const DesktopNavMenu = ({ isRestaurant }) => (
  * @returns {JSX.Element} The user actions section for restaurant users.
  */
 const RestaurantUserActions = ({ onLogout }) => (
-  <>
-    <NotificationBell className="notification-bell" />
+  <div className="flex items-center gap-3 px-2 pt-1">
+    <NotificationBell />
     <div className="hidden lg:flex items-center">
       <div className="dropdown dropdown-end">
         <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
@@ -219,7 +219,7 @@ const RestaurantUserActions = ({ onLogout }) => (
         </ul>
       </div>
     </div>
-  </>
+  </div>
 );
 
 /**
@@ -233,15 +233,17 @@ const RestaurantUserActions = ({ onLogout }) => (
  * @returns {JSX.Element} The user actions section for customer users.
  */
 const CustomerUserActions = ({ totalCartItems, onLogout }) => (
-  <div className="flex items-center">
-    <NotificationBell className="notification-bell" />
-    <div className="hidden lg:flex items-center">
-      <NavLink to={ROUTES.USER.CART} className="btn btn-ghost btn-circle mr-4 indicator">
+  <div className="flex items-center gap-3 px-2 pt-1">
+    <NotificationBell />
+    <div className="hidden lg:flex items-center gap-3">
+      <div className="indicator">
+        <NavLink to={ROUTES.USER.CART} className="btn btn-ghost btn-circle">
+          <FaShoppingCart className="w-5 h-5" />
+        </NavLink>
         {totalCartItems > 0 && (
           <span className="indicator-item badge badge-secondary badge-sm">{totalCartItems}</span>
         )}
-        <FaShoppingCart className="w-5 h-5" />
-      </NavLink>
+      </div>
       <div className="dropdown dropdown-end">
         <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
           <div className="w-10 rounded-full">
@@ -360,7 +362,7 @@ const Header = () => {
 
         <DesktopNavMenu isRestaurant={isRestaurant} />
 
-        <div className="navbar-end">
+        <div className="navbar-end overflow-visible pr-4 py-2">
           {renderUserActions()}
         </div>
       </div>

@@ -80,19 +80,19 @@ const NotificationBell = ({ className = "" }) => {
   };
   
   return (
-    <div className={`relative px-2 ${className}`} ref={dropdownRef}>
-      <button
-        className="btn btn-ghost btn-circle"
-        onClick={toggleDropdown}
-        aria-label="Notifications"
-      >
-        <div className="indicator">
+    <div className={`relative ${className}`} ref={dropdownRef}>
+      <div className="indicator">
+        <button
+          className="btn btn-ghost btn-circle"
+          onClick={toggleDropdown}
+          aria-label="Notifications"
+        >
           <FaBell className="h-6 w-6" />
-          {unreadCount > 0 && (
-            <span className="indicator-item badge badge-primary badge-sm">{unreadCount}</span>
-          )}
-        </div>
-      </button>
+        </button>
+        {unreadCount > 0 && (
+          <span className="indicator-item badge badge-primary badge-sm">{unreadCount}</span>
+        )}
+      </div>
       
       {dropdownOpen && (
         <div className="dropdown-content z-50 menu p-2 shadow-lg bg-base-100 rounded-box w-80 absolute right-0 mt-2 border border-base-300">

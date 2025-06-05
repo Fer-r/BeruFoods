@@ -4,16 +4,12 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        # Provider for regular users
+        # Provider for regular users (with ban check)
         app_user_provider:
-            entity:
-                class: App\Entity\User
-                property: email
-        # Provider for restaurant users
+            id: App\Security\UserProvider
+        # Provider for restaurant users (with ban check)
         restaurant_provider:
-            entity:
-                class: App\Entity\Restaurant
-                property: email
+            id: App\Security\RestaurantProvider
         # Chain provider to check both user types for API token validation
         chain_provider:
             chain:

@@ -142,8 +142,8 @@ export const NotificationProvider = ({ children }) => {
       url.searchParams.append('authorization', mercureToken);
       es = new EventSource(url);
     } else {
-      document.cookie = `mercureAuthorization=${mercureToken}; path=/; secure; samesite=none`;
-      es = new EventSource(url, { withCredentials: true });
+      document.cookie = `mercureAuthorization=${mercureToken}; path=/.well-known/mercure; secure; samesite=strict`;
+      es = new EventSource(url);
     }
 
     es.onopen = () => {

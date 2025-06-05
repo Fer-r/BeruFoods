@@ -4,22 +4,48 @@ This manual provides comprehensive instructions for system administrators to dep
 
 ## Table of Contents
 
-- [System Architecture](#system-architecture)
-- [Deployment](#deployment)
-  - [Local Development Deployment](#local-development-deployment)
-- [Configuration](#configuration)
-  - [Environment Variables](#environment-variables)
-  - [Security Configuration](#security-configuration)
-  - [Database Configuration](#database-configuration)
-  - [Mercure Configuration](#mercure-configuration)
-- [Maintenance](#maintenance)
-  - [Backup and Restore](#backup-and-restore)
-  - [Monitoring](#monitoring)
-  - [Logging](#logging)
-  - [Updating](#updating)
-- [Troubleshooting](#troubleshooting)
-  - [Common Issues](#common-issues)
-  - [Debugging Tools](#debugging-tools)
+- [BeruFoods Administration Manual](#berufoods-administration-manual)
+  - [Table of Contents](#table-of-contents)
+  - [System Architecture](#system-architecture)
+  - [Admin Interface Overview](#admin-interface-overview)
+  - [Deployment](#deployment)
+    - [Local Development Deployment](#local-development-deployment)
+  - [Configuration](#configuration)
+    - [Environment Variables](#environment-variables)
+      - [Database Configuration](#database-configuration)
+      - [JWT Configuration](#jwt-configuration)
+      - [Mercure Configuration](#mercure-configuration)
+      - [Frontend Configuration](#frontend-configuration)
+      - [Symfony Configuration](#symfony-configuration)
+    - [Security Configuration](#security-configuration)
+      - [JWT Authentication](#jwt-authentication)
+      - [CORS Configuration](#cors-configuration)
+    - [Database Configuration](#database-configuration-1)
+    - [Mercure Configuration](#mercure-configuration-1)
+  - [Maintenance](#maintenance)
+    - [Backup and Restore](#backup-and-restore)
+      - [Database Backup](#database-backup)
+      - [File Backup](#file-backup)
+    - [Monitoring](#monitoring)
+      - [Docker Container Monitoring](#docker-container-monitoring)
+      - [Application Monitoring](#application-monitoring)
+    - [Logging](#logging)
+      - [Symfony Logs](#symfony-logs)
+      - [Nginx Logs](#nginx-logs)
+    - [Updating](#updating)
+      - [Updating Dependencies](#updating-dependencies)
+      - [Updating the Application](#updating-the-application)
+  - [Troubleshooting](#troubleshooting)
+    - [Common Issues](#common-issues)
+      - [Database Connection Issues](#database-connection-issues)
+      - [JWT Authentication Issues](#jwt-authentication-issues)
+      - [Mercure Connection Issues](#mercure-connection-issues)
+      - [Frontend Build Issues](#frontend-build-issues)
+      - [Admin Interface Issues](#admin-interface-issues)
+    - [Debugging Tools](#debugging-tools)
+      - [Symfony Debug Tools](#symfony-debug-tools)
+      - [Database Debugging](#database-debugging)
+      - [Container Debugging](#container-debugging)
 
 ## System Architecture
 
@@ -31,8 +57,19 @@ BeruFoods is built using a microservices architecture with the following compone
 4. **Web Server**: Nginx
 5. **Real-time Updates**: Mercure Hub
 6. **Database Management**: phpMyAdmin
+7. **Admin Interface**: Integrated admin dashboard for platform management
 
 The system is containerized using Docker, with each component running in its own container, orchestrated by Docker Compose.
+
+## Admin Interface Overview
+
+The platform includes a comprehensive admin interface accessible through the web application:
+
+- **Admin Dashboard**: Central navigation hub with visual cards and statistics
+- **User Management**: Interface for viewing, editing, and banning user accounts
+- **Restaurant Management**: Tools for managing restaurants, orders, and articles
+- **Role Management**: Edit user roles with admin-only restrictions
+- **Real-time Statistics**: Live counters for total users and restaurants
 
 ## Deployment
 
@@ -42,7 +79,7 @@ For local development, the project uses Docker Compose to create a consistent de
 
 1. **Clone the Repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Fer-r/BeruFoods.git
    cd BeruFoods
    ```
 
@@ -50,6 +87,8 @@ For local development, the project uses Docker Compose to create a consistent de
    ```bash
    cp .env.example .env
    # Edit .env with appropriate values
+   nano ./frontend/.env
+   # Edit frontend/.env with appropriate values   
    ```
 
 3. **Initialize the Project**:
@@ -72,12 +111,38 @@ For local development, the project uses Docker Compose to create a consistent de
    ```bash
    make demo-data
    ```
-   This creates 20 users, 20 restaurants, and 5 menu items per restaurant.
+   This command can be run multiple times safely - it will skip existing accounts and only create new ones.
+   
+   This creates:
+   - 1 admin user (admin@berufoods.com)
+   - 20 users (10 in Granada, 10 in Madrid)
+   - 20 restaurants (10 in Granada, 10 in Madrid)
+   - 5 menu items per restaurant
+   
+   All addresses are realistic and match actual coordinates for locations in Granada and Madrid.
+
+8. **Access the Admin Interface**:
+   - Log in with admin credentials: `admin@berufoods.com` / `password123`
+   - Navigate to the admin dashboard through the header menu
+   - Use the admin interface to manage users and restaurants
 
 6. **Access the Application**:
    - Frontend: [http://localhost](http://localhost)
    - Backend API: [http://localhost/api](http://localhost/api)
-   - phpMyAdmin: [http://localhost:8081](http://localhost:8081)
+   - phpMyAdmin: [http://localhost/phpmyadmin](http://localhost/phpmyadmin)
+
+7. **Demo Account Credentials**:
+   All demo accounts use the password: `password123`
+   
+   - **Administrator**: `admin@berufoods.com` (Full admin dashboard access)
+   - **Demo Users**: `user1@example.com` through `user20@example.com`
+   - **Demo Restaurants**: `restaurant1@example.com` through `restaurant20@example.com`
+
+9. **Admin Dashboard Features**:
+   - Navigate to the admin dashboard after logging in as admin
+   - Use the dashboard to access user and restaurant management
+   - View real-time statistics and platform overview
+   - Manage user roles and permissions through the web interface
 
 ## Configuration
 
@@ -273,7 +338,13 @@ Mercure is used for real-time updates and notifications:
    - Access the Symfony Profiler at `http://localhost/_profiler`
    - View detailed information about requests, performance, and errors
 
-2. **Database Monitoring**:
+2. **Admin Interface Monitoring**:
+   - Access admin dashboard at `http://localhost` (login as admin)
+   - Monitor user and restaurant statistics in real-time
+   - Track platform usage through the dashboard analytics
+   - Manage user roles and permissions through the web interface
+
+3. **Database Monitoring**:
    - Access phpMyAdmin at `http://localhost:8081`
    - Monitor database performance, run queries, and manage tables
 
@@ -401,6 +472,23 @@ Nginx logs are stored in `docker/nginx/logs/`:
    ```bash
    docker compose exec --user=node frontend yarn build
    ```
+
+#### Admin Interface Issues
+
+1. **Admin Access Problems**:
+   - Verify admin credentials: `admin@berufoods.com` / `password123`
+   - Ensure the admin user has `ROLE_ADMIN` role in the database
+   - Check JWT token generation for admin users
+
+2. **Admin Dashboard Not Loading**:
+   - Check frontend container status: `docker compose ps frontend`
+   - Verify API endpoints are accessible: `curl http://localhost/api/users?limit=1`
+   - Check browser console for JavaScript errors
+
+3. **Statistics Not Updating**:
+   - Verify API connectivity from frontend to backend
+   - Check CORS configuration for admin endpoints
+   - Ensure proper authentication headers are being sent
 
 ### Debugging Tools
 

@@ -18,40 +18,34 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[AsCommand(
     name: 'app:create-demo-data',
-    description: 'Creates demo data: 20 users, 20 restaurants with 5 products each',
+    description: 'Creates demo data: admin user, 20 users, 20 restaurants with 5 products each',
 )]
 class CreateDemoDataCommand extends Command
 {
-    private const GRANADA_COORDINATES = [
-        ['lat' => 37.1773363, 'lng' => -3.5985571], // Plaza Nueva
-        ['lat' => 37.1760826, 'lng' => -3.5881388], // Alhambra
-        ['lat' => 37.1834447, 'lng' => -3.6035473], // Cathedral
-        ['lat' => 37.1969493, 'lng' => -3.624167],  // Science Park
-        ['lat' => 37.1789142, 'lng' => -3.6066264], // Realejo
-        ['lat' => 37.1826701, 'lng' => -3.5969644], // Albaicín
-        ['lat' => 37.1741979, 'lng' => -3.5985571], // Sacromonte
-        ['lat' => 37.1618037, 'lng' => -3.5859244], // Genil
-        ['lat' => 37.1924509, 'lng' => -3.6145272], // Chana
-        ['lat' => 37.1618037, 'lng' => -3.6145272], // Zaidín
+    private const GRANADA_LOCATIONS = [
+        ['lat' => 37.1773363, 'lng' => -3.5985571, 'address' => 'Plaza Nueva, 1, Granada'],
+        ['lat' => 37.1760826, 'lng' => -3.5881388, 'address' => 'Calle Real de la Alhambra, s/n, Granada'],
+        ['lat' => 37.1834447, 'lng' => -3.6035473, 'address' => 'Plaza de las Pasiegas, 1, Granada'],
+        ['lat' => 37.1969493, 'lng' => -3.624167, 'address' => 'Avenida de la Ciencia, s/n, Granada'],
+        ['lat' => 37.1789142, 'lng' => -3.6066264, 'address' => 'Campo del Príncipe, 18, Granada'],
+        ['lat' => 37.1826701, 'lng' => -3.5969644, 'address' => 'Plaza de San Nicolás, 2, Granada'],
+        ['lat' => 37.1741979, 'lng' => -3.5985571, 'address' => 'Camino del Sacromonte, 89, Granada'],
+        ['lat' => 37.1618037, 'lng' => -3.5859244, 'address' => 'Paseo del Genil, 25, Granada'],
+        ['lat' => 37.1924509, 'lng' => -3.6145272, 'address' => 'Avenida de la Constitución, 18, Granada'],
+        ['lat' => 37.1618037, 'lng' => -3.6145272, 'address' => 'Calle Recogidas, 35, Granada'],
     ];
 
-    private const MADRID_COORDINATES = [
-        ['lat' => 40.4167754, 'lng' => -3.7037902], // Puerta del Sol
-        ['lat' => 40.4152606, 'lng' => -3.6866267], // Retiro Park
-        ['lat' => 40.4253735, 'lng' => -3.6844611], // Salamanca
-        ['lat' => 40.4233142, 'lng' => -3.7121255], // Gran Vía
-        ['lat' => 40.4380638, 'lng' => -3.6795487], // Chamartín
-        ['lat' => 40.4123932, 'lng' => -3.7136765], // La Latina
-        ['lat' => 40.4332199, 'lng' => -3.7016493], // Chamberí
-        ['lat' => 40.4400356, 'lng' => -3.6921335], // Nuevos Ministerios
-        ['lat' => 40.4079946, 'lng' => -3.6924553], // Atocha
-        ['lat' => 40.4469715, 'lng' => -3.6919832], // Plaza de Castilla
-    ];
-
-    private const FOOD_TYPES = [
-        'Italian', 'Mexican', 'Chinese', 'Indian', 'Japanese',
-        'Thai', 'French', 'Spanish', 'Greek', 'American',
-        'Pizza', 'Burgers', 'Seafood', 'Vegetarian', 'Vegan'
+    private const MADRID_LOCATIONS = [
+        ['lat' => 40.4167754, 'lng' => -3.7037902, 'address' => 'Puerta del Sol, 1, Madrid'],
+        ['lat' => 40.4152606, 'lng' => -3.6866267, 'address' => 'Calle de Alfonso XII, 28, Madrid'],
+        ['lat' => 40.4253735, 'lng' => -3.6844611, 'address' => 'Calle de Serrano, 45, Madrid'],
+        ['lat' => 40.4233142, 'lng' => -3.7121255, 'address' => 'Gran Vía, 32, Madrid'],
+        ['lat' => 40.4380638, 'lng' => -3.6795487, 'address' => 'Paseo de la Castellana, 89, Madrid'],
+        ['lat' => 40.4123932, 'lng' => -3.7136765, 'address' => 'Plaza de la Cebada, 15, Madrid'],
+        ['lat' => 40.4332199, 'lng' => -3.7016493, 'address' => 'Calle de Fuencarral, 78, Madrid'],
+        ['lat' => 40.4400356, 'lng' => -3.6921335, 'address' => 'Paseo de la Castellana, 67, Madrid'],
+        ['lat' => 40.4079946, 'lng' => -3.6924553, 'address' => 'Plaza del Emperador Carlos V, 1, Madrid'],
+        ['lat' => 40.4469715, 'lng' => -3.6919832, 'address' => 'Plaza de Castilla, 3, Madrid'],
     ];
 
     private const RESTAURANT_NAMES = [
@@ -108,9 +102,18 @@ class CreateDemoDataCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $io->title('Creating Demo Data');
 
-        // Create food types if they don't exist
-        $io->section('Creating Food Types');
-        $foodTypes = $this->createFoodTypes($io);
+        // Get existing food types from database
+        $io->section('Fetching Food Types');
+        $foodTypes = $this->getFoodTypes($io);
+
+        if (empty($foodTypes)) {
+            $io->error('No food types found in the database. Please run migrations first.');
+            return Command::FAILURE;
+        }
+
+        // Create admin user
+        $io->section('Creating Admin User');
+        $this->createAdminUser($io);
 
         // Create users
         $io->section('Creating Users');
@@ -121,54 +124,103 @@ class CreateDemoDataCommand extends Command
         $this->createRestaurants($io, $foodTypes);
 
         $io->success('Demo data created successfully!');
+        
+        // Count existing entities
+        $userCount = $this->entityManager->getRepository(User::class)->count([]);
+        $restaurantCount = $this->entityManager->getRepository(Restaurant::class)->count([]);
+        $articleCount = $this->entityManager->getRepository(Article::class)->count([]);
+        
         $io->table(
-            ['Entity', 'Count'],
+            ['Entity', 'Total Count'],
             [
-                ['Users', '20'],
-                ['Restaurants', '20'],
-                ['Articles', '100 (5 per restaurant)'],
+                ['Users (including admin)', $userCount],
+                ['Restaurants', $restaurantCount],
+                ['Articles', $articleCount],
                 ['Food Types', count($foodTypes)],
             ]
         );
 
-        $io->note('All demo accounts use the password: "password123"');
+        $io->note('Demo account credentials:');
+        $io->listing([
+            'Admin: admin@berufoods.com / password123',
+            'Demo users: user1@example.com to user20@example.com / password123',
+            'Demo restaurants: restaurant1@example.com to restaurant20@example.com / password123'
+        ]);
 
         return Command::SUCCESS;
     }
 
-    private function createFoodTypes(SymfonyStyle $io): array
+    private function getFoodTypes(SymfonyStyle $io): array
     {
-        $foodTypes = [];
-        $existingFoodTypes = $this->entityManager->getRepository(FoodType::class)->findAll();
+        $foodTypes = $this->entityManager->getRepository(FoodType::class)->findAll();
         
-        // If we already have food types, use those
-        if (count($existingFoodTypes) > 0) {
-            $io->info(sprintf('Using %d existing food types', count($existingFoodTypes)));
-            return $existingFoodTypes;
+        if (count($foodTypes) > 0) {
+            $io->info(sprintf('Found %d existing food types', count($foodTypes)));
+            return $foodTypes;
         }
         
-        foreach (self::FOOD_TYPES as $name) {
-            $foodType = new FoodType();
-            $foodType->setName($name);
-            $this->entityManager->persist($foodType);
-            $foodTypes[] = $foodType;
-            $io->writeln(sprintf('Created food type: %s', $name));
+        $io->warning('No food types found in the database. Please run migrations first.');
+        return [];
+    }
+
+    private function createAdminUser(SymfonyStyle $io): void
+    {
+        $userRepository = $this->entityManager->getRepository(User::class);
+        $adminEmail = 'admin@berufoods.com';
+        
+        // Check if admin already exists
+        $existingAdmin = $userRepository->findOneBy(['email' => $adminEmail]);
+        if ($existingAdmin) {
+            $io->writeln('Admin user already exists, checking/updating roles...');
+            
+            // Ensure admin has correct roles
+            if (!in_array('ROLE_ADMIN', $existingAdmin->getRoles())) {
+                $existingAdmin->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
+                $this->entityManager->flush();
+                $io->writeln('Updated admin user roles');
+            } else {
+                $io->writeln('Admin user is properly configured');
+            }
+            return;
         }
         
+        $admin = new User();
+        $admin->setEmail($adminEmail);
+        $admin->setName('BeruFoods Administrator');
+        $admin->setPhone('600000000');
+        
+        // Set password
+        $hashedPassword = $this->passwordHasher->hashPassword($admin, 'password123');
+        $admin->setPassword($hashedPassword);
+        $admin->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
+        
+        // Create admin address (in Madrid)
+        $adminAddress = new UserAddress();
+        $adminAddress->setLat('40.4167754');
+        $adminAddress->setLng('-3.7037902');
+        $adminAddress->setAddressLine(['Puerta del Sol, 1', 'Administration Office']);
+        $adminAddress->setCity('Madrid');
+        $adminAddress->setUser($admin);
+        
+        $this->entityManager->persist($adminAddress);
+        $this->entityManager->persist($admin);
         $this->entityManager->flush();
-        return $foodTypes;
+        
+        $io->writeln('Created admin user: ' . $adminEmail);
     }
 
     private function createUsers(SymfonyStyle $io): void
     {
         $userRepository = $this->entityManager->getRepository(User::class);
+        $createdCount = 0;
+        $skippedCount = 0;
         
         for ($i = 1; $i <= 20; $i++) {
             $email = sprintf('user%d@example.com', $i);
             
             // Skip if user already exists
             if ($userRepository->findOneBy(['email' => $email])) {
-                $io->writeln(sprintf('User %s already exists, skipping', $email));
+                $skippedCount++;
                 continue;
             }
             
@@ -191,37 +243,45 @@ class CreateDemoDataCommand extends Command
             
             // Half in Granada, half in Madrid
             if ($i <= 10) {
-                $coordinates = self::GRANADA_COORDINATES[($i - 1) % count(self::GRANADA_COORDINATES)];
+                $location = self::GRANADA_LOCATIONS[($i - 1) % count(self::GRANADA_LOCATIONS)];
                 $userAddress->setCity('Granada');
             } else {
-                $coordinates = self::MADRID_COORDINATES[($i - 11) % count(self::MADRID_COORDINATES)];
+                $location = self::MADRID_LOCATIONS[($i - 11) % count(self::MADRID_LOCATIONS)];
                 $userAddress->setCity('Madrid');
             }
             
-            $userAddress->setLat((string)$coordinates['lat']);
-            $userAddress->setLng((string)$coordinates['lng']);
-            $userAddress->setAddressLine(['Calle Demo ' . $i, 'Apt ' . $i]);
+            $userAddress->setLat((string)$location['lat']);
+            $userAddress->setLng((string)$location['lng']);
+            $userAddress->setAddressLine([$location['address'], 'Apt ' . $i]);
             $userAddress->setUser($user);
             
             $this->entityManager->persist($userAddress);
             $this->entityManager->persist($user);
+            $createdCount++;
             
             $io->writeln(sprintf('Created user: %s in %s', $email, $userAddress->getCity()));
         }
         
         $this->entityManager->flush();
+        
+        if ($skippedCount > 0) {
+            $io->writeln(sprintf('Skipped %d existing users', $skippedCount));
+        }
+        $io->writeln(sprintf('Created %d new users', $createdCount));
     }
 
     private function createRestaurants(SymfonyStyle $io, array $foodTypes): void
     {
         $restaurantRepository = $this->entityManager->getRepository(Restaurant::class);
+        $createdCount = 0;
+        $skippedCount = 0;
         
         for ($i = 1; $i <= 20; $i++) {
             $email = sprintf('restaurant%d@example.com', $i);
             
             // Skip if restaurant already exists
             if ($restaurantRepository->findOneBy(['email' => $email])) {
-                $io->writeln(sprintf('Restaurant %s already exists, skipping', $email));
+                $skippedCount++;
                 continue;
             }
             
@@ -255,16 +315,16 @@ class CreateDemoDataCommand extends Command
             
             // Half in Granada, half in Madrid
             if ($i <= 10) {
-                $coordinates = self::GRANADA_COORDINATES[($i - 1) % count(self::GRANADA_COORDINATES)];
+                $location = self::GRANADA_LOCATIONS[($i - 1) % count(self::GRANADA_LOCATIONS)];
                 $restaurantAddress->setCity('Granada');
             } else {
-                $coordinates = self::MADRID_COORDINATES[($i - 11) % count(self::MADRID_COORDINATES)];
+                $location = self::MADRID_LOCATIONS[($i - 11) % count(self::MADRID_LOCATIONS)];
                 $restaurantAddress->setCity('Madrid');
             }
             
-            $restaurantAddress->setLat((string)$coordinates['lat']);
-            $restaurantAddress->setLng((string)$coordinates['lng']);
-            $restaurantAddress->setAddressLine('Calle Restaurante Demo ' . $i);
+            $restaurantAddress->setLat((string)$location['lat']);
+            $restaurantAddress->setLng((string)$location['lng']);
+            $restaurantAddress->setAddressLine($location['address']);
             $restaurantAddress->setRestaurant($restaurant);
             
             // Add food types (2-4 random types)
@@ -278,23 +338,42 @@ class CreateDemoDataCommand extends Command
             
             $this->entityManager->persist($restaurantAddress);
             $this->entityManager->persist($restaurant);
+            $createdCount++;
             
             $io->writeln(sprintf('Created restaurant: %s in %s', $email, $restaurantAddress->getCity()));
             
             // Create 5 articles for this restaurant
-            $this->createArticlesForRestaurant($restaurant, $io);
+            $this->createArticlesForRestaurant($restaurant, $io, $i);
         }
         
         $this->entityManager->flush();
+        
+        if ($skippedCount > 0) {
+            $io->writeln(sprintf('Skipped %d existing restaurants', $skippedCount));
+        }
+        $io->writeln(sprintf('Created %d new restaurants', $createdCount));
     }
 
-    private function createArticlesForRestaurant(Restaurant $restaurant, SymfonyStyle $io): void
+    private function createArticlesForRestaurant(Restaurant $restaurant, SymfonyStyle $io, int $restaurantIndex): void
     {
+        $articleRepository = $this->entityManager->getRepository(Article::class);
+        
         for ($i = 1; $i <= 5; $i++) {
-            $article = new Article();
-            $articleIndex = (($restaurant->getId() ?? 0) * 5 + $i - 1) % count(self::ARTICLE_NAMES);
+            $articleIndex = (($restaurantIndex - 1) * 5 + $i - 1) % count(self::ARTICLE_NAMES);
+            $articleName = self::ARTICLE_NAMES[$articleIndex];
             
-            $article->setName(self::ARTICLE_NAMES[$articleIndex]);
+            // Check if article already exists for this restaurant
+            $existingArticle = $articleRepository->findOneBy([
+                'restaurant' => $restaurant,
+                'name' => $articleName
+            ]);
+            
+            if ($existingArticle) {
+                continue; // Skip if article already exists
+            }
+            
+            $article = new Article();
+            $article->setName($articleName);
             $article->setDescription(self::ARTICLE_DESCRIPTIONS[$articleIndex % count(self::ARTICLE_DESCRIPTIONS)]);
             $article->setPrice(sprintf('%.2f', random_int(500, 2500) / 100));
             $article->setListed(true);
@@ -308,6 +387,8 @@ class CreateDemoDataCommand extends Command
                 shuffle($shuffledAllergies);
                 $articleAllergies = array_slice($shuffledAllergies, 0, $numAllergies);
                 $article->setAllergies($articleAllergies);
+            } else {
+                $article->setAllergies(null);
             }
             
             $this->entityManager->persist($article);

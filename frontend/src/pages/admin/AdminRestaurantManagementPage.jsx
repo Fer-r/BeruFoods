@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchDataFromEndpoint, deleteFromAPI, putToAPI } from '../../services/useApiService';
+import { fetchDataFromEndpoint, putToAPI } from '../../services/useApiService';
 
 // Modal component using DaisyUI
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -116,18 +116,24 @@ const AdminRestaurantManagementPage = () => {
     }
   };
 
-  // Delete Restaurant Handler
-  const handleDeleteRestaurant = async (restaurantId) => {
-    if (window.confirm('Are you sure you want to ban this restaurant? This action is a soft delete.')) {
+  // Toggle Restaurant Ban Handler
+  const handleToggleRestaurantBan = async (restaurant) => {
+    const action = restaurant.banned ? 'unban' : 'ban';
+    const confirmMessage = restaurant.banned 
+      ? 'Are you sure you want to unban this restaurant?' 
+      : 'Are you sure you want to ban this restaurant?';
+    
+    if (window.confirm(confirmMessage)) {
       try {
-        await deleteFromAPI(`/restaurants/${restaurantId}`);
+        // Use the ban/unban endpoints
+        await fetchDataFromEndpoint(`/restaurants/${restaurant.id}/${action}`, 'PATCH', null, true);
         fetchRestaurants(pagination.currentPage);
-        if (selectedRestaurantDetails && selectedRestaurantDetails.id === restaurantId) {
+        if (selectedRestaurantDetails && selectedRestaurantDetails.id === restaurant.id) {
           setSelectedRestaurantDetails(null);
         }
       } catch (err) {
         setError(err.message); // Show this as a general page error
-        alert(`Failed to ban restaurant: ${err.message}`);
+        alert(`Failed to ${action} restaurant: ${err.message}`);
       }
     }
   };
@@ -222,7 +228,7 @@ const AdminRestaurantManagementPage = () => {
   const handleDeleteArticle = async (articleId) => {
     if (window.confirm('Are you sure you want to delete this article? This action cannot be undone.')) {
       try {
-        await deleteFromAPI(`/articles/${articleId}`);
+        await fetchDataFromEndpoint(`/articles/${articleId}`, 'DELETE', null, true);
         // Refresh details for the current restaurant
         if (selectedRestaurantDetails) {
           fetchRestaurantDetails(selectedRestaurantDetails.id, selectedRestaurantDetails.name);
@@ -253,12 +259,13 @@ const AdminRestaurantManagementPage = () => {
                     <th>ID</th>
                     <th>Name</th>
                     <th>Address</th>
+                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {restaurants.map((restaurant) => (
-                    <tr key={restaurant.id} className={selectedRestaurantDetails?.id === restaurant.id ? 'bg-primary/10' : ''}>
+                    <tr key={restaurant.id} className={`${selectedRestaurantDetails?.id === restaurant.id ? 'bg-primary/10' : ''} ${restaurant.banned ? 'opacity-60 bg-error/10' : ''}`}>
                       <td className="font-bold">{restaurant.id}</td>
                       <td>{restaurant.name}</td>
                       <td>
@@ -266,6 +273,13 @@ const AdminRestaurantManagementPage = () => {
                           ? restaurant.address.address_line || 'N/A'
                           : restaurant.address || 'N/A'
                         }
+                      </td>
+                      <td>
+                        {restaurant.banned ? (
+                          <div className="badge badge-error">Banned</div>
+                        ) : (
+                          <div className="badge badge-success">Active</div>
+                        )}
                       </td>
                       <td>
                         <div className="flex gap-2 flex-wrap">
@@ -282,10 +296,10 @@ const AdminRestaurantManagementPage = () => {
                             Edit
                           </button>
                           <button 
-                            onClick={() => handleDeleteRestaurant(restaurant.id)} 
-                            className="btn btn-error btn-sm"
+                            onClick={() => handleToggleRestaurantBan(restaurant)} 
+                            className={`btn btn-sm ${restaurant.banned ? 'btn-success' : 'btn-error'}`}
                           >
-                            Ban
+                            {restaurant.banned ? 'Unban' : 'Ban'}
                           </button>
                         </div>
                       </td>

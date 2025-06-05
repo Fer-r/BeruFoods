@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchDataFromEndpoint, deleteFromAPI, putToAPI } from '../../services/useApiService'; // Added putToAPI for later use
+import { fetchDataFromEndpoint, putToAPI } from '../../services/useApiService';
 
 // Modal component using DaisyUI
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -109,14 +109,20 @@ const AdminUserManagementPage = () => {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to ban this user? This action is a soft delete.')) {
+  const handleToggleUserBan = async (user) => {
+    const action = user.banned ? 'unban' : 'ban';
+    const confirmMessage = user.banned 
+      ? 'Are you sure you want to unban this user?' 
+      : 'Are you sure you want to ban this user?';
+    
+    if (window.confirm(confirmMessage)) {
       try {
-        await deleteFromAPI(`/users/${userId}`); // deleteFromAPI implies authenticated
+        // Use the ban/unban endpoints
+        await fetchDataFromEndpoint(`/users/${user.id}/${action}`, 'PATCH', null, true);
         fetchUsers(pagination.currentPage); // Refresh the list with current page
       } catch (err) {
         setError(err.message);
-        alert(`Failed to ban user: ${err.message}`);
+        alert(`Failed to ${action} user: ${err.message}`);
       }
     }
   };
@@ -140,15 +146,23 @@ const AdminUserManagementPage = () => {
                   <tr>
                     <th>ID</th>
                     <th>Email</th>
+                    <th>Status</th>
                     <th>Roles</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((user) => (
-                    <tr key={user.id}>
+                    <tr key={user.id} className={user.banned ? 'opacity-60 bg-error/10' : ''}>
                       <td className="font-bold">{user.id}</td>
                       <td>{user.email}</td>
+                      <td>
+                        {user.banned ? (
+                          <div className="badge badge-error">Banned</div>
+                        ) : (
+                          <div className="badge badge-success">Active</div>
+                        )}
+                      </td>
                       <td>
                         <div className="flex flex-wrap gap-1">
                           {(user.roles || []).map((role) => (
@@ -165,10 +179,10 @@ const AdminUserManagementPage = () => {
                             Edit
                           </button>
                           <button
-                            onClick={() => handleDeleteUser(user.id)}
-                            className="btn btn-error btn-sm"
+                            onClick={() => handleToggleUserBan(user)}
+                            className={`btn btn-sm ${user.banned ? 'btn-success' : 'btn-error'}`}
                           >
-                            Ban
+                            {user.banned ? 'Unban' : 'Ban'}
                           </button>
                         </div>
                       </td>

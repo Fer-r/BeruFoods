@@ -44,8 +44,8 @@ class Order
     #[ORM\Column(type: 'json', nullable: false)]
     private ?array $items = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)] // Keep DATETIME_IMMUTABLE for storage
-    private ?\DateTimeInterface $updatedAt = null; // Use DateTimeInterface for type hinting
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeInterface $updatedAt = null;
 
     // --- Getters and Setters ---
 
@@ -156,11 +156,9 @@ class Order
     public function onPrePersist(): void
     {
         $this->created_at = new \DateTimeImmutable();
-        // Optionally set updatedAt on creation as well, or leave it null until first update
-        // $this->updatedAt = new \DateTimeImmutable();
     }
 
-    #[ORM\PreUpdate]
+        #[ORM\PreUpdate]
     public function onPreUpdate(): void
     {
         $this->updatedAt = new \DateTimeImmutable();

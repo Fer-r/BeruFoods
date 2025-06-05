@@ -10,7 +10,7 @@ App\Entity\Order:
         total_price:
             groups: ['order:read', 'order:read:collection']
         items:
-            groups: ['order:read'] # Only show full item details in single order view
+            groups: ['order:read', 'order:read:collection'] # Include in both single and collection views
         user:
             groups: ['order:read', 'order:read:collection'] # Use parent groups
         restaurant:

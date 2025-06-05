@@ -264,7 +264,7 @@ const UserProfilePage = () => {
           />
 
           {formData.address.address_line && (
-            <div className="text-xs text-gray-600 mt-2 p-2 bg-base-200 rounded">
+            <div className="text-xs text-base-content/70 mt-2 p-2 bg-base-200 rounded">
               Selected: {formData.address.address_line}
               {formData.address.address_line_2 && `, ${formData.address.address_line_2}`}
               {formData.address.city && `, ${formData.address.city}`}

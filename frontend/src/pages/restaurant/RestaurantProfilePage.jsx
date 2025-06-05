@@ -410,7 +410,7 @@ const RestaurantProfilePage = () => {
           />
 
           {formData.address.address_line && (
-            <div className="text-xs text-gray-600 mt-2 p-2 bg-base-200 rounded">
+            <div className="text-xs text-base-content/70 mt-2 p-2 bg-base-200 rounded">
               Selected: {formData.address.address_line}
               {formData.address.city && `, ${formData.address.city}`}
               <br/>
@@ -477,13 +477,13 @@ const RestaurantProfilePage = () => {
         />
         {currentImageUrl && !imageFile && (
             <div className="mt-2">
-              <p className="text-sm text-gray-500 mb-1">Current Image:</p>
+              <p className="text-sm text-base-content/60 mb-1">Current Image:</p>
               <img src={currentImageUrl} alt="Current restaurant" className="max-h-48 rounded-md border border-base-300"/>
             </div>
         )}
         {imageFile && (
             <div className="mt-2">
-              <p className="text-sm text-gray-500 mb-1">New Image Preview:</p>
+              <p className="text-sm text-base-content/60 mb-1">New Image Preview:</p>
               <img src={URL.createObjectURL(imageFile)} alt="New preview" className="max-h-48 rounded-md border border-base-300"/>
             </div>
         )}

@@ -21,8 +21,8 @@ const DateFilter = ({ dateFilter, onDateFilterChange }) => {
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="flex items-center gap-2">
-        <MdDateRange className="text-lg text-gray-600" />
-        <span className="text-sm font-medium text-gray-700">Filter by Date:</span>
+        <MdDateRange className="text-lg text-base-content/70" />
+                  <span className="text-sm font-medium text-base-content">Filter by Date:</span>
       </div>
       
       <div className="flex flex-wrap justify-center gap-2">

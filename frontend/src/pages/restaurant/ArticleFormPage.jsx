@@ -192,7 +192,7 @@ const ArticleFormPage = () => {
 
         <div>
           <label htmlFor="price" className="label">
-            <span className="label-text text-base-content font-medium">Price (USD)</span>
+            <span className="label-text text-base-content font-medium">Price (EUR)</span>
           </label>
           <input
             type="number"

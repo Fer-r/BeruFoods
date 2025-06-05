@@ -57,7 +57,7 @@ const SimpleGoogleMap = ({
         <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600;">
           ${markerTitle}
         </h3>
-        <p style="margin: 0; font-size: 12px; color: #666;">
+        <p style="margin: 0; font-size: 12px; color: var(--color-base-content); opacity: 0.7;">
           ${position.lat.toFixed(6)}, ${position.lng.toFixed(6)}
         </p>
       </div>
@@ -205,7 +205,7 @@ const SimpleGoogleMap = ({
 
   return (
     <div 
-      className={`relative bg-gray-50 border rounded-lg ${className}`}
+      className={`relative bg-base-200 border rounded-lg ${className}`}
       style={{ height, width: '100%' }}
     >
       <div
@@ -219,7 +219,7 @@ const SimpleGoogleMap = ({
           style={{ zIndex: 10 }}
         >
           <span className="loading loading-spinner loading-lg mb-2" aria-label="Loading map"></span>
-          <p className="text-gray-600">Loading map...</p>
+          <p className="text-base-content/70">Loading map...</p>
         </div>
       )}
 

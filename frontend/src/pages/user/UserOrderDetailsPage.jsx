@@ -153,7 +153,7 @@ const UserOrderDetailsPage = () => {
         <h2 className="text-xl font-semibold mb-3">Order #{order.id}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <p className="text-sm text-gray-600">Status:</p>
+            <p className="text-sm text-base-content/70">Status:</p>
             <p className={`text-lg font-medium badge badge-lg ${getStatusBadgeClass(order.status)}`}>
               {getStatusText(order.status)}
             </p>
@@ -164,12 +164,12 @@ const UserOrderDetailsPage = () => {
             )}
           </div>
           <div>
-            <p className="text-sm text-gray-600">Order Date:</p>
+            <p className="text-sm text-base-content/70">Order Date:</p>
             <p className="text-lg">{new Date(order.created_at).toLocaleString()}</p>
           </div>
           {order.restaurant && (
             <div>
-              <p className="text-sm text-gray-600">Restaurant:</p>
+              <p className="text-sm text-base-content/70">Restaurant:</p>
               <p className="text-lg font-medium">
                 <Link to={ROUTES.RESTAURANT_MENU.ARTICLES_DYNAMIC(order.restaurant.id)} className="link link-hover text-secondary">
                     {order.restaurant.name || `Restaurant ID: ${order.restaurant.id}`}
@@ -178,7 +178,7 @@ const UserOrderDetailsPage = () => {
             </div>
           )}
           <div>
-            <p className="text-sm text-gray-600">Total Price:</p>
+            <p className="text-sm text-base-content/70">Total Price:</p>
             <p className="text-lg font-bold text-primary">{parseFloat(order.total_price).toFixed(2)}€</p>
           </div>
         </div>
@@ -186,7 +186,7 @@ const UserOrderDetailsPage = () => {
 
       <div className="bg-base-100 shadow-xl rounded-lg p-6">
         <h3 className="text-xl font-semibold mb-4">Items Ordered</h3>
-        {articlesLoading && order?.items?.length > 0 && <p className="text-sm text-gray-500">Loading article details...</p>}
+        {articlesLoading && order?.items?.length > 0 && <p className="text-sm text-base-content/60">Loading article details...</p>}
         {order.items && order.items.length > 0 ? (
           <ul className="divide-y divide-base-300">
             {order.items.map((item, index) => {
@@ -197,7 +197,7 @@ const UserOrderDetailsPage = () => {
                     <p className="font-semibold text-lg">
                       {articleDetail ? articleDetail.name : `Article ID: ${item.articleId}`}
                     </p>
-                    <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                    <p className="text-sm text-base-content/70">Quantity: {item.quantity}</p>
                   </div>
                   {articleDetail && (
                     <p className="text-md font-medium">

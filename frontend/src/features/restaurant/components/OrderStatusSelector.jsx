@@ -66,11 +66,11 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
   if (availableTransitions.length === 0) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500">Status:</span>
+        <span className="text-sm text-base-content/70">Status:</span>
         <div className={`badge ${currentStatus === 'completed' ? 'badge-success' : 'badge-error'} text-white`}>
           {statusLabels[currentStatus]}
         </div>
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-base-content/60">
           {currentStatus === 'completed' ? '(Order completed)' : '(Order cancelled)'}
         </span>
       </div>
@@ -81,7 +81,7 @@ const OrderStatusSelector = ({ currentStatus, onStatusChange, isUpdating }) => {
     <>
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700 font-medium">Update Status:</span>
+          <span className="text-sm text-base-content font-medium">Update Status:</span>
           <div className={`badge ${currentStatus === 'pending' ? 'badge-warning' : currentStatus === 'ready' ? 'badge-accent' : 'badge-info'} text-white`}>
             {statusLabels[currentStatus]}
           </div>

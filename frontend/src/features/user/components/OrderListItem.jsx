@@ -93,17 +93,17 @@ const OrderListItem = ({ order }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 text-sm mb-4">
-          <div>
-            <p className="font-semibold text-gray-600">Restaurant:</p>
-            <p className="text-base-content truncate">{order.restaurant?.name || 'N/A'}</p>
+          <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-2">
+            <p className="font-semibold text-base-content/70">Restaurant:</p>
+            <p className="text-base-content">{order.restaurant?.name || 'N/A'}</p>
           </div>
-          <div>
-            <p className="font-semibold text-gray-600">Order Date:</p>
-            <p className="text-base-content">{new Date(order.created_at).toLocaleString()}</p>
+          <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-2">
+            <p className="font-semibold text-base-content/70">Order Date:</p>
+            <p className="text-base-content">{new Date(order.created_at).toLocaleDateString()}</p>
           </div>
-          <div>
-            <p className="font-semibold text-gray-600">Total Price:</p>
-            <p className="font-bold text-primary text-base-content">{parseFloat(order.total_price).toFixed(2)}€</p>
+          <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-2">
+            <p className="font-semibold text-base-content/70">Total Price:</p>
+            <p className="text-base-content font-medium">{parseFloat(order.total_price).toFixed(2)}€</p>
           </div>
         </div>
         

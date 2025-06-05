@@ -73,7 +73,7 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
         <div className="flex justify-between items-start mb-4">
           <div>
             <h3 className="text-lg font-semibold">Order #{order.id}</h3>
-            <p className="text-sm text-gray-500">{formatDate(order.created_at)}</p>
+            <p className="text-sm text-base-content/60">{formatDate(order.created_at)}</p>
           </div>
           <div className="text-right">
             <div className={`badge ${getStatusBadgeClass(order.status)} text-white font-medium`}>
@@ -86,10 +86,10 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
         {/* Customer Info */}
         {order.user && (
           <div className="mb-4">
-            <h4 className="font-medium text-gray-700 mb-1">Customer</h4>
+            <h4 className="font-medium text-base-content mb-1">Customer</h4>
             <p className="text-sm">{order.user.name}</p>
             {order.user.email && (
-              <p className="text-xs text-gray-500">{order.user.email}</p>
+              <p className="text-xs text-base-content/60">{order.user.email}</p>
             )}
           </div>
         )}
@@ -97,7 +97,7 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
         {/* Order Items */}
         {order.items && order.items.length > 0 && (
           <div className="mb-4">
-            <h4 className="font-medium text-gray-700 mb-2">
+            <h4 className="font-medium text-base-content mb-2">
               Items ({calculateItemsTotal()} total)
             </h4>
             <div className="space-y-1">
@@ -107,7 +107,7 @@ const RestaurantOrderItem = ({ order, onStatusUpdate }) => {
                     {item.quantity}x {item.articleName || `Article ID: ${item.articleId}`}
                   </span>
                   {item.price && (
-                    <span className="text-gray-600">
+                    <span className="text-base-content/70">
                       {(parseFloat(item.price) * item.quantity).toFixed(2)}€
                     </span>
                   )}

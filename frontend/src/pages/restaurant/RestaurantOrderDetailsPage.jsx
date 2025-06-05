@@ -123,7 +123,7 @@ const RestaurantOrderDetailsPage = () => {
         <h2 className="text-xl font-semibold mb-4">Order #{displayOrder.id}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <p className="text-sm text-gray-600 mb-1">Status:</p>
+            <p className="text-sm text-base-content/70 mb-1">Status:</p>
             <div className={`badge badge-lg text-white font-medium ${
               displayOrder.status === 'pending' ? 'badge-warning' : 
               displayOrder.status === 'preparing' ? 'badge-info' : 
@@ -139,15 +139,15 @@ const RestaurantOrderDetailsPage = () => {
             </div>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Order Date:</p>
+            <p className="text-sm text-base-content/70">Order Date:</p>
             <p className="text-lg">{new Date(displayOrder.created_at).toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Total Price:</p>
+            <p className="text-sm text-base-content/70">Total Price:</p>
             <p className="text-lg font-bold text-primary">{parseFloat(displayOrder.total_price).toFixed(2)}€</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Total Items:</p>
+            <p className="text-sm text-base-content/70">Total Items:</p>
             <p className="text-lg">{displayOrder.totalItems || displayOrder.items?.reduce((total, item) => total + item.quantity, 0) || 0}</p>
           </div>
         </div>
@@ -171,23 +171,23 @@ const RestaurantOrderDetailsPage = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-600">Name:</p>
+              <p className="text-sm text-base-content/70">Name:</p>
               <p className="text-lg">{displayOrder.user.name || 'N/A'}</p>
             </div>
             {displayOrder.user.email && (
               <div className="flex items-center gap-2">
-                <MdEmail className="text-gray-500" />
+                <MdEmail className="text-base-content/60" />
                 <div>
-                  <p className="text-sm text-gray-600">Email:</p>
+                  <p className="text-sm text-base-content/70">Email:</p>
                   <p className="text-lg">{displayOrder.user.email}</p>
                 </div>
               </div>
             )}
             {displayOrder.user.phone && (
               <div className="flex items-center gap-2">
-                <MdPhone className="text-gray-500" />
+                <MdPhone className="text-base-content/60" />
                 <div>
-                  <p className="text-sm text-gray-600">Phone:</p>
+                  <p className="text-sm text-base-content/70">Phone:</p>
                   <p className="text-lg">{displayOrder.user.phone}</p>
                 </div>
               </div>
@@ -223,7 +223,7 @@ const RestaurantOrderDetailsPage = () => {
                         <div>
                           <p className="font-semibold">{itemName}</p>
                           {item.articleDescription && (
-                            <p className="text-sm text-gray-500 mt-1">{item.articleDescription}</p>
+                            <p className="text-sm text-base-content/60 mt-1">{item.articleDescription}</p>
                           )}
                           {!item.articleDetail && item.articleId && (
                             <p className="text-xs text-warning mt-1">
@@ -239,14 +239,14 @@ const RestaurantOrderDetailsPage = () => {
                         {unitPrice > 0 ? (
                           <span className="font-medium">{parseFloat(unitPrice).toFixed(2)}€</span>
                         ) : (
-                          <span className="text-gray-500">N/A</span>
+                          <span className="text-base-content/60">N/A</span>
                         )}
                       </td>
                       <td>
                         {lineTotal > 0 ? (
                           <span className="font-bold text-primary">{lineTotal.toFixed(2)}€</span>
                         ) : (
-                          <span className="text-gray-500">-</span>
+                          <span className="text-base-content/60">-</span>
                         )}
                       </td>
                     </tr>
@@ -260,8 +260,8 @@ const RestaurantOrderDetailsPage = () => {
                 </tr>
                 {displayOrder.calculatedTotal && Math.abs(displayOrder.calculatedTotal - parseFloat(displayOrder.total_price)) > 0.01 && (
                   <tr className="border-t">
-                    <td colSpan="3" className="text-sm text-gray-500 text-right">Calculated Total:</td>
-                    <td className="text-sm text-gray-500">{displayOrder.calculatedTotal.toFixed(2)}€</td>
+                    <td colSpan="3" className="text-sm text-base-content/60 text-right">Calculated Total:</td>
+                    <td className="text-sm text-base-content/60">{displayOrder.calculatedTotal.toFixed(2)}€</td>
                   </tr>
                 )}
               </tfoot>

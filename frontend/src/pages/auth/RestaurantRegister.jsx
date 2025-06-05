@@ -176,7 +176,7 @@ const RestaurantRegister = () => {
               accept="image/png, image/jpeg, image/webp"
               className="file-input file-input-bordered file-input-primary w-full"
             />
-            {imageFile && <p className="text-xs mt-1 text-gray-500">Selected: {imageFile.name}</p>}
+            {imageFile && <p className="text-xs mt-1 text-base-content/60">Selected: {imageFile.name}</p>}
 
             <div className="w-full mt-4">
               <GoogleMapDisplay

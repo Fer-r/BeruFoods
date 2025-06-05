@@ -100,7 +100,7 @@ const RestaurantOrdersPage = () => {
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center justify-center">
             {/* Status Filter */}
             <div className="flex flex-col items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
+              <span className="text-sm font-medium text-base-content">Filter by Status:</span>
               <div className="flex flex-wrap justify-center gap-2">
                 {statusOptions.map((option) => (
                   <button
@@ -184,7 +184,7 @@ const RestaurantOrdersPage = () => {
       {!initialLoading && !error && orders.length === 0 && !hasMore ? (
         <div className="text-center">
           <div className="bg-base-100 p-8 rounded-lg shadow">
-            <p className="text-xl text-gray-500 mb-2">
+            <p className="text-xl text-base-content/60 mb-2">
               {statusFilter === 'all' 
                 ? "No orders found." 
                 : `No ${statusFilter} orders found.`
@@ -209,7 +209,7 @@ const RestaurantOrdersPage = () => {
           loader={<div className="text-center py-4"><LoadingFallback small text="Loading more orders..."/></div>}
           endMessage={
             orders.length > 0 && !hasMore ? (
-              <p className="text-center py-6 text-gray-500">
+              <p className="text-center py-6 text-base-content/60">
                 <b>You&apos;ve seen all orders.</b>
               </p>
             ) : null

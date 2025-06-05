@@ -1,141 +1,211 @@
-# BeruFoods Project
+# BeruFoods - Food Delivery Platform
 
-Este proyecto utiliza Docker y Docker Compose para crear un entorno de desarrollo consistente para una aplicación web que consiste en un frontend Vite/React y un backend Symfony PHP, servidos a través de Nginx y respaldados por una base de datos MySQL.
+BeruFoods is a comprehensive food delivery platform that connects users with local restaurants. This application allows users to browse restaurants, view menus, place orders, and track deliveries, while providing restaurant owners with tools to manage their menus, orders, and business information.
 
-## Descripción de la Pila Tecnológica
+## Table of Contents
 
-*   **Frontend:** Vite con React (Servido en modo desarrollo en `http://localhost:5173`)
-*   **Backend:** Symfony 7+ (PHP 8.2 FPM)
-*   **Servidor Web:** Nginx (Proxy inverso para el backend y servidor de archivos estáticos, accesible en `http://localhost:80`)
-*   **Base de Datos:** MySQL 8.0
-*   **Gestión de Base de Datos:** phpMyAdmin (Accesible en `http://localhost:8080`)
-*   **Contenedorización:** Docker & Docker Compose
+- [Getting Started](#getting-started)
+- [Installation Guide](#installation-guide)
+- [User Manual](#user-manual)
+- [Administration Manual](#administration-manual)
+- [Technical Stack](#technical-stack)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
 
-## Prerrequisitos
+## Getting Started
 
-*   Docker ([Instrucciones de Instalación](https://docs.docker.com/engine/install/))
-*   Docker Compose ([Instrucciones de Instalación](https://docs.docker.com/compose/install/))
-*   Make (Opcional, pero recomendado para usar los comandos del `Makefile`)
+BeruFoods consists of two main components:
 
-## Configuración Inicial
+1. **Frontend**: A React application built with Vite, providing the user interface for both customers and restaurant owners.
+2. **Backend**: A Symfony PHP API that handles data processing, authentication, and business logic.
 
-1.  **Clonar el Repositorio:**
-    ```bash
-    git clone <URL_DEL_REPOSITORIO>
-    cd BeruFoods
-    ```
+The application is containerized using Docker for consistent development and deployment environments.
 
-2.  **Crear archivo `.env`:**
-    Copia el archivo `.env.example` (si existe) o crea un nuevo archivo llamado `.env` en la raíz del proyecto. Este archivo contendrá las variables de entorno secretas para Docker Compose. Asegúrate de definir al menos las siguientes variables:
-    ```dotenv
-    # .env (NO AÑADIR A GIT)
+### Key Features
 
-    # Base de Datos
-    MYSQL_ROOT_PASSWORD=root_password_secret
-    MYSQL_DATABASE=berufoods_db
-    MYSQL_USER=berufoods_user
-    MYSQL_PASSWORD=user_password_secret
+- **For Customers**:
+  - Browse restaurants by location, cuisine type, and availability
+  - View restaurant menus and item details
+  - Place and track food orders
+  - Manage user profile and order history
 
-    # Symfony
-    APP_ENV=dev
-    APP_SECRET=tu_secreto_aqui # Cambia esto por un secreto real
+- **For Restaurant Owners**:
+  - Manage restaurant profile and menu items
+  - Process incoming orders
+  - Track order history and analytics
+  - Receive real-time notifications for new orders
 
-    # CORS Configuration
-    CORS_ALLOW_ORIGIN=^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$
+### Demo Data
 
-    # Google Maps API Configuration (Frontend)
-    # Get your API key from: https://console.cloud.google.com/apis/credentials
-    # Make sure to enable: Maps JavaScript API, Places API, Geocoding API
-    VITE_GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY_HERE
+You can quickly populate the system with demo data using:
 
-    # API Base URL (Frontend)
-    VITE_URL_API=http://localhost/api
+```bash
+make demo-data
+```
 
-    # Opcional: Versión de MySQL si es diferente a la configurada en docker-compose.yml
-    # MYSQL_VERSION=8.0
-    ```
-    *Importante:* El `MYSQL_DATABASE`, `MYSQL_USER`, y `MYSQL_PASSWORD` aquí deben coincidir con los valores que usará Symfony (inyectados como `DB_NAME`, `DB_USER`, `DB_PASSWORD` a través de `docker-compose.yml`).
+This will create:
+- 20 demo users (10 in Granada, 10 in Madrid)
+- 20 demo restaurants (10 in Granada, 10 in Madrid)
+- 5 menu items for each restaurant
 
-3.  **Permisos de Ejecución (si es necesario):**
-    Asegúrate de que el script de consola de Symfony sea ejecutable en tu máquina host (debido al montaje de volúmenes):
-    ```bash
-    chmod +x backend/bin/console
-    ```
+All demo accounts use the password: `password123`
 
-4.  **Construir e Iniciar los Contenedores:**
-    Usa el comando `make init` para una inicialización completa. Esto detendrá contenedores existentes, construirá las imágenes, iniciará los servicios, instalará dependencias (Composer y npm), ejecutará migraciones de base de datos y calentará la caché de Symfony.
-    ```bash
-    make init
-    ```
-    Alternativamente, para solo construir e iniciar:
-    ```bash
-    make up
-    ```
+Example accounts:
+- **Customer**: 
+  - Email: `user1@example.com` through `user20@example.com`
+  - Password: `password123`
 
-## Acceso a los Servicios
+- **Restaurant Owner**:
+  - Email: `restaurant1@example.com` through `restaurant20@example.com`
+  - Password: `password123`
 
-*   **Aplicación Web (vía Nginx):** [http://localhost:80](http://localhost:80)
-    *   Nginx sirve el `index.php` del backend y los archivos estáticos desde `backend/public`.
-    *   Las peticiones PHP son enviadas al servicio `backend` (PHP-FPM).
-*   **Frontend Dev Server (directo):** [http://localhost:5173](http://localhost:5173)
-    *   Útil para ver el frontend directamente con HMR (Hot Module Replacement).
-*   **phpMyAdmin:** [http://localhost:8080](http://localhost:8080)
-    *   Usuario: `root`
-    *   Contraseña: La `MYSQL_ROOT_PASSWORD` definida en tu `.env`.
-    *   Servidor: `database` (normalmente prellenado)
+## Installation Guide
 
-## Comandos Útiles (`Makefile`)
+### Prerequisites
 
-El `Makefile` proporciona atajos convenientes para las operaciones comunes de Docker Compose:
+- [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
+- [Make](https://www.gnu.org/software/make/) (Optional, but recommended for using the `Makefile` commands)
+- [Git](https://git-scm.com/downloads)
 
-*   `make init`: Inicialización completa (build, up, install, db, cache).
-*   `make up`: Construir (si es necesario) e iniciar contenedores en segundo plano.
-*   `make down`: Detener y eliminar contenedores y redes.
-*   `make stop`: Detener contenedores en ejecución.
-*   `make restart`: Reiniciar contenedores.
-*   `make build`: Forzar la reconstrucción de las imágenes Docker.
-*   `make logs`: Ver logs de todos los servicios.
-*   `make logs-backend`: Ver logs solo del servicio `backend`.
-*   `make logs-frontend`: Ver logs solo del servicio `frontend`.
-*   `make bash`: Conectar a la shell del contenedor `backend` (como `www-data`).
-*   `make bash-frontend`: Conectar a la shell del contenedor `frontend`.
-*   `make install`: Instalar dependencias Composer (backend) y npm (frontend).
-*   `make db`: Ejecutar migraciones de base de datos Doctrine.
-*   `make migration`: Generar un nuevo archivo de migración Doctrine.
-*   `make cache`: Limpiar y calentar la caché de Symfony.
-*   `make cache-clear`: Solo limpiar la caché de Symfony.
-*   `make test-backend`: Ejecutar tests PHPUnit en el backend.
-*   `make frontend`: Construir assets del frontend para producción (ejecuta `npm run build`).
+### Setup Instructions
 
-Para ver todos los comandos disponibles, ejecuta `make help` o simplemente `make`.
+1. **Clone the Repository**:
+   ```bash
+   git clone <repository-url>
+   cd BeruFoods
+   ```
 
-## Configuración de Google Maps API
+2. **Create Environment Files**:
+   Copy the example environment files and configure them:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit the `.env` file to set your environment variables:
+   ```
+   # Database Configuration
+   MYSQL_ROOT_PASSWORD=your_secure_root_password
+   MYSQL_DATABASE=berufoods
+   MYSQL_USER=berufoods_user
+   MYSQL_PASSWORD=your_secure_user_password
 
-Este proyecto utiliza Google Maps API para funcionalidades de ubicación y mapas. Para configurarlo:
+   # JWT Configuration
+   JWT_PASSPHRASE=your_secure_passphrase
 
-1. **Crear un proyecto en Google Cloud Console:**
-   - Ve a [Google Cloud Console](https://console.cloud.google.com/)
-   - Crea un nuevo proyecto o selecciona uno existente
+   # Google Maps API (Frontend)
+   VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 
-2. **Habilitar las APIs necesarias:**
+   # API Base URL (Frontend)
+   VITE_URL_API=http://localhost/api
+   
+   # Mercure Configuration
+   MERCURE_JWT_SECRET=your_secure_mercure_secret
+   ```
+
+3. **Initialize the Project**:
+   Using Make (recommended):
+   ```bash
+   make init
+   ```
+   
+   Or manually with Docker Compose:
+   ```bash
+   docker compose build
+   docker compose up -d
+   docker compose exec --user=www-data backend composer install
+   docker compose exec --user=node frontend yarn install
+   docker compose exec backend bin/console doctrine:migration:migrate --no-interaction
+   ```
+
+4. **Generate JWT Keys**:
+   ```bash
+   make generate-keys
+   ```
+   Or manually:
+   ```bash
+   docker compose exec --user=www-data backend bin/console lexik:jwt:generate-keypair --overwrite
+   ```
+
+5. **Access the Application**:
+   - Frontend: [http://localhost](http://localhost)
+   - Backend API: [http://localhost/api](http://localhost/api)
+   - phpMyAdmin: [http://localhost:8081](http://localhost:8081)
+
+6. **Generate Demo Data (Optional)**:
+   ```bash
+   make demo-data
+   ```
+
+### Google Maps API Setup
+
+This project uses Google Maps API for location services. To set it up:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the following APIs:
    - Maps JavaScript API
    - Places API
    - Geocoding API
+4. Create an API key and add restrictions as needed
+5. Add the API key to your `.env` file as `VITE_GOOGLE_MAPS_API_KEY`
 
-3. **Crear credenciales:**
-   - Ve a "APIs y servicios" > "Credenciales"
-   - Haz clic en "Crear credenciales" > "Clave de API"
-   - Copia la clave generada
+## User Manual
 
-4. **Configurar restricciones (recomendado):**
-   - Restringe la clave a tu dominio para mayor seguridad
-   - Limita las APIs que puede usar la clave
+For detailed instructions on how to use the BeruFoods platform, please refer to the [User Manual](docs/USER_MANUAL.md).
 
-5. **Agregar la clave al archivo `.env`:**
-   ```
-   VITE_GOOGLE_MAPS_API_KEY=tu_clave_de_api_aqui
-   ```
+## Administration Manual
 
-**Nota:** Sin una clave de API válida, las funcionalidades de ubicación usarán valores por defecto y la búsqueda de direcciones no funcionará.
+For system administration and maintenance instructions, please refer to the [Administration Manual](docs/ADMIN_MANUAL.md).
 
+## Technical Stack
 
+### Frontend
+- React 18.3+
+- Vite 6.0+
+- TailwindCSS 4.1+
+- DaisyUI
+- React Router
+- JWT Authentication
+
+### Backend
+- Symfony 7.2+
+- PHP 8.2+
+- MySQL 8.0
+- Doctrine ORM
+- API Platform
+- Lexik JWT Authentication
+- Mercure for real-time updates
+
+### Infrastructure
+- Docker & Docker Compose
+- Nginx
+- PHP-FPM
+- MySQL
+- Mercure Hub
+
+## Project Structure
+
+```
+BeruFoods/
+├── backend/               # Symfony backend API
+│   ├── config/            # Symfony configuration
+│   ├── migrations/        # Database migrations
+│   ├── public/            # Public web directory
+│   ├── src/               # PHP source code
+│   └── ...
+├── frontend/              # React frontend application
+│   ├── public/            # Static assets
+│   ├── src/               # React source code
+│   └── ...
+├── docker/                # Docker configuration
+│   ├── nginx/             # Nginx configuration
+│   ├── php/               # PHP configuration
+│   └── ...
+├── docker-compose.yml     # Docker Compose configuration
+├── Makefile               # Make commands for common operations
+└── README.md              # Project documentation
+```
+
+## Contributing
+
+Please read our [Contributing Guidelines](docs/CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.

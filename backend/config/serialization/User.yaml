@@ -11,7 +11,7 @@ App\Entity\User:
             groups: ['user:read', 'user:read:collection'] # Include phone in lists for admin view? Maybe create user:read:admin?
         roles:
              # groups: ['user:read'] # Removed from default user view
-             groups: ['admin:read'] # Only readable by admin
+             groups: ['admin:read', 'user:read:collection'] # Only readable by admin
         banned:
             groups: ['user:read', 'user:read:collection'] # Show banned status in lists
         address:

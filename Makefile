@@ -13,7 +13,7 @@ COMPOSE := docker compose
 .DEFAULT_GOAL := help
 
 # Phony targets prevent conflicts with files of the same name
-.PHONY: help init up down restart build logs-backend logs-frontend bash-backend bash-frontend install db cache cache-clear migration test-backend frontend backend fix-linux-permissions start-frontend-dev-blocking generate-keys
+.PHONY: help init up down restart build logs-backend logs-frontend bash-backend bash-frontend install db cache cache-clear migration test-backend frontend backend fix-linux-permissions start-frontend-dev-blocking generate-keys demo-data
 
 help: ## Display this help message
 	@echo "Usage: make [target]"
@@ -41,6 +41,7 @@ help: ## Display this help message
 	@echo "  backend         Validate backend composer setup"
 	@echo "  start-frontend-dev Show frontend dev server logs (starts automatically)"
 	@echo "  generate-keys   Generate LexikJWTBundle RSA keys and Mercure HMAC secret"
+	@echo "  demo-data       Generate demo data: 20 users, 20 restaurants, 5 products per restaurant"
 
 init: stop up install db cache ## Initialize the project: stop, build, start, install deps, setup DB, warm cache (frontend dev server starts automatically)
 	@echo "Project initialization complete. Frontend dev server is starting..."
@@ -136,6 +137,11 @@ generate-keys: ## Generate LexikJWTBundle RSA keys and Mercure HMAC secret, then
 	@echo "Restarting services to apply new keys..."
 	$(COMPOSE) restart
 	@echo "Keys generation and service restart complete!"
+
+demo-data: ## Generate demo data: 20 users, 20 restaurants, 5 products per restaurant
+	@echo "Generating demo data..."
+	$(COMPOSE) exec ${BACKEND_SERVICE} bin/console app:create-demo-data
+	@echo "Demo data generation complete!"
 
 fix-linux-permissions: ## Ensures necessary backend directories are writable on Linux hosts (used by 'init')
 	@if [ "$(shell uname)" = "Linux" ]; then \

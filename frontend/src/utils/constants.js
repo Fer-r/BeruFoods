@@ -88,6 +88,13 @@ export const ROUTES = {
     ARTICLES: '/restaurants/:restaurantId/articles',
     ARTICLES_DYNAMIC: (restaurantId) => `/restaurants/${restaurantId}/articles`,
   },
+
+  // Admin Routes
+  ADMIN: {
+    DASHBOARD: '/admin',
+    USERS: '/admin/users',
+    RESTAURANTS: '/admin/restaurants',
+  },
 };
 
 // Status Constants

@@ -4,7 +4,7 @@ import PublicHeaderLayout from "../layouts/PublicHeaderLayout.jsx";
 import MinimalLayout from "../layouts/MinimalLayout";
 import AuthLayout from "../layouts/AuthLayout.jsx";
 import LoadingFallback from "../components/common/LoadingFallback.jsx";
-import { RestaurantRoute, UserRoute } from "./ProtectedRoutes.jsx";
+import { RestaurantRoute, UserRoute, AdminRoute } from "./ProtectedRoutes.jsx";
 
 // Page Components
 const ErrorPage = lazy(() => import("../pages/ErrorPage.jsx"));
@@ -24,6 +24,9 @@ const UserProfilePage = lazy(() => import("../pages/user/UserProfilePage.jsx"));
 const UserOrdersPage = lazy(() => import("../pages/user/UserOrdersPage.jsx"));
 const UserCartPage = lazy(() => import("../pages/cart/UserCartPage.jsx"));
 const OrderDetailsPage = lazy(() => import("../pages/user/./UserOrderDetailsPage"));
+const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard.jsx"));
+const AdminUserManagementPage = lazy(() => import("../pages/admin/AdminUserManagementPage.jsx"));
+const AdminRestaurantManagementPage = lazy(() => import("../pages/admin/AdminRestaurantManagementPage.jsx"));
 
 const PATHS = {
   ROOT: "/",
@@ -43,6 +46,9 @@ const PATHS = {
   USER_ORDER_DETAILS: "/user/orders/:orderId",
   USER_CART: "/cart",
   REGISTER: "/register",
+  ADMIN_DASHBOARD: "/admin",
+  ADMIN_USERS: "/admin/users",
+  ADMIN_RESTAURANTS: "/admin/restaurants",
 };
 
 const renderSuspendedPage = (LazyComponent, fallback = <LoadingFallback />) => (
@@ -119,6 +125,19 @@ export const router = createBrowserRouter([
       {
         path: PATHS.RESTAURANT_ARTICLES_EDIT,
         element: renderProtectedPage(RestaurantRoute, ArticleFormPage),
+      },
+      // Admin Routes (Protected)
+      {
+        path: PATHS.ADMIN_DASHBOARD,
+        element: renderProtectedPage(AdminRoute, AdminDashboard),
+      },
+      {
+        path: PATHS.ADMIN_USERS,
+        element: renderProtectedPage(AdminRoute, AdminUserManagementPage),
+      },
+      {
+        path: PATHS.ADMIN_RESTAURANTS,
+        element: renderProtectedPage(AdminRoute, AdminRestaurantManagementPage),
       },
     ],
   },

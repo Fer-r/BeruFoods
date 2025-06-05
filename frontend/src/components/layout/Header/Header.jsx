@@ -22,6 +22,11 @@ const MENU_ITEMS = {
   ],
   USER: [
     { to: ROUTES.USER.ORDERS, label: "Order History" }
+  ],
+  ADMIN: [
+    { to: ROUTES.ADMIN.DASHBOARD, label: "Dashboard" },
+    { to: ROUTES.ADMIN.USERS, label: "Manage Users" },
+    { to: ROUTES.ADMIN.RESTAURANTS, label: "Manage Restaurants" }
   ]
 };
 
@@ -122,11 +127,17 @@ const UnauthenticatedDrawerContent = ({ onLoginClick, onDrawerClose }) => (
  * @param {function} props.onLogout - Handler function to be called when the logout button is clicked.
  * @returns {JSX.Element} The drawer content for authenticated users.
  */
-const AuthenticatedDrawerContent = ({ isRestaurant, isUser, totalCartItems, onMenuClose, onLogout }) => (
+const AuthenticatedDrawerContent = ({ entity, isRestaurant, isUser, totalCartItems, onMenuClose, onLogout }) => (
   <div className="flex flex-col h-full">
     <div className="flex-1">
       <ul className="menu menu-lg menu-vertical px-0 gap-1">
         {isRestaurant && MENU_ITEMS.RESTAURANT.map(item => (
+          <NavMenuItem key={item.to} to={item.to} onClick={onMenuClose}>
+            {item.label}
+          </NavMenuItem>
+        ))}
+
+        {entity?.roles?.includes('ROLE_ADMIN') && MENU_ITEMS.ADMIN.map(item => (
           <NavMenuItem key={item.to} to={item.to} onClick={onMenuClose}>
             {item.label}
           </NavMenuItem>
@@ -154,10 +165,10 @@ const AuthenticatedDrawerContent = ({ isRestaurant, isUser, totalCartItems, onMe
         )}
 
         <NavMenuItem 
-          to={isRestaurant ? ROUTES.RESTAURANT.PROFILE : ROUTES.USER.PROFILE} 
+          to={isRestaurant ? ROUTES.RESTAURANT.PROFILE : (entity?.roles?.includes('ROLE_ADMIN') ? ROUTES.ADMIN.DASHBOARD : ROUTES.USER.PROFILE)} 
           onClick={onMenuClose}
         >
-          Profile
+          {entity?.roles?.includes('ROLE_ADMIN') ? 'Admin Dashboard' : 'Profile'}
         </NavMenuItem>
         
         <MenuButton onClick={onLogout}>
@@ -176,19 +187,23 @@ const AuthenticatedDrawerContent = ({ isRestaurant, isUser, totalCartItems, onMe
  * @param {object} props - Component props.
  * @param {boolean} props.isRestaurant - Flag indicating if the current user is a restaurant,
  *                                     determining whether to display the restaurant-specific menu items.
+ * @param {object} props.entity - The user entity object from useAuth.
  * @returns {JSX.Element | null} The desktop navigation menu for restaurants, or null if not applicable.
  */
-const DesktopNavMenu = ({ isRestaurant }) => (
+const DesktopNavMenu = ({ isRestaurant, entity }) => (
   <div className="navbar-center hidden lg:flex">
-    {isRestaurant && (
-      <ul className="menu menu-horizontal px-1">
-        {MENU_ITEMS.RESTAURANT.map(item => (
-          <li key={item.to}>
-            <NavLink to={item.to}>{item.label}</NavLink>
-          </li>
-        ))}
-      </ul>
-    )}
+    <ul className="menu menu-horizontal px-1">
+      {isRestaurant && MENU_ITEMS.RESTAURANT.map(item => (
+        <li key={item.to}>
+          <NavLink to={item.to}>{item.label}</NavLink>
+        </li>
+      ))}
+      {entity?.roles?.includes('ROLE_ADMIN') && MENU_ITEMS.ADMIN.map(item => (
+        <li key={item.to}>
+          <NavLink to={item.to}>{item.label}</NavLink>
+        </li>
+      ))}
+    </ul>
   </div>
 );
 
@@ -274,7 +289,7 @@ const Header = () => {
   const { isLoginModalOpen, openLoginModal, closeLoginModal } = useModal();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated, logOut, isRestaurant, isUser } = useAuth();
+  const { isAuthenticated, logOut, isRestaurant, isUser, entity } = useAuth();
   const { getCartTotalItems } = useCart();
 
   const totalCartItems = getCartTotalItems();
@@ -312,6 +327,7 @@ const Header = () => {
 
     return (
       <AuthenticatedDrawerContent
+        entity={entity}
         isRestaurant={isRestaurant}
         isUser={isUser}
         totalCartItems={totalCartItems}
@@ -360,7 +376,7 @@ const Header = () => {
           </NavLink>
         </div>
 
-        <DesktopNavMenu isRestaurant={isRestaurant} />
+        <DesktopNavMenu isRestaurant={isRestaurant} entity={entity} />
 
         <div className="navbar-end overflow-visible pr-4 py-2">
           {renderUserActions()}

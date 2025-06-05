@@ -69,6 +69,20 @@ final class UserController extends AbstractController
             'phone' => 'setPhone',
         ];
 
+        // Handle roles (only for admins)
+        if (array_key_exists('roles', $jsonData) && $this->isGranted('ROLE_ADMIN')) {
+            $newRoles = is_array($jsonData['roles']) ? $jsonData['roles'] : [];
+            $currentRoles = $user->getRoles();
+            // Remove ROLE_USER for comparison as it's always added
+            $currentRolesFiltered = array_filter($currentRoles, fn($role) => $role !== 'ROLE_USER');
+            $newRolesFiltered = array_filter($newRoles, fn($role) => $role !== 'ROLE_USER');
+            
+            if (array_diff($currentRolesFiltered, $newRolesFiltered) !== array_diff($newRolesFiltered, $currentRolesFiltered)) {
+                $user->setRoles($newRoles);
+                $_entityWasModified_ = true;
+            }
+        }
+
         foreach ($allowedFieldsToUpdate as $field => $setterMethod) {
             if (array_key_exists($field, $jsonData)) {
                 $newValue = $jsonData[$field];

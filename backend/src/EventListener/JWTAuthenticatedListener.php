@@ -28,8 +28,10 @@ class JWTAuthenticatedListener
 
         if ($subject instanceof Restaurant) {
             $payload['restaurant_id'] = $subject->getId();
+            $payload['banned'] = $subject->isBanned();
         } elseif ($subject instanceof User) {
             $payload['user_id'] = $subject->getId();
+            $payload['banned'] = $subject->isBanned();
         }
 
         $addressEntity = null;

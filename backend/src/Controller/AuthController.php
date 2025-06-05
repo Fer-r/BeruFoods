@@ -350,6 +350,15 @@ final class AuthController extends AbstractController
             return $this->json(['message' => 'Not authenticated'], Response::HTTP_UNAUTHORIZED);
         }
 
+        
+        if ($user instanceof User && $user->isBanned()) {
+            return $this->json(['message' => 'Your account has been banned. Please contact support.'], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($user instanceof Restaurant && $user->isBanned()) {
+            return $this->json(['message' => 'Your restaurant account has been banned. Please contact support.'], Response::HTTP_FORBIDDEN);
+        }
+
         $topics = [];
         if ($user instanceof Restaurant) {
             $topics[] = "restaurant/{$user->getId()}/orders";

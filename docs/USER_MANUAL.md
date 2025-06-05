@@ -1,21 +1,44 @@
 # BeruFoods User Manual
 
-This manual provides comprehensive instructions for using the BeruFoods platform, covering both customer and restaurant owner functionalities.
+This manual provides comprehensive instructions for using the BeruFoods platform, covering customer, restaurant owner, and administrator functionalities.
+
+## Getting Started with Demo Data
+
+BeruFoods comes with demo data that can be quickly generated for testing and demonstration purposes. The demo data includes:
+
+- **1 Administrator Account**: `admin@berufoods.com` with full system access
+- **20 Customer Accounts**: `user1@example.com` through `user20@example.com` (10 in Granada, 10 in Madrid)
+- **20 Restaurant Accounts**: `restaurant1@example.com` through `restaurant20@example.com` (10 in Granada, 10 in Madrid)
+- **100 Menu Items**: 5 items per restaurant with realistic pricing and allergen information
+
+All demo accounts use the password: `password123`
+
+**Note**: The demo data command can be run multiple times safely - it will skip existing accounts and only create new ones. All addresses are realistic and match actual coordinates for locations in Granada and Madrid.
 
 ## Table of Contents
 
-- [Customer Guide](#customer-guide)
-  - [Creating an Account](#creating-an-account)
-  - [Browsing Restaurants](#browsing-restaurants)
-  - [Placing Orders](#placing-orders)
-  - [Managing Your Profile](#managing-your-profile)
-  - [Viewing Order History](#viewing-order-history)
-- [Restaurant Owner Guide](#restaurant-owner-guide)
-  - [Restaurant Registration](#restaurant-registration)
-  - [Managing Your Restaurant Profile](#managing-your-restaurant-profile)
-  - [Managing Menu Items](#managing-menu-items)
-  - [Processing Orders](#processing-orders)
-  - [Viewing Order History](#viewing-order-history-restaurant)
+- [BeruFoods User Manual](#berufoods-user-manual)
+  - [Getting Started with Demo Data](#getting-started-with-demo-data)
+  - [Table of Contents](#table-of-contents)
+  - [Customer Guide](#customer-guide)
+    - [Creating an Account](#creating-an-account)
+    - [Browsing Restaurants](#browsing-restaurants)
+    - [Placing Orders](#placing-orders)
+    - [Managing Your Profile](#managing-your-profile)
+    - [Viewing Order History](#viewing-order-history)
+  - [Restaurant Owner Guide](#restaurant-owner-guide)
+    - [Restaurant Registration](#restaurant-registration)
+    - [Managing Your Restaurant Profile](#managing-your-restaurant-profile)
+    - [Managing Menu Items](#managing-menu-items)
+    - [Processing Orders](#processing-orders)
+    - [Viewing Order History (Restaurant)](#viewing-order-history-restaurant)
+  - [Notifications System](#notifications-system)
+  - [Troubleshooting](#troubleshooting)
+  - [Administrator Guide](#administrator-guide)
+    - [Admin Access](#admin-access)
+    - [Admin Features](#admin-features)
+    - [Admin Dashboard](#admin-dashboard)
+    - [Using Admin Management Tools](#using-admin-management-tools)
 
 ## Customer Guide
 
@@ -278,3 +301,84 @@ If you encounter any issues while using the BeruFoods platform:
 
 4. **Contact Support**:
    - For persistent issues, contact support at support@berufoods.com
+
+## Administrator Guide
+
+### Admin Access
+
+The BeruFoods platform includes an administrator account for system management:
+
+- **Email**: `admin@berufoods.com`
+- **Password**: `password123` (demo environment)
+
+### Admin Features
+
+Administrators have access to a comprehensive admin dashboard and management tools:
+
+1. **Admin Dashboard**:
+   - Centralized overview of the platform
+   - Quick access to user and restaurant management
+   - Real-time statistics showing total users and restaurants
+   - Visual navigation cards for easy access to admin functions
+
+2. **User Management**:
+   - View all registered users with pagination
+   - Edit user email and roles
+   - Ban users
+
+3. **Restaurant Management**:
+   - View all registered restaurants with pagination
+   - Edit restaurant information (name, address, phone, SIRET)
+   - View restaurant orders and articles in detail
+   - Edit individual orders (status) and articles (name, price, description)
+   - Ban restaurants
+   - Delete restaurant articles
+
+4. **Role Management**:
+   - Edit user roles (comma-separated format in the user management interface)
+   - Support for ROLE_USER, ROLE_RESTAURANT, ROLE_ADMIN
+   - Role changes restricted to admin users only
+
+
+### Admin Dashboard
+
+The admin dashboard provides a centralized interface for platform management:
+
+1. **Accessing the Dashboard**:
+   - Log in with admin credentials (`admin@berufoods.com`)
+   - You'll be automatically redirected to the admin dashboard
+   - Or navigate to your profile menu and select "Admin Dashboard"
+
+2. **Dashboard Features**:
+   - **Management Cards**: Visual navigation to User Management and Restaurant Management
+   - **Quick Statistics**: Real-time counters showing total users and restaurants
+   - **Responsive Design**: Optimized for both desktop and mobile access
+
+3. **Navigation**:
+   - **User Management Card**: Click to access the comprehensive user management interface
+   - **Restaurant Management Card**: Click to manage restaurants, menus, and operations
+   - **Header Menu**: Access dashboard, user management, and restaurant management from any page
+
+4. **Quick Stats Display**:
+   - Total registered users count
+   - Total active restaurants count
+   - Loading indicators during data fetching
+   - Formatted numbers for better readability
+
+### Using Admin Management Tools
+
+1. **User Management Interface**:
+   - Access via the dashboard or header menu
+   - View paginated list of all users (ID, email, roles)
+   - Edit user email and roles through modal forms
+   - Ban users (soft delete with confirmation)
+
+2. **Restaurant Management Interface**:
+   - Access via the dashboard or header menu
+   - View paginated list of restaurants (ID, name, address)
+   - Edit restaurant details through modal forms
+   - Expand restaurant details to view orders and articles
+   - Edit individual orders and articles through modal forms
+   - Ban restaurants and delete articles with confirmation
+
+For detailed administrator instructions and system maintenance, please refer to the [Administration Manual](./ADMIN_MANUAL.md).

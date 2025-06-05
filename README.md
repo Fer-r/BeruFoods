@@ -4,13 +4,22 @@ BeruFoods is a comprehensive food delivery platform that connects users with loc
 
 ## Table of Contents
 
-- [Getting Started](#getting-started)
-- [Installation Guide](#installation-guide)
-- [User Manual](#user-manual)
-- [Administration Manual](#administration-manual)
-- [Technical Stack](#technical-stack)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
+- [BeruFoods - Food Delivery Platform](#berufoods---food-delivery-platform)
+  - [Table of Contents](#table-of-contents)
+  - [Getting Started](#getting-started)
+    - [Key Features](#key-features)
+    - [Demo Data](#demo-data)
+  - [Installation Guide](#installation-guide)
+    - [Prerequisites](#prerequisites)
+    - [Setup Instructions](#setup-instructions)
+    - [Google Maps API Setup](#google-maps-api-setup)
+  - [User Manual](#user-manual)
+  - [Administration Manual](#administration-manual)
+  - [Technical Stack](#technical-stack)
+    - [Frontend](#frontend)
+    - [Backend](#backend)
+    - [Infrastructure](#infrastructure)
+  - [Project Structure](#project-structure)
 
 ## Getting Started
 
@@ -35,6 +44,12 @@ The application is containerized using Docker for consistent development and dep
   - Track order history and analytics
   - Receive real-time notifications for new orders
 
+- **For Administrators**:
+  - Access admin dashboard with navigation and statistics
+  - Manage user accounts (edit email, roles, ban users)
+  - Manage restaurants (edit details, view orders/articles, ban restaurants)
+  - View real-time platform statistics (total users and restaurants)
+
 ### Demo Data
 
 You can quickly populate the system with demo data using:
@@ -43,7 +58,10 @@ You can quickly populate the system with demo data using:
 make demo-data
 ```
 
+This command can be run multiple times safely - it will skip existing accounts and only create new ones.
+
 This will create:
+- 1 admin user
 - 20 demo users (10 in Granada, 10 in Madrid)
 - 20 demo restaurants (10 in Granada, 10 in Madrid)
 - 5 menu items for each restaurant
@@ -51,6 +69,11 @@ This will create:
 All demo accounts use the password: `password123`
 
 Example accounts:
+- **Administrator**:
+  - Email: `admin@berufoods.com`
+  - Password: `password123`
+  - Access: Full admin dashboard with user and restaurant management
+
 - **Customer**: 
   - Email: `user1@example.com` through `user20@example.com`
   - Password: `password123`
@@ -205,7 +228,3 @@ BeruFoods/
 ├── Makefile               # Make commands for common operations
 └── README.md              # Project documentation
 ```
-
-## Contributing
-
-Please read our [Contributing Guidelines](docs/CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.

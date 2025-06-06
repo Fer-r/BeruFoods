@@ -113,8 +113,18 @@ const RestaurantProfilePage = () => {
   };
 
   const handleFileChange = (e) => {
-    setImageFile(e.target.files[0]);
-    setCurrentImageUrl(''); // Clear old preview if a new file is selected
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 4 * 1024 * 1024) {
+        setError('File is too large. Maximum size allowed is 4MB.');
+        e.target.value = '';
+        return;
+      }
+      
+      setImageFile(file);
+      setCurrentImageUrl('');
+      setError('');
+    }
   };
 
   const handleFoodTypeChange = (e) => {
@@ -469,7 +479,7 @@ const RestaurantProfilePage = () => {
             type="file"
             id="imageFile"
             name="imageFile"
-            label="Update Restaurant Image (Optional)"
+            label="Update Restaurant Image (Max 4MB, Optional)"
             onChange={handleFileChange}
             accept="image/png, image/jpeg, image/webp"
             className="file-input file-input-bordered file-input-primary w-full"

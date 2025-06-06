@@ -76,8 +76,15 @@ const ArticleFormPage = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 4 * 1024 * 1024) {
+        setError('File is too large. Maximum size allowed is 4MB.');
+        e.target.value = ''; // Clear the file input
+        return;
+      }
+      
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
+      setError(null);
     }
   };
 
@@ -209,7 +216,7 @@ const ArticleFormPage = () => {
 
         <div className="form-control">
           <label htmlFor="imageFile" className="label">
-            <span className="label-text text-base-content font-medium">Article Image</span>
+            <span className="label-text text-base-content font-medium">Article Image (Max 4MB)</span>
             {isEditMode && formData.imageUrl && !imagePreview && <span className="label-text-alt text-xs">(Current image will be kept)</span>}
             {isEditMode && imagePreview && imagePreview.startsWith('blob:') && <span className="label-text-alt text-xs">(New image selected)</span>}
 

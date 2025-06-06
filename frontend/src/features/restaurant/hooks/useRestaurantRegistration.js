@@ -49,7 +49,16 @@ const useRestaurantRegistration = () => {
   // Handler for file input
   const handleFileChange = useCallback((e) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      
+      if (file.size > 4 * 1024 * 1024) {
+        setError('File is too large. Maximum size allowed is 4MB.');
+        e.target.value = ''; 
+        setImageFile(null);
+        return;
+      }
+      
+      setImageFile(file);
     } else {
       setImageFile(null);
     }

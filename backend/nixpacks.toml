@@ -6,6 +6,12 @@
 APP_ENV = "prod"
 # Allow Composer to run as superuser (required in Railway containers)
 COMPOSER_ALLOW_SUPERUSER = "1"
+# PHP configuration for file uploads
+PHP_UPLOAD_MAX_FILESIZE = "5M"
+PHP_POST_MAX_SIZE = "5M"
+PHP_MAX_EXECUTION_TIME = "120"
+PHP_MAX_INPUT_TIME = "120"
+PHP_MEMORY_LIMIT = "256M"
 
 [phases.setup]
 # Install PHP 8.2 and required extensions + OpenSSL for JWT key generation
@@ -26,4 +32,4 @@ cmds = [
 
 [start]
 # Run migrations (with automatic database waiting) then start PHP server
-cmd = "php bin/console cache:clear --env=prod && php bin/console cache:warmup --env=prod && php bin/console doctrine:migration:migrate --no-interaction --allow-no-migration && php -S 0.0.0.0:$PORT -t public" 
+cmd = "php bin/console cache:clear --env=prod && php bin/console cache:warmup --env=prod && php bin/console doctrine:migration:migrate --no-interaction --allow-no-migration && php -d upload_max_filesize=5M -d post_max_size=5M -d max_execution_time=120 -d max_input_time=120 -d memory_limit=256M -S 0.0.0.0:$PORT -t public" 

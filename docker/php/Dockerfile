@@ -32,6 +32,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Composer globally
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Copy custom PHP configuration
+COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
+
 # Define Composer home and create cache directory owned by www-data
 ENV COMPOSER_HOME=/var/www/backend/var/cache/composer
 # Ensure var/cache and var/log exist and are owned by www-data before potential volume mount overwrites during runtime

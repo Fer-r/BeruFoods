@@ -171,7 +171,7 @@ const RestaurantRegister = () => {
               type="file"
               id="imageFile"
               name="imageFile"
-              label="Restaurant Image (Optional)"
+              label="Restaurant Image (Max 4MB, Optional)"
               onChange={handleFileChange}
               accept="image/png, image/jpeg, image/webp"
               className="file-input file-input-bordered file-input-primary w-full"

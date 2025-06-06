@@ -16,18 +16,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     libicu-dev \
     libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libwebp-dev \
     libzip-dev \
     openssl \
     unzip \
     zip \
     && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-configure intl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_mysql \
     zip \
     intl \
-    opcache
+    opcache \
+    gd
 
 # Install Composer globally
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

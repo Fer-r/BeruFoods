@@ -9,7 +9,7 @@ use App\Repository\RestaurantRepository;
 use App\Entity\UserAddress;
 use App\Entity\RestaurantAddress;
 use App\Repository\FoodTypeRepository;
-use App\Service\ImageUploader;
+use App\Service\ImageManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -128,7 +128,7 @@ final class AuthController extends AbstractController
         UserRepository $userRepository,
         FoodTypeRepository $foodTypeRepository, 
         ValidatorInterface $validator,
-        ImageUploader $imageUploader 
+        ImageManager $imageUploader 
     ): JsonResponse {
         // --- Access form data from multipart/form-data ---
         $email = $request->request->get('email');

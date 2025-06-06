@@ -6,7 +6,7 @@ use App\Entity\Article;
 use App\Entity\Restaurant;
 use App\Repository\ArticleRepository;
 use App\Repository\RestaurantRepository;
-use App\Service\ImageUploader;
+use App\Service\ImageManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -28,7 +28,7 @@ final class ArticleController extends AbstractController
     private const ITEMS_PER_PAGE = 10; 
 
     public function __construct(
-        private ImageUploader $imageUploader
+        private ImageManager $imageUploader
     ) {}
 
     #[Route('', name: 'api_article_index', methods: ['GET'])]

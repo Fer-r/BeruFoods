@@ -44,9 +44,9 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    # Configure instances of the new App\Service\ImageUploader
-    app.image_uploader.article:
-        class: App\Service\ImageUploader
+    # Configure instances of the new App\Service\ImageManager
+    app.image_manager.article:
+        class: App\Service\ImageManager
         arguments:
             $slugger: '@Symfony\Component\String\Slugger\SluggerInterface'
             $filesystem: '@Symfony\Component\Filesystem\Filesystem'
@@ -54,8 +54,8 @@ services:
             $imagesPublicPath: '%article_images_public_path%'
             $parameterBag: '@parameter_bag'
 
-    app.image_uploader.restaurant:
-        class: App\Service\ImageUploader
+    app.image_manager.restaurant:
+        class: App\Service\ImageManager
         arguments:
             $slugger: '@Symfony\Component\String\Slugger\SluggerInterface'
             $filesystem: '@Symfony\Component\Filesystem\Filesystem'
@@ -65,18 +65,18 @@ services:
 
     App\Controller\ArticleController:
         arguments:
-            $imageUploader: '@app.image_uploader.article'
+            $imageUploader: '@app.image_manager.article'
         tags: ['controller.service_arguments']
 
     App\Controller\RestaurantController:
         arguments:
-            $imageUploader: '@app.image_uploader.restaurant'
+            $imageUploader: '@app.image_manager.restaurant'
         tags: ['controller.service_arguments']
 
     App\Controller\AuthController:
         tags: ['controller.service_arguments']
         bind:
-            App\Service\ImageUploader: '@app.image_uploader.restaurant'
+            App\Service\ImageManager: '@app.image_manager.restaurant'
 
     App\Controller\UploadsController:
         arguments:

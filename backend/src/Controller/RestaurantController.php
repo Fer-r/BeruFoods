@@ -7,7 +7,7 @@ use App\Entity\RestaurantAddress; // Added import
 use App\Repository\RestaurantRepository;
 use App\Repository\FoodTypeRepository; // For handling food types update
 use App\Entity\FoodType; // For type hinting
-use App\Service\ImageUploader;
+use App\Service\ImageManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,7 +41,7 @@ final class RestaurantController extends AbstractController
     private const DEFAULT_RADIUS = 5000;
     private const MAX_RADIUS = 50000;
 
-    public function __construct(private ImageUploader $imageUploader) {}
+    public function __construct(private ImageManager $imageUploader) {}
 
     #[Route('', name: 'api_restaurant_index', methods: ['GET'])]
     public function index(RestaurantRepository $restaurantRepository, SerializerInterface $serializer, Request $request): JsonResponse

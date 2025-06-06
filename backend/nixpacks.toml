@@ -15,7 +15,7 @@ PHP_MEMORY_LIMIT = "256M"
 
 [phases.setup]
 # Install PHP 8.2 and required extensions + OpenSSL for JWT key generation
-nixPkgs = ["php82", "php82Packages.composer", "openssl", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.opcache", "php82Extensions.intl", "php82Extensions.mbstring", "php82Extensions.curl", "php82Extensions.xml", "php82Extensions.zip", "php82Extensions.openssl"]
+nixPkgs = ["php82", "php82Packages.composer", "openssl", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.opcache", "php82Extensions.intl", "php82Extensions.mbstring", "php82Extensions.curl", "php82Extensions.xml", "php82Extensions.zip", "php82Extensions.openssl", "php82Extensions.gd"]
 
 [phases.install]
 # Install Composer dependencies optimized for production

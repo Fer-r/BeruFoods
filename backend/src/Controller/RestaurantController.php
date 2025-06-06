@@ -85,6 +85,12 @@ final class RestaurantController extends AbstractController
                    ->setParameter('name', '%' . $name . '%');
             }
 
+            // Filter out banned restaurants for non-admin users in nearby search
+            if (!$this->isGranted('ROLE_ADMIN')) {
+                $qb->andWhere('r.banned = :banned')
+                   ->setParameter('banned', false);
+            }
+
         } else {
             // Standard QB filtering (no pagination applied here yet)
             $qb = $restaurantRepository->createQueryBuilder('r')
@@ -104,6 +110,12 @@ final class RestaurantController extends AbstractController
 
             // Add other non-spatial filters here
             $qb->orderBy('r.name', 'ASC'); // Set default order for non-nearby
+        }
+
+        // Filter out banned restaurants for non-admin users
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            $qb->andWhere('r.banned = :banned')
+               ->setParameter('banned', false);
         }
 
         // Apply "isOpenNow" filter if requested
@@ -173,6 +185,11 @@ final class RestaurantController extends AbstractController
     #[Route('/{id}', name: 'api_restaurant_show', methods: ['GET'])]
     public function show(Restaurant $restaurant, SerializerInterface $serializer): JsonResponse
     {
+        // Prevent non-admin users from accessing banned restaurants
+        if ($restaurant->isBanned() && !$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['message' => 'Restaurant not found or not available'], Response::HTTP_NOT_FOUND);
+        }
+
         $json = $serializer->serialize($restaurant, 'json', ['groups' => 'restaurant:read']);
         $data = json_decode($json, true);
 
@@ -526,6 +543,11 @@ final class RestaurantController extends AbstractController
         Request $request,
         ReservationRepository $reservationRepository
     ): JsonResponse {
+        // Prevent non-admin users from accessing banned restaurants' availability
+        if ($restaurant->isBanned() && !$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['message' => 'Restaurant not found or not available'], Response::HTTP_NOT_FOUND);
+        }
+
         // Get startDate and endDate from query parameters
         $startDateString = $request->query->get('startDate'); // Expecting YYYY-MM-DD format
         $endDateString = $request->query->get('endDate');     // Expecting YYYY-MM-DD format

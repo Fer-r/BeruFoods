@@ -195,7 +195,6 @@ For system administration and maintenance instructions, please refer to the [Adm
 - PHP 8.2+
 - MySQL 8.0
 - Doctrine ORM
-- API Platform
 - Lexik JWT Authentication
 - Mercure for real-time updates
 

@@ -209,6 +209,22 @@ class CreateDemoDataCommand extends Command
         $io->writeln('Created admin user: ' . $adminEmail);
     }
 
+    private function getLocationForIndex(int $index, int $halfwayPoint): array
+    {
+        if ($index <= $halfwayPoint) {
+            $location = self::GRANADA_LOCATIONS[($index - 1) % count(self::GRANADA_LOCATIONS)];
+            $city = 'Granada';
+        } else {
+            $location = self::MADRID_LOCATIONS[($index - $halfwayPoint - 1) % count(self::MADRID_LOCATIONS)];
+            $city = 'Madrid';
+        }
+        
+        return [
+            'location' => $location,
+            'city' => $city
+        ];
+    }
+
     private function createUsers(SymfonyStyle $io): void
     {
         $userRepository = $this->entityManager->getRepository(User::class);
@@ -241,18 +257,12 @@ class CreateDemoDataCommand extends Command
             // Create address
             $userAddress = new UserAddress();
             
-            // Half in Granada, half in Madrid
-            if ($i <= 10) {
-                $location = self::GRANADA_LOCATIONS[($i - 1) % count(self::GRANADA_LOCATIONS)];
-                $userAddress->setCity('Granada');
-            } else {
-                $location = self::MADRID_LOCATIONS[($i - 11) % count(self::MADRID_LOCATIONS)];
-                $userAddress->setCity('Madrid');
-            }
-            
-            $userAddress->setLat((string)$location['lat']);
-            $userAddress->setLng((string)$location['lng']);
-            $userAddress->setAddressLine([$location['address'], 'Apt ' . $i]);
+            // Get location and city using helper method
+            $locationData = $this->getLocationForIndex($i, 10);
+            $userAddress->setCity($locationData['city']);
+            $userAddress->setLat((string)$locationData['location']['lat']);
+            $userAddress->setLng((string)$locationData['location']['lng']);
+            $userAddress->setAddressLine([$locationData['location']['address'], 'Apt ' . $i]);
             $userAddress->setUser($user);
             
             $this->entityManager->persist($userAddress);
@@ -313,18 +323,12 @@ class CreateDemoDataCommand extends Command
             // Create address
             $restaurantAddress = new RestaurantAddress();
             
-            // Half in Granada, half in Madrid
-            if ($i <= 10) {
-                $location = self::GRANADA_LOCATIONS[($i - 1) % count(self::GRANADA_LOCATIONS)];
-                $restaurantAddress->setCity('Granada');
-            } else {
-                $location = self::MADRID_LOCATIONS[($i - 11) % count(self::MADRID_LOCATIONS)];
-                $restaurantAddress->setCity('Madrid');
-            }
-            
-            $restaurantAddress->setLat((string)$location['lat']);
-            $restaurantAddress->setLng((string)$location['lng']);
-            $restaurantAddress->setAddressLine($location['address']);
+            // Get location and city using helper method
+            $locationData = $this->getLocationForIndex($i, 10);
+            $restaurantAddress->setCity($locationData['city']);
+            $restaurantAddress->setLat((string)$locationData['location']['lat']);
+            $restaurantAddress->setLng((string)$locationData['location']['lng']);
+            $restaurantAddress->setAddressLine($locationData['location']['address']);
             $restaurantAddress->setRestaurant($restaurant);
             
             // Add food types (2-4 random types)

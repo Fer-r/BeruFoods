@@ -121,17 +121,17 @@ For local development, the project uses Docker Compose to create a consistent de
    
    All addresses are realistic and match actual coordinates for locations in Granada and Madrid.
 
-8. **Access the Admin Interface**:
+6. **Access the Admin Interface**:
    - Log in with admin credentials: `admin@berufoods.com` / `password123`
    - Navigate to the admin dashboard through the header menu
    - Use the admin interface to manage users and restaurants
 
-6. **Access the Application**:
+7. **Access the Application**:
    - Frontend: [http://localhost](http://localhost)
    - Backend API: [http://localhost/api](http://localhost/api)
    - phpMyAdmin: [http://localhost/phpmyadmin](http://localhost/phpmyadmin)
 
-7. **Demo Account Credentials**:
+8. **Demo Account Credentials**:
    All demo accounts use the password: `password123`
    
    - **Administrator**: `admin@berufoods.com` (Full admin dashboard access)

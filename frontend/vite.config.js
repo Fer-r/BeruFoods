@@ -8,6 +8,17 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router']
+        }
+      }
+    }
+  },
   server: {
     host: "0.0.0.0",
     allowedHosts: ["frontend","frontend-production-9900.up.railway.app"],

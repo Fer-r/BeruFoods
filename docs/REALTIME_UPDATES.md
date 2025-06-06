@@ -163,12 +163,25 @@ The frontend handles connection issues and offline scenarios:
 
 To test the real-time update system:
 
-1. **Local Development**:
+1. **Setup for Testing**:
+   ```bash
+   make init          # Initialize the application
+   make demo-data     # Create test accounts
+   ```
+
+2. **Test Scenario**:
+   - Open two browser windows
+   - Login as restaurant owner (`restaurant1@example.com` / `password123`) in one window
+   - Login as customer (`user1@example.com` / `password123`) in another window
+   - Place an order as customer and observe real-time notifications in restaurant dashboard
+
+3. **Local Development Debug**:
    - Ensure the Mercure Hub is running (`docker compose ps mercure`)
    - Check Mercure logs for connection issues (`docker compose logs mercure`)
    - Use browser developer tools to monitor the EventSource connection
+   - Access Mercure directly: [http://localhost:3000](http://localhost:3000)
 
-2. **Production**:
+4. **Production**:
    - Monitor Mercure Hub logs
    - Check for CORS or connection issues in browser console
    - Verify JWT token generation and validation

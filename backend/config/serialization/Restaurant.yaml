@@ -10,7 +10,7 @@ App\Entity\Restaurant:
         name:
             groups: ['restaurant:read', 'restaurant:read:collection', 'restaurant:read:nested', 'order:read', 'order:read:collection']
         phone:
-            groups: ['restaurant:read'] # Phone might not be needed in list view
+            groups: ['restaurant:read', 'restaurant:read:collection']
         banned:
             groups: ['restaurant:read', 'restaurant:read:collection'] # Show banned status in lists for admin
         takes_reservations:

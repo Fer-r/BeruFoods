@@ -36,7 +36,16 @@ const AdminRestaurantManagementPage = () => {
   // Restaurant Edit Modal
   const [isEditRestaurantModalOpen, setIsEditRestaurantModalOpen] = useState(false);
   const [currentRestaurant, setCurrentRestaurant] = useState(null);
-  const [editRestaurantFormData, setEditRestaurantFormData] = useState({ name: '', address: '', phone: '', siret: '' });
+  const [editRestaurantFormData, setEditRestaurantFormData] = useState({ 
+    name: '', 
+    address: {
+      address_line: '',
+      city: '',
+      lat: '',
+      lng: ''
+    }, 
+    phone: ''
+  });
 
   // Order Edit Modal
   const [isEditOrderModalOpen, setIsEditOrderModalOpen] = useState(false);
@@ -85,9 +94,13 @@ const AdminRestaurantManagementPage = () => {
     setCurrentRestaurant(restaurant);
     setEditRestaurantFormData({
       name: restaurant.name,
-      address: restaurant.address,
+      address: {
+        address_line: restaurant.address?.address_line || '',
+        city: restaurant.address?.city || '',
+        lat: restaurant.address?.lat || '',
+        lng: restaurant.address?.lng || ''
+      },
       phone: restaurant.phone || '',
-      siret: restaurant.siret || '',
     });
     setModalError(null);
     setIsEditRestaurantModalOpen(true);
@@ -99,7 +112,19 @@ const AdminRestaurantManagementPage = () => {
   };
 
   const handleEditRestaurantFormChange = (e) => {
-    setEditRestaurantFormData({ ...editRestaurantFormData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name.startsWith('address.')) {
+      const addressField = name.split('.')[1];
+      setEditRestaurantFormData(prev => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [addressField]: value
+        }
+      }));
+    } else {
+      setEditRestaurantFormData({ ...editRestaurantFormData, [name]: value });
+    }
   };
 
   const handleUpdateRestaurant = async (e) => {
@@ -475,17 +500,61 @@ const AdminRestaurantManagementPage = () => {
           </div>
           <div className="form-control">
             <label className="label">
-              <span className="label-text">Address</span>
+              <span className="label-text">Address Line</span>
             </label>
             <input 
               type="text" 
-              name="address" 
-              value={editRestaurantFormData.address} 
+              name="address.address_line" 
+              value={editRestaurantFormData.address.address_line} 
               onChange={handleEditRestaurantFormChange} 
               className="input input-bordered w-full" 
               placeholder="Restaurant address"
               required 
             />
+          </div>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">City</span>
+            </label>
+            <input 
+              type="text" 
+              name="address.city" 
+              value={editRestaurantFormData.address.city} 
+              onChange={handleEditRestaurantFormChange} 
+              className="input input-bordered w-full" 
+              placeholder="City"
+              required 
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Latitude</span>
+              </label>
+              <input 
+                type="number" 
+                name="address.lat" 
+                value={editRestaurantFormData.address.lat} 
+                onChange={handleEditRestaurantFormChange} 
+                className="input input-bordered w-full" 
+                placeholder="Latitude"
+                step="any"
+              />
+            </div>
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Longitude</span>
+              </label>
+              <input 
+                type="number" 
+                name="address.lng" 
+                value={editRestaurantFormData.address.lng} 
+                onChange={handleEditRestaurantFormChange} 
+                className="input input-bordered w-full" 
+                placeholder="Longitude"
+                step="any"
+              />
+            </div>
           </div>
           <div className="form-control">
             <label className="label">
@@ -500,19 +569,7 @@ const AdminRestaurantManagementPage = () => {
               placeholder="Phone number"
             />
           </div>
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">SIRET</span>
-            </label>
-            <input 
-              type="text" 
-              name="siret" 
-              value={editRestaurantFormData.siret} 
-              onChange={handleEditRestaurantFormChange} 
-              className="input input-bordered w-full" 
-              placeholder="SIRET number"
-            />
-          </div>
+
           {modalError && (
             <div className="alert alert-error">
               <span>{modalError}</span>

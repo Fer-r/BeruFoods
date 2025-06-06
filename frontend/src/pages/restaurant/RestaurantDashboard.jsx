@@ -127,9 +127,6 @@ const RestaurantDashboard = () => {
               <span className="badge badge-error badge-sm ml-2">{unreadCount}</span>
             )}
           </h2>
-          <Link to="/notifications" className="btn btn-sm btn-outline btn-primary">
-            View All
-          </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {recentNotifications.length > 0 ? (

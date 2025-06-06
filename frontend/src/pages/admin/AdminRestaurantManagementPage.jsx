@@ -411,7 +411,7 @@ const AdminRestaurantManagementPage = () => {
                                 <div>
                                   <p className="font-semibold">Order #{order.id}</p>
                                   <div className="badge badge-outline badge-sm">{order.status}</div>
-                                  <p className="text-sm opacity-70">Total: {(typeof order.totalPrice === 'number' ? order.totalPrice : parseFloat(order.totalPrice) || 0).toFixed(2)} €</p>
+                                  <p className="text-sm opacity-70">Total: {(typeof order.total_price === 'number' ? order.total_price : parseFloat(order.total_price) || 0).toFixed(2)} €</p>
                                 </div>
                                 <button 
                                   onClick={() => handleOpenEditOrderModal(order)} 
